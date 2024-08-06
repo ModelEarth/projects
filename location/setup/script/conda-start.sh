@@ -2,6 +2,13 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+CONDA_BASE=$(conda info --base)
+if [ -z "$CONDA_BASE" ]; then
+  echo "Conda base path not found."
+  exit 1
+fi
+echo "CONDA_BASE:" $CONDA_BASE
+
 # Install npm dependencies and build the project
 echo "Running npm install..."
 npm install
@@ -20,6 +27,10 @@ if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
     . "$HOME/miniconda3/etc/profile.d/conda.sh"
 elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
     . "$HOME/anaconda3/etc/profile.d/conda.sh"
+elif [ -f "$HOME/opt/miniconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/opt/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "$HOME/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/opt/anaconda3/etc/profile.d/conda.sh"
 else
     echo "Conda initialization script not found. Please install Conda and ensure it is properly initialized."
     exit 1
