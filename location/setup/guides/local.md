@@ -36,8 +36,12 @@ page should be up at http://localhost:8080
 Make sure you have [docker](https://www.docker.com/products/docker-desktop/) and [Ollama](https://ollama.com/) installed. Also, follow this [guide](https://github.com/ollama/ollama/blob/86b907f82ad1cc5eb16e919d6cb5830765d73be4/docs/faq.md?plain=1#L62) to expose Ollama server. Then run this command:
 
 ```zsh
-docker run -d -p 3000:8080 -e -v open-webui:/app/backend/data --name open-webui --restart always [PROJECT_IAMGE]
+docker run -d -p 8080:8080 -v ollama:/root/.ollama -v open-webui:/app/backend/data --name open-webui --restart always ghcr.io/open-webui/open-webui:ollama
 ```
+
+### Add pipelines feature
+
+Check out this [quick-start guide](https://docs.openwebui.com/pipelines/).
 
 ## Other Installation Methods
 
