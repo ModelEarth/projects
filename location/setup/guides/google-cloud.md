@@ -56,7 +56,7 @@ Repeat the step for pipeline images.
 
 &nbsp;&nbsp;&nbsp;&nbsp;For the pipeline image, change the **mount path** to `app/pipelines`.
 
-4. Then follow [adding pipelines features] (https://docs.openwebui.com/pipelines/).
+4. Then follow [adding pipelines features](https://docs.openwebui.com/pipelines/).
 5. Good to go!
 
 <!-- ## Deployment on GKE
