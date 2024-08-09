@@ -116,6 +116,12 @@ Note that we do not use \~/ in the command above since it already runs in your c
 
 <!-- Docker set-up contributors: Dinesh B, Loren, Yifeng, Yuxin -->
 
+## Installing git while creation of docker image
+
+To be able to run git commands inside a docker container the following command has been used:<!-- Dinesh B -->
+
+	apt-get install -y --no-install-recommends curl jq git
+
 ## Using git inside of docker
 
 **Code in Dockerfile to install Git while creating a Container**
@@ -165,6 +171,17 @@ To run git commands above inside our docker container,
 
 **Areas of future sync issues:**
 We updated our [DockerFile with this PR](https://github.com/ModelEarth/projects/pull/2/files) - Dinesh
+
+## Changes to make if we run Git in OpenWebUI
+
+From Dinesh B. (Not implemented yet since we're debugging Google Cloud setup.)
+
+Dockerfile (in root of repo) change:
+apt-get install -y --no-install-recommends curl jq && \
+apt-get install -y --no-install-recommends curl jq git && \
+
+apt-get install -y --no-install-recommends pandoc gcc netcat-openbsd curl jq && \
+apt-get install -y --no-install-recommends pandoc gcc netcat-openbsd curl jq git && \
 
 ## How we created our Docker "projects" containers on GitHub
 
@@ -233,6 +250,25 @@ CPU was already at 16
 Increased memory limit from 8GB to 24GB
 Increase Swap from 1GB to 3GB
 -->
+
+## How to build with a different "src" file
+
+We're not taking this approach, prepending "team-" instead.
+
+1.) Add to vite.config.js:  root: 'src-merged'
+
+2.) In package.json, replace "src" with "src-merged" (was in one place)
+
+3.) Add to svelt.config.js (Provided by ChatGPT. You might need all these lines.)
+
+, files: {  
+assets: 'src-merged/assets',  
+lib: 'src-merged/lib',  
+params: 'src-merged/params',  
+routes: 'src-merged/routes',  
+serviceWorker: 'src-merged/service-worker',  
+appTemplate: 'src-merged/app.html'
+
 
 ---
 <br>[Install for Building Locally](../) - without Docker
