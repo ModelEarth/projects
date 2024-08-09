@@ -1,17 +1,14 @@
 [Install Steps](../)
-# Docker Setup for Editing (Experimental)
+# Docker Setup
 
 Since Docker restarts local containers when your computer restarts, you may already have 
-[http://localhost:3000](http://localhost:3000) running if you've added to Docker previously. The port and ghcr.io source is visible under details within Docker.
-<!-- ghcr.io stands for GitHub Container Registry (GHCR) -->
+[http://localhost:3000](http://localhost:3000) running if you've added to Docker previously. 
 
-Our staging Docker container resides at [https://github.com/modelearth/projects/pkgs/container/projects](https://github.com/modelearth/projects/pkgs/container/projects)
+Also see <a href="https://docs.openwebui.com/getting-started/">Quick Start with Docker (recommended)</a> and [Open WebUI install video](https://www.youtube.com/watch?v=N-aRJe--txs) 
 
-Our production Docker container is in our [Github datascape account packages](https://github.com/users/datascape/packages/container/package/projects).
+Once you have the site running, you can copy model names from the [Model Library](https://ollama.com/library). The model "mistral" is small and fast.
 
-## Setup
-
-[Overview in video](https://www.youtube.com/watch?v=N-aRJe--txs)
+## Setup for your local computer
 
 1. [Download Ollama](https://ollama.com/) - And Install (you'll have a llama icon)
 <!-- Sample says "ollama run llama3.1" but that downloads 4.7 GB -->
@@ -43,9 +40,18 @@ If the docker cmd is not recognized after installing Docker on a Mac, Create a s
 
 	sudo ln -s /Applications/Docker.app/Contents/Resources/bin/docker /usr/local/bin/docker
 
-**ghcr.io** stands for GitHub Container Registry, which is a service provided by GitHub for hosting and managing container images.
+**ghcr.io** stands for GitHub Container Registry, which is a service provided by GitHub for hosting and managing container images.  
+The port and ghcr.io source will be visible under details within your Docker Desktop.<br>
 
+**Our Staging "modelearth" Docker container**
+Resides at [https://github.com/modelearth/projects/pkgs/container/projects](https://github.com/modelearth/projects/pkgs/container/projects)
 
+**Our Production "datascape" Docker container**
+Resides at [https://github.com/users/datascape/packages/container/package/projects](https://github.com/users/datascape/packages/container/package/projects)
+
+<br>
+
+# Docker Steps for Editing Locally (experimental)
 
 ## Edit files pulled down from Docker package
 
@@ -58,7 +64,7 @@ Replaced open-webui/open-webui with modelearth/projects
 Replaced open-webui-container with projects-container
 -->
 
-Here are commands to locally install [the Docker package](https://github.com/modelearth/projects/pkgs/container/projects) created from our "[projects](https://github.com/modelearth/projects)"  fork of open-webui.
+Here are commands to locally install [the Docker package](https://github.com/modelearth/projects/pkgs/container/projects) created from our "[projects](https://github.com/modelearth/projects)" fork of open-webui.
 
 <!--
 The main Open WebUI container is at:
@@ -229,4 +235,4 @@ Increase Swap from 1GB to 3GB
 -->
 
 ---
-<br>[Install and build locally](../) - without Docker
+<br>[Install for Building Locally](../) - without Docker

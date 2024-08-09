@@ -4,24 +4,33 @@
 
 If you already have an "open-webui" Docker container, your OpenWebUI server may already be running at [localhost:3000](http://localhost:3000) (since Docker restarts it when you start your computer).  You can now [train with a web page](train).
 
-You can use the <a href="https://docs.openwebui.com/getting-started/">Quick Start with Docker (recommended)</a> to install locally. This will automatically include Ollama in your Docker install. It's a quick way to install. For editing, the backend files can be extract from Docker with our [Docker Setup for Editing (Experimental)](docker) in which we extract backend files to edit in a Webroot. We're not sure if un-built frontend files can reside in OpenWebUI Docker container images.
+Use our [Docker Setup](docker) for a quick install with Ollama for loading models. The page also includes experiments in which we extract backend files to edit in a Webroot. We're not sure if un-built frontend files can reside in OpenWebUI Docker container images.
 <br>
 
 
-# Install and Build Locally (without Docker)
+# Install for Building Locally (without Docker)
 
-### Use our conda-start.sh script to install with one step
+### Use our conda-start.sh script to install with one step for Linux/MacOS. [Reference](./guides/local.md)
 
-These steps are for programmers planning to edit and build locally.  
+These steps are for programmers planning to edit and build locally. Visit [localhost:8080](http://localhost:8080) if you've already install.  
+After the initial one hour or more install, it only takes a minute to restart the server using the same conda-start.sh command below.
 
-The install can take over an hour initially. It takes less than a minute to restart once installed. If you're not planning to edit, you can install faster using a [local Docker instance](https://docs.openwebui.com/).  
+If you machine needs updates, our [node, python and conda upgrade page](https://model.earth/io/coders/python) is helpful.  
+If you're not planning to edit, you can install faster using a [local Docker instance](docker).  
 
-Clone with a command or use GitHub Desktop to pull to your computer from [our projects repo](https://github.com/modelearth/projects/).
+We recommend using GitHub Desktop to pull [our projects repo](https://github.com/modelearth/projects/) to your computer, or you can clone with a command:
 
 	git clone https://github.com/modelearth/projects.git
 	cd projects/
 
-Next run our [conda-start.sh script](https://github.com/ModelEarth/projects/blob/main/location/setup/script/start.sh) in the root of the "projects" folder. It invokes python3.11.
+Check that you have cmd apps available, include a 3.11 version of python.
+
+	conda --version
+	python3.11 --version
+	node --version
+	npm --version
+
+Next run the following to in the root of the "projects" folder. Our [conda-start.sh](https://github.com/ModelEarth/projects/blob/main/location/setup/script/conda-start.sh) script invokes python3.11, so you might need [pyenv](https://model.earth/io/coders/python).
 	
 	bash location/setup/script/conda-start.sh
 
@@ -29,7 +38,7 @@ That's it. Wait an hour or two to finish, then view the site here:
 
 [http://localhost:8080](http://localhost:8080)
 
-Now you can build to apply changes from "src".
+Now you can build to apply changes from "src" and "backup".
 
 	npm run build
 
@@ -55,7 +64,7 @@ If none are found, [download from Anaconda.com](https://www.anaconda.com/downloa
 
 The conda-start.sh script uses commands from [Open WebUI Getting Started](https://docs.openwebui.com/getting-started/) for building locally.  
 
-The commands incude the following:
+The commands include the following:
 
 	# Building Frontend Using Node
 	npm i
@@ -109,7 +118,7 @@ Choose the existing conda environment by saying "no" when asked to reinstall.
 ## Edit in our Open WebUI "projects/location" folder
 
 The "projects/location" folder is where we'll edit enhancements to the "src" folder.  
-We'll merge our enhancments into "src-merged" so we don't have sync issues with open-webui.
+We'll merge our enhancements into "src-merged" so we don't have sync issues with open-webui.
 
 We also edit index.html and active.md in our "projects" fork root. We added those files, so they won't have sync conflicts with the parent repo.
 
