@@ -1,8 +1,0 @@
-runtime: custom
-env: flex
-
-image: ghcr.io/open-webui/open-webui:main
-
-env_variables:
-  USE_OLLAMA: "false"
-  HOST: "host.docker.internal"
