@@ -68,9 +68,9 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 TO DO: Add a field called #gitrepo on our [home repo dev page](../home/repo) for pasting a Github account and repo name. Include an alert if the URL does not contain github.com (or another git provider), an account and a repo name.  
 
-TO DO: Add javascript to our [Planet repo](https://github.com/modelearth/planet/) that uses [Langchain's Chat Model Interface](https://python.langchain.com/docs/concepts/chat_models/), send a page from any GitHUb repo to an AI API like OpenAI to provide Retrieval Augmented Generation (RAG) using [LangChain.js](https://api.js.langchain.com) javascript. 
+TO DO: Add javascript to our [Planet repo](https://github.com/modelearth/planet/) that uses [Langchain's Chat Model Interface](https://python.langchain.com/docs/concepts/chat_models/), send a page from any GitHUb repo to an AI API like OpenAI to provide Retrieval Augmented Generation (RAG) using [LangChain.js](https://api.js.langchain.com) javascript. -- Dhananjay
 
-Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally.
+Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally. -- Dhananjay
 
 <!--See also: DataStax Astra DB-->
 
