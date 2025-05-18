@@ -148,7 +148,7 @@ IN PROGRESS: Use our [cloud repo](https://github.com/ModelEarth/cloud) and add F
 -->
 
 - [Update Farm Fresh Data pull](/community-data/process/python/farmfresh/) - Bhavna - DONE
-- [Push EPA date to Google Data Commons API](https://docs.datacommons.org/api/)
+- [Push EPA date to Google Data Commons API](https://docs.datacommons.org/api/) - Spoorthy
 
 
 ## 4. International Trade Flow - SQL, Python, Javascript (IO)
@@ -156,7 +156,7 @@ IN PROGRESS: Use our [cloud repo](https://github.com/ModelEarth/cloud) and add F
 [International Trade Flow SQL Data Prep](/profile/trade) - Exiobase Colab, charts and SQL
 <!-- Contributors: Gary, Satya, Himanshu, Sahil, Poorna -->
 
-NEW: We're [configuring SuiteCRM](../profile/crm/) to run in an Azure instance.
+NEW: We're [configuring SuiteCRM](../profile/crm/) to run in an Azure instance. 
 
 NEW: Update javascript report to use json generated from our Exiobase in CoLabs.
 
