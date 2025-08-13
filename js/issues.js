@@ -139,6 +139,10 @@ class GitHubIssuesManager {
                         <a href="#" id="toggleTokenSection" class="token-toggle-link" style="font-size: 0.9rem;">Add Your GitHub Token</a>
                         <span id="tokenBenefitText" style="font-size: 0.9rem;"> to increase API rate limits from 60 to 5,000 requests per hour</span>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
+                        <span id="gitAccountDisplay" style="font-size: 0.9rem; display: none;"> GitHub: <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;"></a></span>
+                    </p>
+                    <p class="subtitle" style="margin-top: 5px;">
+                        <input type="text" id="gitIssuesAccount" class="textInput" style="width:150px; font-size: 14px; display: none;" placeholder="GitHub Account" onfocus="this.select()" oninput="updateGitIssuesAccount()">
                     </p>
                 </div>
                 
@@ -1526,6 +1530,13 @@ class GitHubIssuesManager {
             item.innerHTML = `<i class="fas fa-user"></i> ${assignee}`;
             dropdown.appendChild(item);
         });
+        
+        // Set default assignee based on gitAccount if available
+        setTimeout(() => {
+            if (typeof updateAssigneeButtonDefault === 'function') {
+                updateAssigneeButtonDefault();
+            }
+        }, 100);
     }
 
     populateLabelFilter() {
@@ -2408,6 +2419,89 @@ class GitHubIssuesManager {
         document.getElementById('paginationContainer').innerHTML = '';
     }
 }
+
+// Git Issues Account Management Functions
+function updateGitIssuesAccount() {
+    const gitIssuesAccount = document.getElementById("gitIssuesAccount").value;
+    
+    // Store in localStorage using same cache as other git fields - store even if empty to clear cache
+    localStorage.gitAccount = gitIssuesAccount;
+    
+    // Update the display
+    updateGitAccountDisplay();
+    
+    // Update assignee button default if needed
+    updateAssigneeButtonDefault();
+}
+
+function updateGitAccountDisplay() {
+    const gitAccount = localStorage.gitAccount || document.getElementById("gitIssuesAccount").value;
+    const gitAccountDisplay = document.getElementById("gitAccountDisplay");
+    const gitAccountLink = document.getElementById("gitAccountLink");
+    
+    if (gitAccount && gitAccount.trim() !== '' && gitAccountDisplay && gitAccountLink) {
+        // Show GitHub account when available
+        gitAccountLink.textContent = gitAccount;
+        gitAccountLink.href = `https://github.com/${gitAccount}`;
+        gitAccountDisplay.innerHTML = ` GitHub: <a href="https://github.com/${gitAccount}" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">${gitAccount}</a>`;
+        gitAccountDisplay.style.display = 'inline';
+    } else if (gitAccountDisplay && gitAccountLink) {
+        // Show "Add my Github name" when no account is cached
+        gitAccountDisplay.innerHTML = ` <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">Add my Github name</a> - Will soon allow you to display your projects.`;
+        gitAccountDisplay.style.display = 'inline';
+    }
+}
+
+function toggleGitIssuesAccount() {
+    const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
+    if (gitIssuesAccountField) {
+        if (gitIssuesAccountField.style.display === 'none' || !gitIssuesAccountField.style.display) {
+            gitIssuesAccountField.style.display = 'inline-block';
+            gitIssuesAccountField.focus();
+        } else {
+            gitIssuesAccountField.style.display = 'none';
+        }
+    }
+}
+
+function updateAssigneeButtonDefault() {
+    const gitAccount = localStorage.gitAccount;
+    if (!gitAccount || !issuesManager) return;
+    
+    // Check if gitAccount exists in the assignees list
+    if (issuesManager.assignees && issuesManager.assignees.has(gitAccount)) {
+        // Only set as default if no other assignee value is cached
+        const cachedAssignee = localStorage.getItem('issuesManager_assignee');
+        if (!cachedAssignee || cachedAssignee === 'all') {
+            issuesManager.filters.assignee = gitAccount;
+            issuesManager.updateAssigneeButton();
+        }
+    }
+}
+
+// Initialize Git Issues Account on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
+        if (gitIssuesAccountField) {
+            // Load from localStorage if available
+            if (localStorage.gitAccount) {
+                gitIssuesAccountField.value = localStorage.gitAccount;
+            }
+            
+            // Add keypress event listener for clearing cache on Enter when field is empty
+            gitIssuesAccountField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim() === '') {
+                    localStorage.removeItem('gitAccount');
+                    updateGitIssuesAccount();
+                }
+            });
+        }
+        
+        // Update the display initially
+        updateGitAccountDisplay();
+    }, 100);
+});
 
 // Initialize the issues manager when the page loads
 let issuesManager;

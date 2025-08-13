@@ -67,6 +67,17 @@
     opacity: 0.9;
 }
 
+.issues-header .subtitle a {
+    color: #ffffff;
+    text-decoration: underline;
+    opacity: 1;
+}
+
+.issues-header .subtitle a:hover {
+    color: #f0f6ff;
+    text-decoration: none;
+}
+
 .issues-header .subtitle-description {
     margin: 0;
     font-size: 1.2rem;
