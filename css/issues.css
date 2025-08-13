@@ -104,6 +104,64 @@
     transform: scale(1.1);
 }
 
+/* Header search button - positioned to the left of fullscreen button */
+.header-search-btn {
+    position: absolute;
+    top: 1rem;
+    right: 3.5rem; /* Position to the left of fullscreen button */
+    color: white !important;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    z-index: 1000;
+}
+
+.header-search-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+/* Cache status section */
+.cache-status-section {
+    background: var(--light-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #2d3748 !important; /* Much darker text */
+}
+
+.cache-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cache-info {
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .cache-status-section {
+    background: var(--dark-color);
+    border-color: var(--border-color);
+    color: #e2e8f0 !important; /* Much lighter text for dark theme */
+}
+
+.dark .cache-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
 .issues-header {
     position: relative;
 }
@@ -123,7 +181,6 @@
 }
 
 .issues-header i {
-    margin-right: 0.5rem;
     color: white;
 }
 
@@ -447,6 +504,16 @@
     box-shadow: var(--box-shadow);
     position: relative;
     container-type: inline-size;
+}
+
+/* Ensure filters start hidden by default */
+#filtersSection {
+    display: none !important;
+}
+
+/* Only show when explicitly toggled */
+#filtersSection.show-filters {
+    display: block !important;
 }
 
 .dark .filters-section {
@@ -981,27 +1048,26 @@ body.widget-fullscreen-active {
 .minimize-btn {
     position: absolute;
     top: 1rem;
-    right: 1rem;
-    background: var(--danger-color);
+    right: 1rem; /* Position to the right of search icon (search icon is at 3.5rem) */
+    background: rgba(0, 0, 0, 0.2);
     color: white;
     border: none;
     padding: 0.5rem;
     border-radius: var(--border-radius);
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.2rem;
     z-index: 10000;
     transition: var(--transition);
-    width: 40px;
-    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .minimize-btn:hover {
-    background: #c82333;
+    background: rgba(0, 0, 0, 0.4);
     transform: scale(1.1);
 }
+
 
 /* Fullscreen toggle button in pagination */
 .fullscreen-btn:hover {
@@ -1349,10 +1415,18 @@ body.widget-fullscreen-active {
 .widget-fullscreen-active .header-fullscreen-btn {
     display: none !important;
 }
+
+
 /* Media query fallback */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .header-fullscreen-btn {
         display: none !important;
+    }
+    
+    /* Keep search button visible on mobile since it's essential for accessing filters */
+    .header-search-btn {
+        right: 1rem !important; /* Move to where fullscreen button was */
+        display: block !important;
     }
     
     .pagination-info {
