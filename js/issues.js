@@ -30,6 +30,13 @@ class GitHubIssuesManager {
         this.autoRefreshInterval = null;
         this.assignees = new Set();
         this.labels = new Set();
+        
+        // Cache configuration (in minutes)
+        this.cacheConfig = {
+            duration: parseInt(localStorage.getItem('github_cache_duration')) || 10, // Default 10 minutes
+            autoRefresh: localStorage.getItem('github_cache_auto_refresh') !== 'false' // Default true
+        };
+        this.cacheExpireTimer = null;
         this.rateLimitInfo = {
             remaining: null,
             resetTime: null,
@@ -123,6 +130,7 @@ class GitHubIssuesManager {
             ${this.createFiltersHTML()}
             ${this.createIssuesContainerHTML()}
             ${this.createStatsHTML()}
+            ${this.createCacheStatusHTML()}
             ${this.createErrorHTML()}
             ${this.createModalHTML()}
         `;
@@ -131,6 +139,7 @@ class GitHubIssuesManager {
     createHeaderHTML() {
         return `
             <div class="issues-header">
+                <i class="fas fa-search header-search-btn" onclick="issuesManager.toggleFilters()" title="Toggle Filters"></i>
                 <i class="fas fa-expand header-fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="Toggle Fullscreen"></i>
                 
                 <div class="header-content">
@@ -217,7 +226,7 @@ class GitHubIssuesManager {
     createFiltersHTML() {
         return `
             <div class="filters-section" id="filtersSection" style="display: none;">
-                <button class="filters-close-btn" id="filtersCloseBtn" style="display: none;">
+                <button class="filters-close-btn" id="filtersCloseBtn" onclick="issuesManager.hideFilters()" title="Close Filters">
                     <i class="fas fa-times"></i>
                 </button>
                 <div class="filters-row filters-primary-row">
@@ -393,6 +402,16 @@ class GitHubIssuesManager {
                         <div class="stat-number" id="totalComments">0</div>
                         <div class="stat-label">Comments</div>
                     </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createCacheStatusHTML() {
+        return `
+            <div class="cache-status-section">
+                <div id="cacheStatus" class="cache-status">
+                    <span class="cache-info">Cache: Loading...</span>
                 </div>
             </div>
         `;
@@ -648,6 +667,76 @@ class GitHubIssuesManager {
         };
         localStorage.removeItem('github_rate_limit_info');
         this.updateRateLimitDisplay();
+    }
+
+    // Cache management functions
+    setupCacheExpirationTimer(timeUntilExpiration) {
+        // Clear existing timer
+        if (this.cacheExpireTimer) {
+            clearTimeout(this.cacheExpireTimer);
+        }
+
+        // Set new timer for auto-refresh
+        this.cacheExpireTimer = setTimeout(() => {
+            console.log('Cache expired, auto-refreshing...');
+            this.loadData(true); // Force refresh
+        }, timeUntilExpiration);
+
+        console.log(`Cache expiration timer set for ${Math.round(timeUntilExpiration / 60000)} minutes`);
+    }
+
+    updateCacheStatusDisplay() {
+        const cacheStatusDiv = document.getElementById('cacheStatus');
+        if (!cacheStatusDiv) return;
+
+        const cached = localStorage.getItem('github_issues_cache');
+        if (cached) {
+            try {
+                const data = JSON.parse(cached);
+                const cacheAge = Date.now() - data.timestamp;
+                const cacheAgeMinutes = Math.round(cacheAge / 60000);
+                const remainingMinutes = Math.max(0, this.cacheConfig.duration - cacheAgeMinutes);
+                
+                cacheStatusDiv.innerHTML = `
+                    <span class="cache-info">
+                        Cache: ${cacheAgeMinutes}m old, expires in ${remainingMinutes}m 
+                        (${this.cacheConfig.duration}m duration)
+                        ${this.cacheConfig.autoRefresh ? ' • Auto-refresh enabled' : ' • Auto-refresh disabled'}
+                    </span>
+                `;
+            } catch (error) {
+                cacheStatusDiv.innerHTML = '<span class="cache-info">Cache: Invalid</span>';
+            }
+        } else {
+            cacheStatusDiv.innerHTML = '<span class="cache-info">Cache: Empty</span>';
+        }
+    }
+
+    setCacheDuration(minutes) {
+        this.cacheConfig.duration = Math.max(1, Math.min(60, minutes)); // Limit between 1-60 minutes
+        localStorage.setItem('github_cache_duration', this.cacheConfig.duration.toString());
+        
+        // Clear existing cache to apply new duration
+        localStorage.removeItem('github_issues_cache');
+        
+        this.showNotification(`Cache duration set to ${this.cacheConfig.duration} minutes`, 'info');
+        this.updateCacheStatusDisplay();
+        
+        // Reload data with new cache settings
+        this.loadData(true);
+    }
+
+    toggleAutoRefresh() {
+        this.cacheConfig.autoRefresh = !this.cacheConfig.autoRefresh;
+        localStorage.setItem('github_cache_auto_refresh', this.cacheConfig.autoRefresh.toString());
+        
+        if (!this.cacheConfig.autoRefresh && this.cacheExpireTimer) {
+            clearTimeout(this.cacheExpireTimer);
+            this.cacheExpireTimer = null;
+        }
+        
+        this.showNotification(`Auto-refresh ${this.cacheConfig.autoRefresh ? 'enabled' : 'disabled'}`, 'info');
+        this.updateCacheStatusDisplay();
     }
 
     updateRateLimitDisplay() {
@@ -1390,9 +1479,11 @@ class GitHubIssuesManager {
         this.populateLabelFilter();
         this.updateStats();
         this.updateRateLimitDisplay();
+        this.updateCacheStatusDisplay();
         this.filterAndDisplayIssues();
         
-        document.getElementById('filtersSection').style.display = 'block';
+        // Keep filters hidden by default - user can toggle with search button
+        // document.getElementById('filtersSection').style.display = 'block';
         document.getElementById('statsSection').style.display = 'flex';
         document.getElementById('issuesContainer').style.display = 'block';
     }
@@ -2124,6 +2215,14 @@ class GitHubIssuesManager {
             timestamp: Date.now()
         };
         localStorage.setItem('github_issues_cache', JSON.stringify(cacheData));
+        
+        // Set up cache expiration timer for auto-refresh
+        if (this.cacheConfig.autoRefresh) {
+            this.setupCacheExpirationTimer(this.cacheConfig.duration * 60 * 1000);
+        }
+        
+        // Update cache status display
+        this.updateCacheStatusDisplay();
     }
     
     saveViewPreference() {
@@ -2149,16 +2248,17 @@ class GitHubIssuesManager {
             container.classList.add('widget-fullscreen');
             document.body.classList.add('widget-fullscreen-active');
             
-            // Add minimize button to issues header bar
-            const headerBar = document.querySelector('.issues-header-bar');
-            if (headerBar && !headerBar.querySelector('.minimize-btn')) {
+            // Add minimize button to main header next to search icon
+            const mainHeader = document.querySelector('.issues-header');
+            if (mainHeader && !mainHeader.querySelector('.minimize-btn')) {
                 const minimizeBtn = document.createElement('button');
                 minimizeBtn.className = 'minimize-btn';
                 minimizeBtn.innerHTML = '<i class="fas fa-compress"></i>';
                 minimizeBtn.title = 'Exit Fullscreen';
                 minimizeBtn.onclick = () => this.toggleFullscreen();
-                headerBar.insertBefore(minimizeBtn, headerBar.firstChild);
+                mainHeader.appendChild(minimizeBtn);
             }
+            
         } else {
             // Exit fullscreen
             container.classList.remove('widget-fullscreen');
@@ -2169,10 +2269,34 @@ class GitHubIssuesManager {
             if (minimizeBtn) {
                 minimizeBtn.remove();
             }
+            
         }
         
         // Update icon in pagination
         this.updatePagination();
+    }
+
+    toggleFilters() {
+        const filtersSection = document.getElementById('filtersSection');
+        const closeBtn = document.getElementById('filtersCloseBtn');
+        
+        if (!filtersSection) return;
+        
+        if (filtersSection.classList.contains('show-filters')) {
+            filtersSection.classList.remove('show-filters');
+            if (closeBtn) closeBtn.style.display = 'none';
+        } else {
+            filtersSection.classList.add('show-filters');
+            if (closeBtn) closeBtn.style.display = 'block';
+        }
+    }
+
+    hideFilters() {
+        const filtersSection = document.getElementById('filtersSection');
+        const closeBtn = document.getElementById('filtersCloseBtn');
+        
+        if (filtersSection) filtersSection.classList.remove('show-filters');
+        if (closeBtn) closeBtn.style.display = 'none';
     }
 
     loadFromCache() {
@@ -2182,9 +2306,11 @@ class GitHubIssuesManager {
 
             const data = JSON.parse(cached);
             
-            // Check if cache is less than 5 minutes old
-            const maxAge = 5 * 60 * 1000; // 5 minutes
-            if (Date.now() - data.timestamp > maxAge) {
+            // Check if cache is less than configured duration old
+            const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
+            const cacheAge = Date.now() - data.timestamp;
+            if (cacheAge > maxAge) {
+                console.log(`Cache expired (${Math.round(cacheAge / 60000)} minutes old, max age: ${this.cacheConfig.duration} minutes)`);
                 return null;
             }
 
@@ -2192,6 +2318,12 @@ class GitHubIssuesManager {
                 this.filters = { ...this.filters, ...data.filters };
             }
 
+            // Set up cache expiration timer if auto-refresh is enabled
+            if (this.cacheConfig.autoRefresh) {
+                this.setupCacheExpirationTimer(maxAge - cacheAge);
+            }
+
+            console.log(`Loaded from cache (${Math.round(cacheAge / 60000)} minutes old)`);
             return data;
         } catch (error) {
             console.warn('Failed to load from cache:', error);
@@ -2387,7 +2519,8 @@ class GitHubIssuesManager {
 
     showFiltersOnError() {
         // Show basic UI elements even when API fails
-        document.getElementById('filtersSection').style.display = 'block';
+        // Keep filters hidden by default - user can toggle with search button
+        // document.getElementById('filtersSection').style.display = 'block';
         
         // Populate repository filter from loaded repositories
         this.populateRepositoryFilter();
