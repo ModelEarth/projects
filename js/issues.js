@@ -457,6 +457,7 @@ class GitHubIssuesManager {
         this.createWidgetStructure();
         
         this.setupEventListeners();
+        this.setupMenuClickHandler(); // Add menu click handler
         this.loadFromHash();
         this.loadFromCache();
         this.updateTokenUI();
@@ -1790,10 +1791,28 @@ class GitHubIssuesManager {
                 <div class="issue-header">
                     <div class="issue-title-row">
                         ${stateIcon}
+                        <div class="issue-number">#${issue.number}</div>
                         <h3 class="issue-title">
                             <a href="${issue.html_url}" target="_blank">${this.escapeHtml(issue.title)}</a>
                         </h3>
-                        <div class="issue-number">#${issue.number}</div>
+                        
+                        <!-- Issue Actions Menu -->
+                        <div class="issue-actions-menu">
+                            <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="issue-menu-dropdown" id="issueMenu-${issue.id}">
+                                <div class="menu-item" onclick="issuesManager.refreshSingleIssue('${issue.id}')">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </div>
+                                <div class="menu-item" onclick="window.open('${issue.html_url}', '_blank')">
+                                    <i class="fas fa-external-link-alt"></i> Open in GitHub
+                                </div>
+                                <div class="menu-item" onclick="issuesManager.copyIssueLink('${issue.html_url}')">
+                                    <i class="fas fa-link"></i> Copy Link
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 ${issue.body ? `
@@ -1818,10 +1837,28 @@ class GitHubIssuesManager {
             <div class="issue-header">
                 <div class="issue-title-row">
                     ${stateIcon}
+                    <div class="issue-number">#${issue.number}</div>
                     <h3 class="issue-title">
                         <a href="${issue.html_url}" target="_blank">${this.escapeHtml(issue.title)}</a>
                     </h3>
-                    <div class="issue-number">#${issue.number}</div>
+                    
+                    <!-- Issue Actions Menu -->
+                    <div class="issue-actions-menu">
+                        <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="issue-menu-dropdown" id="issueMenu-${issue.id}">
+                            <div class="menu-item" onclick="issuesManager.refreshSingleIssue('${issue.id}')">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </div>
+                            <div class="menu-item" onclick="window.open('${issue.html_url}', '_blank')">
+                                <i class="fas fa-external-link-alt"></i> Open in GitHub
+                            </div>
+                            <div class="menu-item" onclick="issuesManager.copyIssueLink('${issue.html_url}')">
+                                <i class="fas fa-link"></i> Copy Link
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="issue-meta">
                     <span class="repo-name">
@@ -1863,9 +1900,10 @@ class GitHubIssuesManager {
                         <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
                             <i class="fas fa-eye"></i><span> Details</span>
                         </button>
-                        <a href="${issue.html_url}" target="_blank" class="btn btn-sm btn-outline">
+                        <!-- GitHub button commented out - now available in 3-dot menu -->
+                        <!--<a href="${issue.html_url}" target="_blank" class="btn btn-sm btn-outline">
                             <i class="fab fa-github"></i><span> GitHub</span>
-                        </a>
+                        </a>-->
                     </div>
                 </div>
                 
@@ -2297,6 +2335,160 @@ class GitHubIssuesManager {
         
         if (filtersSection) filtersSection.classList.remove('show-filters');
         if (closeBtn) closeBtn.style.display = 'none';
+    }
+
+    // Issue menu functionality
+    toggleIssueMenu(issueId, event) {
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+        
+        // Close all other open menus
+        document.querySelectorAll('.issue-menu-dropdown').forEach(menu => {
+            if (menu.id !== `issueMenu-${issueId}`) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        // Toggle current menu
+        const menu = document.getElementById(`issueMenu-${issueId}`);
+        if (menu) {
+            menu.classList.toggle('show');
+        }
+    }
+
+    async refreshSingleIssue(issueId) {
+        try {
+            // Close menu
+            const menu = document.getElementById(`issueMenu-${issueId}`);
+            if (menu) menu.classList.remove('show');
+            
+            // Find the issue in our current data
+            const existingIssue = this.allIssues.find(issue => issue.id == issueId);
+            if (!existingIssue) {
+                this.showNotification('Issue not found', 'error');
+                return;
+            }
+            
+            // Show loading indicator on specific issue
+            this.showIssueLoading(issueId, true);
+            
+            // Fetch fresh issue data from GitHub API
+            const updatedIssue = await this.apiRequest(
+                `/repos/${this.owner}/${existingIssue.repository}/issues/${existingIssue.number}`
+            );
+            
+            // Preserve repository information
+            updatedIssue.repository = existingIssue.repository;
+            updatedIssue.repository_url = existingIssue.repository_url;
+            
+            // Update the issue in our data arrays
+            this.updateIssueInCollections(updatedIssue);
+            
+            // Re-render only this specific issue
+            this.rerenderSingleIssue(issueId, updatedIssue);
+            
+            // Update cache with new data
+            this.saveToCache();
+            
+            this.showNotification(`Issue #${updatedIssue.number} refreshed`, 'success');
+            
+        } catch (error) {
+            console.error('Error refreshing single issue:', error);
+            if (error.name === 'AbortError') {
+                this.showNotification('Refresh timed out', 'warning');
+            } else if (error.message.includes('403')) {
+                this.showNotification('API rate limit exceeded', 'error');
+            } else {
+                this.showNotification('Failed to refresh issue', 'error');
+            }
+        } finally {
+            this.showIssueLoading(issueId, false);
+        }
+    }
+
+    updateIssueInCollections(updatedIssue) {
+        // Update in main issues array
+        const mainIndex = this.allIssues.findIndex(issue => issue.id == updatedIssue.id);
+        if (mainIndex !== -1) {
+            this.allIssues[mainIndex] = updatedIssue;
+        }
+        
+        // Update in filtered array if present
+        const filteredIndex = this.filteredIssues.findIndex(issue => issue.id == updatedIssue.id);
+        if (filteredIndex !== -1) {
+            this.filteredIssues[filteredIndex] = updatedIssue;
+        }
+        
+        // Update repository-specific cache if exists
+        if (this.repositoryIssues[updatedIssue.repository]) {
+            const repoIndex = this.repositoryIssues[updatedIssue.repository].findIndex(
+                issue => issue.id == updatedIssue.id
+            );
+            if (repoIndex !== -1) {
+                this.repositoryIssues[updatedIssue.repository][repoIndex] = updatedIssue;
+            }
+        }
+    }
+
+    rerenderSingleIssue(issueId, updatedIssue) {
+        const existingElement = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (existingElement) {
+            // Create new element with updated data
+            const newElement = this.createIssueElement(updatedIssue);
+            
+            // Replace existing element with smooth transition
+            existingElement.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                existingElement.replaceWith(newElement);
+                newElement.style.opacity = '0';
+                newElement.offsetHeight; // Force reflow
+                newElement.style.transition = 'opacity 0.3s ease';
+                newElement.style.opacity = '1';
+            }, 150);
+        }
+    }
+
+    showIssueLoading(issueId, isLoading) {
+        const issueElement = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (issueElement) {
+            if (isLoading) {
+                issueElement.classList.add('issue-refreshing');
+                // Add subtle loading indicator
+                const loader = document.createElement('div');
+                loader.className = 'issue-refresh-loader';
+                loader.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                issueElement.appendChild(loader);
+            } else {
+                issueElement.classList.remove('issue-refreshing');
+                const loader = issueElement.querySelector('.issue-refresh-loader');
+                if (loader) loader.remove();
+            }
+        }
+    }
+
+    async copyIssueLink(url) {
+        try {
+            await navigator.clipboard.writeText(url);
+            this.showNotification('Issue link copied to clipboard', 'success');
+        } catch (error) {
+            console.error('Failed to copy link:', error);
+            this.showNotification('Failed to copy link', 'error');
+        }
+    }
+
+    // Close menus when clicking outside
+    setupMenuClickHandler() {
+        document.addEventListener('click', (event) => {
+            // Check if click is outside any issue menu
+            if (!event.target.closest('.issue-actions-menu')) {
+                document.querySelectorAll('.issue-menu-dropdown').forEach(menu => {
+                    menu.classList.remove('show');
+                });
+            }
+        });
     }
 
     loadFromCache() {

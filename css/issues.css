@@ -162,6 +162,138 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Issue Actions Menu */
+.issue-actions-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.issue-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    color: var(--text-muted);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+}
+
+.issue-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary-color);
+}
+
+.dark .issue-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.issue-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+    min-width: 160px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.issue-menu-dropdown.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dark .issue-menu-dropdown {
+    background: var(--dark-color);
+    border-color: var(--border-color);
+}
+
+.menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+}
+
+.dark .menu-item {
+    color: var(--light-color);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.menu-item i {
+    width: 14px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* Issue loading states */
+.issue-refreshing {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.issue-refresh-loader {
+    position: absolute;
+    top: 0.5rem;
+    right: 3rem;
+    color: var(--primary-color);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.dark .issue-refresh-loader {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.issue-refresh-loader i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .issues-header {
     position: relative;
 }
@@ -1131,9 +1263,14 @@ body.widget-fullscreen-active {
 
 .issue-number {
     color: var(--text-muted);
-    font-weight: 500;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
     white-space: nowrap;
+}
+
+.dark .issue-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
 }
 
 .issue-open {

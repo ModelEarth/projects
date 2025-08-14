@@ -189,6 +189,11 @@ setupCacheExpirationTimer(timeUntilExpiration) {
 | `setCacheDuration()` | Configure cache duration (1-60 min) | js/issues.js |
 | `toggleAutoRefresh()` | Enable/disable auto-refresh | js/issues.js |
 | `createCacheStatusHTML()` | Generate cache status HTML | js/issues.js |
+| `toggleIssueMenu()` | Show/hide 3-dot menu for specific issue | js/issues.js |
+| `refreshSingleIssue()` | Refresh individual issue from GitHub API | js/issues.js |
+| `copyIssueLink()` | Copy issue URL to clipboard | js/issues.js |
+| `showIssueLoading()` | Display loading state for issue | js/issues.js |
+| `updateIssueInCollections()` | Update issue data in all collections | js/issues.js |
 
 ### New CSS Classes:
 | Class | Purpose | File |
@@ -198,6 +203,10 @@ setupCacheExpirationTimer(timeUntilExpiration) {
 | `.cache-status` | Cache status layout | css/issues.css |
 | `.cache-info` | Cache status text styling | css/issues.css |
 | `#filtersSection.show-filters` | Filter visibility control | css/issues.css |
+| `.issue-actions` | 3-dot menu container positioning | css/issues.css |
+| `.issue-actions-menu` | 3-dot button styling | css/issues.css |
+| `.issue-menu-dropdown` | Dropdown menu container | css/issues.css |
+| `.issue-menu-item` | Individual menu option styling | css/issues.css |
 
 ### Configuration Options:
 - **Cache Duration**: 1-60 minutes (default: 10 minutes)
@@ -285,5 +294,50 @@ issuesManager.hideFilters(); // Force hide filters
 3. **Customizable UI**: User-configurable button positions
 4. **Analytics Integration**: Track filter usage patterns
 5. **Keyboard Shortcuts**: Hotkeys for power users
+
+### 5. Advanced Issue Actions Menu
+**Objective**: Provide granular control over individual issues with contextual actions
+
+#### Key Features:
+- **Per-Issue Menu**: 3-dot menu (⋮) on each issue for contextual actions
+- **Single Issue Refresh**: Refresh individual issues without reloading all data
+- **Quick Access Links**: Direct links to GitHub issue page
+- **Copy Functionality**: One-click copying of issue URLs for sharing
+- **Smart Positioning**: Menu positioning adapts to viewport boundaries
+
+#### Implementation Details:
+```javascript
+// 3-dot menu functionality
+toggleIssueMenu(issueId, event) {
+    // Close other menus and toggle current
+    document.querySelectorAll('.issue-menu-dropdown.show').forEach(menu => {
+        if (menu.closest('.issue-actions').dataset.issueId !== issueId) {
+            menu.classList.remove('show');
+        }
+    });
+    
+    const menu = document.querySelector(`[data-issue-id="${issueId}"] .issue-menu-dropdown`);
+    menu.classList.toggle('show');
+}
+
+// Single issue refresh
+async refreshSingleIssue(issueId) {
+    const response = await this.makeGitHubRequest(apiUrl);
+    // Update only the specific issue in collections
+    this.updateIssueInCollections(updatedIssue);
+}
+```
+
+#### Menu Options:
+1. **🔄 Refresh**: Update individual issue data from GitHub API
+2. **🔗 Open on GitHub**: Direct link to issue on GitHub (new tab)
+3. **📋 Copy Link**: Copy issue URL to clipboard with user feedback
+
+#### Technical Features:
+- **Selective DOM Updates**: Only refresh the specific issue element
+- **Cache Integration**: Updated issues integrate with existing cache system  
+- **Error Handling**: Graceful fallback with user feedback on failures
+- **Loading States**: Visual indicators during refresh operations
+- **Smart Menu Behavior**: Auto-close when clicking outside or on other menus
 
 All enhancements maintain backward compatibility and are production-ready with comprehensive testing across multiple browsers and devices.
