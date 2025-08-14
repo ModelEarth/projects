@@ -21,7 +21,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 # Active Projects
 
-### Webroots for Claude Code CLI
+### Webroot for Claude Code CLI
 
 [Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
 [CodeChat](../codechat/) - Overview of webroots for developer insights RAG training
