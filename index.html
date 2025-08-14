@@ -1,196 +1,223 @@
 <!DOCTYPE html>
 <html lang="en-us">
-	<head>
-		<script type="text/javascript">
-			if (location.host.indexOf('model.georgia') >= 0) {
-				window.location = 'https://model.earth/projects'; // Until base href is added to page so links work.
-			}
-		</script>
-		<meta charset="utf-8" />
-		<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-		<title>Projects</title>
-		<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+	<script type="text/javascript">
+		if (location.host.indexOf('model.georgia') >= 0) {
+			window.location = 'https://model.earth/projects'; // Until base href is added to page so links work.
+		}
+	</script>
+	<meta charset="utf-8" />
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+	<title>Projects</title>
+	<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<link type="text/css" rel="stylesheet" href="../localsite/css/base.css" id="/localsite/css/base.css">
-		<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true"></script>
+	<link type="text/css" rel="stylesheet" href="../localsite/css/base.css" id="/localsite/css/base.css">
+	<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true"></script>
 
-	    <!-- Issues widget styles -->
-    	<link rel="stylesheet" href="css/issues.css">
-    	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Issues widget styles -->
+	<link rel="stylesheet" href="css/issues.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-		<script>
-		loadMarkdown('active.md', 'activeDiv', '_parent',1, formatBuckets('activeDiv'));
-		</script>
+	<script>
+	//loadMarkdown('active.md', 'activeDiv', '_parent',1, formatBuckets('activeDiv'));
+	loadMarkdown('active.md', 'activeDiv', '_parent',1);
+	</script>
 
-		<style>
-			body {
-				font-family: 'Nunito Sans', sans-serif;
-			}
-			li p {
-				/* Not sure why this became necessary */
-				margin-top: 0px;
-				margin-bottom: 2px;
-			}
-			.bucket {
-				background-color: #ccc;
-				border: 1px solid #000;
-			}
-			#activeDiv h2 {
-				border-top-left-radius: 18px;
-				border-top-right-radius: 18px;
-				background-color: #ddd;
-				margin-top: 35px !important;
-				padding-top: 6px !important;
-				padding-bottom: 2px !important;
-				padding-left: 15px;
-				color: #333;
-				line-heightX: 27px !important;
-			}
-			.dark #activeDiv h2 {
-				background-color: #000;
-				border-bottom: 0px;
-			}
-		</style>
+	<style>
+		body {
+			font-family: 'Nunito Sans', sans-serif;
+		}
+		li p {
+			/* Not sure why this became necessary */
+			margin-top: 0px;
+			margin-bottom: 2px;
+		}
+		.bucket {
+		    box-shadow: var(--box-shadow);
+		    margin-bottom: 30px;
+		  }
+		  .bucketcontent {
+		    padding: 15px 30px;
+		    border-bottom-left-radius: var(--border-radius);
+		    border-bottom-right-radius: var(--border-radius);
+		    border-right: 1px solid #eee;
+		    border-left: 1px solid #eee;
+		  }
+		  #activeDiv h2 {
+		    border-top-left-radius: 18px;
+		    border-top-right-radius: 18px;
+		    background-color: #ddd;
+		    margin-top: 0px !important;
+		    padding-top: 6px !important;
+		    padding-bottom: 2px !important;
+		    margin-bottom: 0px !important;
+		    padding-left: 15px;
+		    color: #333;
+		    line-heightX: 27px !important;
+		  }
+		  .dark #readmeDiv h2 {
+		    background-color: #000;
+		    border-bottom: 0px;
+		  }
+	</style>
 
-		<script>
-			// Create GitHub cmds for downloading missing local repos.
-			document.addEventListener('DOMContentLoaded', function () {
-				waitForElm('#activeDivLoaded').then((elm) => {
-					const website = location.host;
-					const projectsDiv = document.getElementById('activeDiv');
-					const missingReposFound = document.getElementById('missingReposFound');
-					const localsiteView = document.getElementById('localsiteView');
-					const links = projectsDiv.getElementsByTagName('a');
+	<script>
+	// Create GitHub cmds for downloading missing local repos.
+	document.addEventListener('DOMContentLoaded', function () {
+		waitForElm('#activeDivLoaded').then((elm) => {
+			const website = location.host;
+			const projectsDiv = document.getElementById('activeDiv');
+			const missingReposFound = document.getElementById('missingReposFound');
+			const localsiteView = document.getElementById('localsiteView');
+			const links = projectsDiv.getElementsByTagName('a');
 
-					const repoArray = [];
-					const repoCount = {};
-					const missingRepos = [];
-					const missingRepoCount = {};
+			const repoArray = [];
+			const repoCount = {};
+			const presentRepos = [];
+			const presentRepoCount = {};
+			const missingRepos = [];
+			const missingRepoCount = {};
 
-					// Build repoArray and repoCount
-					for (let link of links) {
-						if (link.href.includes(location.host)) {
-							// Get links pointed at current domain (typically localhost:8887)
-							const path = new URL(link.href).pathname.split('/');
-							const folder = path[1]; // Top level parent folder
+			// Build repoArray and repoCount
+			for (let link of links) {
+				if (link.href.includes(location.host)) {
+					// Get links pointed at current domain (typically localhost:8887)
+					const path = new URL(link.href).pathname.split('/');
+					const folder = path[1]; // Top level parent folder
 
-							if (folder && !repoArray.includes(folder)) {
-								repoArray.push(folder);
-							}
-
-							repoCount[folder] = (repoCount[folder] || 0) + 1;
-						}
+					if (folder && !repoArray.includes(folder)) {
+						repoArray.push(folder);
 					}
 
-					// Check for missing repos and build missingRepoCount
-					const checkRepos = async () => {
-						for (let i = 0; i < repoArray.length; i++) {
-							const folder = repoArray[i];
-							if (folder !== 'localsite') {
-								try {
-									const response = await fetch(`http://${website}/${folder}/`);
-									if (!response.ok) {
-										throw new Error('Not Found');
-									}
-									// These are the ones found
-									missingRepos.push(folder);
-									missingRepoCount[folder] = repoCount[folder];
-								} catch (error) {
-									missingRepos.push(folder);
-									missingRepoCount[folder] = repoCount[folder];
-								}
+					repoCount[folder] = (repoCount[folder] || 0) + 1;
+				}
+			}
+
+			// Check for missing repos and build missingRepoCount
+			const checkRepos = async () => {
+				console.log("The following errors are By Design for the list of missing repos.")
+				for (let i = 0; i < repoArray.length; i++) {
+					const folder = repoArray[i];
+					if (folder !== 'localsite') {
+						try {
+							const response = await fetch(`http://${website}/${folder}/`);
+							if (!response.ok) {
+								throw new Error('Not Found');
 							}
+							// These are the ones found
+							presentRepos.push(folder);
+							presentRepoCount[folder] = repoCount[folder];
+						} catch (error) {
+							missingRepos.push(folder);
+							missingRepoCount[folder] = repoCount[folder];
 						}
-						missingReposFound.style.display = 'block';
-						displayMissingRepos();
-						buildCloneCommands();
-						if (missingRepos.length > 0) {
-							
-						} else {
-							allReposPresent.style.display = 'block';
-						}
-						if (location.host.includes('localhost')) {
-							localsiteView.style.display = 'block';
-						}
-					};
+					}
+				}
+				displayAllRepos();
 
-					// Display missing repos
-					const displayMissingRepos = () => {
-						const missingReposDiv = document.getElementById('missingRepos');
-						let html = '<ul>';
-						for (let folder of missingRepos) {
-							html += `<li><a href="https://github.com/modelearth/${folder}">https://github.com/modelearth/${folder}</a> (Links: ${missingRepoCount[folder]}) - <a href='https://gitdiagram.com/modelearth/${folder}'>GitDiagram</a></li>`;
-						}
-						html += '</ul>';
-						missingReposDiv.innerHTML = html;
-					};
+				missingReposFound.style.display = 'block';
+				displayMissingRepos();
+				buildCloneCommands();
+				if (missingRepos.length > 0) {
+					
+				} else {
+					allReposPresent.style.display = 'block';
+				}
+				if (location.host.includes('localhost')) {
+					localsiteView.style.display = 'block';
+				}
+			};
 
-					// Build and display clone commands
-					const buildCloneCommands = () => {
-						let githubCloneCmds = '';
-						for (let folder of missingRepos) {
-							githubCloneCmds += `git clone https://github.com/modelearth/${folder} ${folder} &&\r`;
-						}
-						githubCloneCmds = githubCloneCmds.slice(0, -4); // Remove the trailing " &&"
+			// Display all repos
+			const displayAllRepos = () => {
+				const allReposDiv = document.getElementById('allReposPresent');
+				let html = '<h2>Model.earth repos</h2>List of repos mentioned above. More at: <a href="https://github.com/ModelEarth?tab=repositories">github.com/modelearth</a><br>';
+				html += '<ul>';
+				for (let folder of repoArray) {
+					html += `<li><a href="https://github.com/modelearth/${folder}">https://github.com/modelearth/${folder}</a> (Links: ${repoCount[folder]}) - <a href='https://gitdiagram.com/modelearth/${folder}'>GitDiagram</a></li>`;
+				}
+				html += '</ul>';
+				allReposDiv.innerHTML = html;
+			};
 
-						const cloneMissingReposTextbox = document.getElementById('cloneMissingRepos');
-						cloneMissingReposTextbox.value = githubCloneCmds;
+			// Display missing repos
+			const displayMissingRepos = () => {
+				const missingReposDiv = document.getElementById('missingRepos');
+				let html = '<ul>';
+				for (let folder of missingRepos) {
+					html += `<li><a href="https://github.com/modelearth/${folder}">https://github.com/modelearth/${folder}</a> (Links: ${missingRepoCount[folder]}) - <a href='https://gitdiagram.com/modelearth/${folder}'>GitDiagram</a></li>`;
+				}
+				html += '</ul>';
+				missingReposDiv.innerHTML = html;
+			};
 
-						const boldTitle = document.createElement('div');
-						boldTitle.className = 'bold-title';
-						boldTitle.textContent =
-							'You can run in your webroot to clone additional repos featured above.';
-						cloneMissingReposTextbox.insertAdjacentElement('beforebegin', boldTitle);
-					};
+			// Build and display clone commands
+			const buildCloneCommands = () => {
+				let githubCloneCmds = '';
+				for (let folder of missingRepos) {
+					githubCloneCmds += `git clone https://github.com/modelearth/${folder} ${folder} &&\r`;
+				}
+				githubCloneCmds = githubCloneCmds.slice(0, -4); // Remove the trailing " &&"
 
-					// Start the checking process
-					checkRepos();
-				});
-			});
-		</script>
-	</head>
+				const cloneMissingReposTextbox = document.getElementById('cloneMissingRepos');
+				cloneMissingReposTextbox.value = githubCloneCmds;
 
-	<body>
-		<div class="content contentpadding" style="max-width: 1800px;">
-			
-			<div class="floatright">
-		        <!-- Issues Widget -->
-		        <div id="issuesWidget" 
-		             data-container-id="issuesWidget"
-		             data-github-owner="ModelEarth"
-		             data-detect-current-folder="true"
-		             data-multi-repo-roots="webroot,PartnerTools,MaterialScience,modelearth"></div>
-		        <script src="js/issues.js"></script>
-		        <!-- / Issues Widget -->
-		    </div>
+				const boldTitle = document.createElement('div');
+				boldTitle.className = 'bold-title';
+				boldTitle.textContent =
+					'You can run in your webroot to clone additional repos featured above.';
+				cloneMissingReposTextbox.insertAdjacentElement('beforebegin', boldTitle);
+			};
 
-			<div id="formatMeX">
-				<div id="activeDiv" class="mTable"></div>
-			</div>
-			<div id="missingReposFound" style="display: none">
-				<h2>Repos Above</h2>
-				<div id="missingRepos"></div>
-				<textarea
-					id="cloneMissingRepos"
-					rows="4"
-					cols="50"
-					style="width: 100%; max-width: 620px"
-				></textarea><br />
-			</div>
+			// Start the checking process
+			checkRepos();
+		});
+	});
+	</script>
+</head>
 
-			<div id="allReposPresent" style="display: none">
-				<h2>Model.earth repos</h2>
-				All repos above are present. Github source files:
-				<a href="https://github.com/ModelEarth?tab=repositories">github.com/modelearth</a>
-			</div>
-			<br />
+<body>
+	<div class="content contentpadding" style="max-width: 1800px;">
+		
+		<div class="floatright">
+	        <!-- Issues Widget -->
+	        <div id="issuesWidget" 
+	             data-container-id="issuesWidget"
+	             data-github-owner="ModelEarth"
+	             data-detect-current-folder="true"
+	             data-multi-repo-roots="webroot,PartnerTools,MaterialScience,modelearth"></div>
+	        <script src="js/issues.js"></script>
+	        <!-- / Issues Widget -->
+	    </div>
 
-			<div id="localsiteView" style="display: none">
-				<a href="/localsite/start/steps/">Refresh your local repos</a> for the latest updates.<br /><br />
-
-				Meet our <a href="https://dreamstudio.com/earth/">DreamStudio Data Science Team</a>
-			</div>
+		<div id="formatMeX">
+			<div id="activeDiv" class="mTable"></div>
 		</div>
-	</body>
+		
+
+		<div id="allReposPresent" style="displayX: none">
+			<h2>Model.earth repos</h2>
+			Source files:
+			<a href="https://github.com/ModelEarth?tab=repositories">github.com/modelearth</a>
+		</div>
+
+		<div id="missingReposFound" style="display: none">
+			<h2>Not present in your local webroot</h2>
+			<div id="missingRepos"></div>
+			<textarea
+				id="cloneMissingRepos"
+				rows="4"
+				cols="50"
+				style="width: 100%; max-width: 620px"
+			></textarea><br />
+		</div>
+
+		<div id="localsiteView" style="display: none">
+			<a href="/localsite/start/steps/">Refresh your local repos</a> for the latest updates.<br /><br />
+
+			Meet our <a href="https://dreamstudio.com/earth/">DreamStudio Data Science Team</a>
+		</div>
+	</div>
+</body>
 </html>
