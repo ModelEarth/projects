@@ -21,14 +21,21 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 # Active Projects
 
-### Webroots for RAG training and IO Data Pipeline
+### Webroot for Claude Code CLI
 
+[Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
 [CodeChat](../codechat/) - Overview of webroots for developer insights RAG training
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
-[MaterialScience webroot](https://model.earth/MaterialScience/) - International and state tradeflow for Claude Code CLI
+[MaterialScience webroot](https://model.earth/MaterialScience/) 
 [Model.earth Data Pipeline](/data-pipeline/) - Recent notes in Discord
 
-### MemberCommons for Teams
+### New IO Data Pipeline
+
+[Webroot setup](https://model.earth/webroot/) - with quick cmd at the bottom to pull trade repos
+[exiobase tradeflow processing](../exiobase/tradeflow)
+
+
+### PartnerTools for Teams
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model Team List](../team/projects#list=modelteam)  
@@ -92,7 +99,7 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 ## 2. Planet Langchain - LLM Interface
 
-Recent work is also underway in [earthscape Anything LLM](https://model.earth/earthscape) and [Team AI Insights](https://model.earth/team/)
+Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
 
 
 - [Planet Langchain Dev](/planet) within our [Planet Repo](https://github.com/modelearth/planet) for using [LangchainJS](https://github.com/langchain-ai/langchainjs).
