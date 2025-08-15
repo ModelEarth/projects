@@ -97,6 +97,29 @@ class GitHubIssuesManager {
         return pathParts.length > 0 ? pathParts[0] : '';
     }
 
+    getHubPath() {
+        // Determine the correct path to hub/repos.csv based on the script's location
+        const scripts = document.getElementsByTagName('script');
+        for (let script of scripts) {
+            if (script.src && script.src.includes('issues.js')) {
+                alert(script.src)
+                const srcAttribute = script.getAttribute('src');
+                // If script src starts with ../js/ (from hub directory)
+                if (srcAttribute && srcAttribute.startsWith('../js/')) {
+                    return 'repos.csv';
+                }
+                // If script src is js/issues.js (from projects directory)
+                else if (srcAttribute && srcAttribute === 'js/issues.js') {
+                    return 'hub/repos.csv';
+                }
+                break;
+            }
+        }
+        
+        // Fallback: climb out of js folder and into hub folder
+        return '../hub/repos.csv';
+    }
+
     determineDefaultRepo() {
         if (!this.detectCurrentFolder) {
             return 'projects'; // Default fallback
@@ -510,7 +533,7 @@ class GitHubIssuesManager {
 
     async loadRepositoriesFromCSV() {
         try {
-            const response = await fetch('hub/repos.csv');
+            const response = await fetch(this.getHubPath());
             if (!response.ok) {
                 throw new Error(`CSV fetch failed: ${response.status}`);
             }
@@ -584,14 +607,16 @@ class GitHubIssuesManager {
             return null;
         }
 
-        try {
+        //try {
             console.log('Fetching all repositories from GitHub API...');
             const repos = [];
             let page = 1;
             const perPage = 100;
 
             while (true) {
-                const response = await fetch(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
+                const response = await this.makeGitHubRequest(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
+                // The following returned 404 error even though pasting the link works. Revert to the line above which works.
+                //const response = await fetch(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
                     headers: {
                         'Accept': 'application/vnd.github.v3+json',
                         ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
@@ -627,10 +652,10 @@ class GitHubIssuesManager {
             localStorage.setItem(cacheTimeKey, Date.now().toString());
 
             return repos;
-        } catch (error) {
-            console.error('Error fetching repositories from GitHub API:', error);
-            return null;
-        }
+        //} catch (error) {
+        //    console.error('Error fetching repositories from GitHub API:', error);
+        //    return null;
+        //}
     }
 
     parseCSV(csvText) {
