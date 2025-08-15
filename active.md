@@ -101,6 +101,9 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
 
+Our work within Planet Langchain is being replaced with the [Team Projects Page](https://model.earth/team/projects) which allows any data feed to be sent to our AI Insights process using Claude and Gemini.
+
+When you're ready to jump in, start with the setup steps in [modelearth webroot](https://model.earth/webroot)
 
 - [Planet Langchain Dev](/planet) within our [Planet Repo](https://github.com/modelearth/planet) for using [LangchainJS](https://github.com/langchain-ai/langchainjs).
 
