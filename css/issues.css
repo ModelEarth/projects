@@ -162,6 +162,138 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Issue Actions Menu */
+.issue-actions-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.issue-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    color: var(--text-muted);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+}
+
+.issue-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary-color);
+}
+
+.dark .issue-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.issue-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+    min-width: 160px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.issue-menu-dropdown.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dark .issue-menu-dropdown {
+    background: var(--dark-color);
+    border-color: var(--border-color);
+}
+
+.menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+}
+
+.dark .menu-item {
+    color: var(--light-color);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.menu-item i {
+    width: 14px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* Issue loading states */
+.issue-refreshing {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.issue-refresh-loader {
+    position: absolute;
+    top: 0.5rem;
+    right: 3rem;
+    color: var(--primary-color);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.dark .issue-refresh-loader {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.issue-refresh-loader i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .issues-header {
     position: relative;
 }
@@ -546,12 +678,43 @@
     background: #30363d;
 }
 
-/* More Filters button */
+/* More Filters button - commented out (now using header search button instead) */
+/*
 .more-filters-btn {
     white-space: nowrap;
     width: auto;
     flex: none;
     align-self: flex-start;
+}
+*/
+
+/* Clear All Filters button */
+.clear-filters-btn {
+    white-space: nowrap;
+    width: auto;
+    flex: none;
+    align-self: flex-start;
+    margin-left: 0.5rem;
+    background: var(--light-color);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    transition: var(--transition);
+}
+
+.clear-filters-btn:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.dark .clear-filters-btn {
+    background: var(--light-color);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.dark .clear-filters-btn:hover {
+    background: var(--danger-color);
+    color: white;
 }
 
 /* Responsive filters - narrow container */
@@ -566,7 +729,13 @@
         display: none;
     }
     
-    /* Show More Filters button on narrow screens */
+    /* Show additional filters when search button opens filter section */
+    .filters-section.show-filters .additional-filters {
+        display: flex;
+    }
+    
+    /* Show More Filters button on narrow screens - commented out */
+    /*
     .more-filters-btn {
         display: inline-flex !important;
         font-size: 0.8rem;
@@ -580,8 +749,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    */
     
-    /* When filters are expanded, show additional filters and close button */
+    /* When filters are expanded, show additional filters and close button - commented out */
+    /*
     .filters-section.expanded .additional-filters {
         display: flex;
     }
@@ -589,10 +760,11 @@
     .filters-section.expanded .filters-close-btn {
         display: block !important;
     }
+    */
     
-    .filters-section.expanded .more-filters-btn {
+    /* .filters-section.expanded .more-filters-btn {
         display: none !important;
-    }
+    } */
     
     /* Adjust layout for narrow screens */
     .filters-primary-row {
@@ -692,11 +864,16 @@
         display: none;
     }
     
-    .filters-section .more-filters-btn {
+    /* Show additional filters when search button opens filter section */
+    .filters-section.show-filters .additional-filters {
+        display: flex;
+    }
+    
+    /* .filters-section .more-filters-btn {
         display: inline-flex !important;
         width: auto;
         flex: none;
-    }
+    } */
     
     .additional-filters .filter-button {
         width: auto;
@@ -715,17 +892,17 @@
         margin-top: 0.5rem;
     }
     
-    .filters-section.expanded .additional-filters {
+    /* .filters-section.expanded .additional-filters {
         display: flex;
     }
     
     .filters-section.expanded .filters-close-btn {
         display: block !important;
-    }
+    } */
     
-    .filters-section.expanded .more-filters-btn {
+    /* .filters-section.expanded .more-filters-btn {
         display: none !important;
-    }
+    } */
 }
 
 .filters-row {
@@ -734,10 +911,48 @@
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 1rem;
+    margin-right: 0.7rem;
 }
 
 .filters-row:last-child {
     margin-bottom: 0;
+}
+
+/* Primary row (Row 1): Repository filter and Clear All Filters */
+.filters-primary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    margin-right: 0.7rem;
+}
+
+.filters-primary-row .filter-group:first-child {
+    flex: 1;
+}
+
+.filters-primary-row .clear-filters-btn {
+    flex-shrink: 0;
+}
+
+/* Secondary row (Row 2): Filter buttons */
+.filters-secondary-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    margin-right: 0.7rem;
+}
+
+/* Tertiary row (Row 3): Search */
+.filters-tertiary-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0;
+    margin-right: 0.7rem;
 }
 
 .filter-group {
@@ -875,12 +1090,15 @@
 }
 
 /* Search button - make it square around the search icon */
-#searchButton {
+#searchButton, #clearSearch {
     width: auto;
     min-width: auto;
-    padding: 0.5rem;
     flex-shrink: 0;
     margin: 0px !important;
+}
+
+#searchButton {
+    padding: 0.5rem;
 }
 
 /* View Controls */
@@ -1131,9 +1349,14 @@ body.widget-fullscreen-active {
 
 .issue-number {
     color: var(--text-muted);
-    font-weight: 500;
-    font-size: 1rem;
+    font-weight: 600;
+    font-size: 1.25rem;
     white-space: nowrap;
+}
+
+.dark .issue-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
 }
 
 .issue-open {
@@ -1301,8 +1524,16 @@ body.widget-fullscreen-active {
 
 .btn-secondary {
     background: var(--light-color);
-    color: var(--dark-color);
-    border: 1px solid var(--border-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #333;
+}
+
+.btn-secondary:link,
+.btn-secondary:visited,
+.contentpadding .btn-secondary:link,
+.contentpadding .btn-secondary:visited,
+.btn-secondary {
+    color: var(--primary-color) !important;
 }
 
 .btn-secondary:hover {
@@ -1311,10 +1542,75 @@ body.widget-fullscreen-active {
 
 .dark .btn-secondary {
     background: var(--light-color);
-    color: var(--dark-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #666;
+}
+
+.dark .btn-secondary:link,
+.dark .btn-secondary:visited,
+.dark .contentpadding .btn-secondary:link,
+.dark .contentpadding .btn-secondary:visited,
+.dark .btn-secondary {
+    color: var(--primary-color) !important;
 }
 
 .dark .btn-secondary:hover {
+    background: #30363d;
+}
+
+/* Force btn-secondary in issue actions to have blue text */
+.issue-actions-detail .btn-secondary,
+.issue-actions-detail .btn-secondary:link,
+.issue-actions-detail .btn-secondary:visited,
+.contentpadding .issue-actions-detail .btn-secondary,
+.contentpadding .issue-actions-detail .btn-secondary:link,
+.contentpadding .issue-actions-detail .btn-secondary:visited {
+    color: var(--primary-color) !important;
+}
+
+.dark .issue-actions-detail .btn-secondary,
+.dark .issue-actions-detail .btn-secondary:link,
+.dark .issue-actions-detail .btn-secondary:visited,
+.dark .contentpadding .issue-actions-detail .btn-secondary,
+.dark .contentpadding .issue-actions-detail .btn-secondary:link,
+.dark .contentpadding .issue-actions-detail .btn-secondary:visited {
+    color: var(--primary-color) !important;
+}
+
+/* Clear search button - same size as primary button but secondary styling */
+.btn-clear-search {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 1px solid #333;
+    padding: 0.2rem 0.5rem; /* Same as btn-primary */
+    font-size: 0.9rem; /* Same as btn-primary */
+}
+
+.btn-clear-search:link,
+.btn-clear-search:visited,
+.contentpadding .btn-clear-search:link,
+.contentpadding .btn-clear-search:visited {
+    color: var(--primary-color) !important;
+}
+
+.btn-clear-search:hover {
+    background: #e6e6e6;
+}
+
+.dark .btn-clear-search {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #666;
+}
+
+.dark .btn-clear-search:link,
+.dark .btn-clear-search:visited,
+.dark .contentpadding .btn-clear-search:link,
+.dark .contentpadding .btn-clear-search:visited {
+    color: var(--primary-color) !important;
+}
+
+.dark .btn-clear-search:hover {
     background: #30363d;
 }
 
@@ -1886,6 +2182,11 @@ body.widget-fullscreen-active {
         font-size: 1.1rem;
         margin: 0;
     }
+    
+    /* Move Details button to extreme right in card view */
+    .card-view .issue-actions {
+        justify-content: flex-end;
+    }
 }
 
 /* Fallback for media queries */
@@ -1977,6 +2278,11 @@ body.widget-fullscreen-active {
     .card-view .issue-actions .btn i {
         font-size: 1.1rem;
         margin: 0;
+    }
+    
+    /* Move Details button to extreme right in card view */
+    .card-view .issue-actions {
+        justify-content: flex-end;
     }
 }
 
@@ -2147,7 +2453,7 @@ body.widget-fullscreen-active {
     }
     
     .filters-row {
-        flex-direction: column;
+        /* flex-direction: column; */
         align-items: stretch;
         gap: 0.5rem;
     }
