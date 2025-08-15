@@ -24,28 +24,28 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 ### Webroot for Claude Code CLI
 
 [Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
-[CodeChat](../codechat/) - Overview of webroots for developer insights RAG training
+[CodeChat](../codechat/) - RAG training documentation, after overview of webroot submodule repos
+<!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
-[MaterialScience webroot](https://model.earth/MaterialScience/) 
-[Model.earth Data Pipeline](/data-pipeline/) - Recent notes in Discord
+-->
 
 ### New IO Data Pipeline
 
-[Webroot setup](https://model.earth/webroot/) - with quick cmd at the bottom to pull trade repos
-[exiobase tradeflow processing](../exiobase/tradeflow)
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Report](../profile/footprint/sample.html)
+[Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
 
 
 ### PartnerTools for Teams
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
-[Admin Dashboard](../team/admin/) and our [Model Team List](../team/projects#list=modelteam)  
+[Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
 [Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure your Server](../team/admin/server/)
 
 ### RealityStream updates in progress
 
-[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) - Prathuyusha
-RealityStream industry titles in importance report - Abivish
-Tree Canopy density as forecasting target - Sai Thanmayi
+[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
+RealityStream industry titles in importance report <!-- Abivish -->
+Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
 ### Resources
 
