@@ -591,7 +591,12 @@ class GitHubIssuesManager {
             const perPage = 100;
 
             while (true) {
-                const response = await this.makeGitHubRequest(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`);
+                const response = await fetch(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
+                    }
+                });
                 
                 if (!response.ok) {
                     throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
@@ -1244,7 +1249,12 @@ class GitHubIssuesManager {
     async getRepositoryIssueCount(repoName, state = 'open') {
         try {
             const url = `${this.baseURL}/repos/${this.owner}/${repoName}/issues?state=${state}&per_page=1`;
-            const response = await this.makeGitHubRequest(url);
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
+                }
+            });
             
             if (response.ok) {
                 // GitHub returns the total count in the Link header
