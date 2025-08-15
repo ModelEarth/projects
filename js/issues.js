@@ -57,6 +57,10 @@ class GitHubIssuesManager {
         this.currentView = 'list'; // Default view
         this.isFullscreen = false;
         
+        // Search debouncing
+        this.searchDebounceTimer = null;
+        this.searchDebounceDelay = 300; // 300ms delay
+        
         this.init();
     }
 
@@ -229,6 +233,7 @@ class GitHubIssuesManager {
                 <button class="filters-close-btn" id="filtersCloseBtn" onclick="issuesManager.hideFilters()" title="Close Filters">
                     <i class="fas fa-times"></i>
                 </button>
+                <!-- Row 1: Repository filter and Clear All Filters button -->
                 <div class="filters-row filters-primary-row">
                     <div class="filter-group">
                         <select id="repoFilter" class="filter-select">
@@ -236,11 +241,14 @@ class GitHubIssuesManager {
                         </select>
                     </div>
                     
-                    <button id="moreFiltersBtn" class="btn btn-outline more-filters-btn" style="display: none;">
-                        <i class="fas fa-filter"></i> More Filters
+                    <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
+                        <i class="fas fa-times-circle"></i> Clear All Filters
                     </button>
+                </div>
 
-                    <div class="filter-group additional-filters">
+                <!-- Row 2: Filter buttons -->
+                <div class="filters-row filters-secondary-row additional-filters">
+                    <div class="filter-group">
                         <button id="sortButton" class="filter-button">
                             <i class="fas fa-sort"></i> Sort by: Updated
                             <i class="fas fa-chevron-down"></i>
@@ -264,7 +272,7 @@ class GitHubIssuesManager {
                         </div>
                     </div>
 
-                    <div class="filter-group additional-filters">
+                    <div class="filter-group">
                         <button id="assigneeButton" class="filter-button">
                             <i class="fas fa-user"></i> Assigned to: All
                             <i class="fas fa-chevron-down"></i>
@@ -279,7 +287,7 @@ class GitHubIssuesManager {
                         </div>
                     </div>
 
-                    <div class="filter-group additional-filters">
+                    <div class="filter-group">
                         <button id="stateButton" class="filter-button">
                             <i class="fas fa-exclamation-circle"></i> State: Open
                             <i class="fas fa-chevron-down"></i>
@@ -297,7 +305,7 @@ class GitHubIssuesManager {
                         </div>
                     </div>
 
-                    <div class="filter-group additional-filters">
+                    <div class="filter-group">
                         <button id="labelButton" class="filter-button">
                             <i class="fas fa-tags"></i> Labels: All
                             <i class="fas fa-chevron-down"></i>
@@ -310,14 +318,15 @@ class GitHubIssuesManager {
                     </div>
                 </div>
 
-                <div class="filters-row filters-secondary-row additional-filters">
+                <!-- Row 3: Search -->
+                <div class="filters-row filters-tertiary-row">
                     <div class="search-container">
                         <div class="search-group">
                             <input type="text" id="searchInput" placeholder="Search issues by title, body, or number...">
                             <button id="searchButton" class="btn btn-primary">
                                 <i class="fas fa-search"></i>
                             </button>
-                            <button id="clearSearch" class="btn btn-secondary" style="display: none;">
+                            <button id="clearSearch" class="btn btn-clear-search" style="display: none;">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -719,6 +728,7 @@ class GitHubIssuesManager {
         
         // Clear existing cache to apply new duration
         localStorage.removeItem('github_issues_cache');
+        this.clearRepositoryCache(); // Clear all repository-specific caches
         
         this.showNotification(`Cache duration set to ${this.cacheConfig.duration} minutes`, 'info');
         this.updateCacheStatusDisplay();
@@ -862,15 +872,25 @@ class GitHubIssuesManager {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.performSearch();
         });
+        
+        // Add debounced search on input
+        searchInput.addEventListener('input', (e) => {
+            this.debouncedSearch(e.target.value);
+        });
+        
+        // Clear all filters button
+        document.getElementById('clearAllFiltersBtn').addEventListener('click', () => {
+            this.clearAllFilters();
+        });
 
         // View controls
         document.getElementById('listView').addEventListener('click', () => this.setView('list'));
         document.getElementById('rowView').addEventListener('click', () => this.setView('row'));
         document.getElementById('cardView').addEventListener('click', () => this.setView('card'));
 
-        // Filters expand/collapse
-        document.getElementById('moreFiltersBtn').addEventListener('click', () => this.expandFilters());
-        document.getElementById('filtersCloseBtn').addEventListener('click', () => this.collapseFilters());
+        // Filters expand/collapse - commented out (now using header search button instead)
+        // document.getElementById('moreFiltersBtn').addEventListener('click', () => this.expandFilters());
+        // document.getElementById('filtersCloseBtn').addEventListener('click', () => this.collapseFilters());
 
         // Modal
         document.getElementById('modalClose').addEventListener('click', () => this.closeModal());
@@ -1006,6 +1026,7 @@ class GitHubIssuesManager {
             localStorage.removeItem('github_issues_cache'); // Clear cache when token changes
             localStorage.removeItem('github_all_repos'); // Clear repo cache to fetch fresh data
             localStorage.removeItem('github_all_repos_time');
+            this.clearRepositoryCache(); // Clear all repository-specific caches
             
             // Clear rate limit info since new token likely has better limits
             this.clearRateLimit();
@@ -1044,6 +1065,7 @@ class GitHubIssuesManager {
             this.githubToken = '';
             localStorage.removeItem('github_token');
             localStorage.removeItem('github_issues_cache'); // Clear cache when token changes
+            this.clearRepositoryCache(); // Clear all repository-specific caches
             this.updateTokenUI();
             this.updateTokenSectionUI();
             this.showNotification('GitHub token cleared successfully', 'info');
@@ -1261,9 +1283,38 @@ class GitHubIssuesManager {
         console.log('Finished loading issues for all repositories');
     }
 
-    async loadIssuesForRepository(repoName) {
-        if (this.repositoryIssues[repoName]) {
+    async loadIssuesForRepository(repoName, forceRefresh = false) {
+        // Check memory cache first
+        if (!forceRefresh && this.repositoryIssues[repoName]) {
             return this.repositoryIssues[repoName];
+        }
+        
+        // Check persistent cache for this repository
+        if (!forceRefresh) {
+            const cachedData = this.loadRepositoryFromCache(repoName);
+            if (cachedData) {
+                console.log(`Using cached data for repository: ${repoName}`);
+                this.repositoryIssues[repoName] = cachedData.issues;
+                
+                // Update repository object with cached counts
+                const repo = this.repositories.find(r => r.name === repoName);
+                if (repo && cachedData.metadata) {
+                    repo.openIssueCount = cachedData.metadata.openIssueCount;
+                    repo.totalIssueCount = cachedData.metadata.totalIssueCount;
+                }
+                
+                // Update assignees and labels from cached data
+                cachedData.issues.forEach(issue => {
+                    if (issue.assignees && issue.assignees.length > 0) {
+                        issue.assignees.forEach(assignee => this.assignees.add(assignee.login));
+                    }
+                    if (issue.labels && issue.labels.length > 0) {
+                        issue.labels.forEach(label => this.labels.add(label.name));
+                    }
+                });
+                
+                return cachedData.issues;
+            }
         }
 
         try {
@@ -1297,6 +1348,12 @@ class GitHubIssuesManager {
             
             this.populateAssigneeFilter();
             this.populateLabelFilter();
+            
+            // Save repository data to cache
+            this.saveRepositoryToCache(repoName, issues, {
+                openIssueCount: repo ? repo.openIssueCount : 0,
+                totalIssueCount: repo ? repo.totalIssueCount : 0
+            });
             
             return issues;
         } catch (error) {
@@ -1756,6 +1813,9 @@ class GitHubIssuesManager {
         }
 
         this.updatePagination();
+        
+        // Update Clear All Filters button visibility whenever filters are applied
+        this.updateClearAllFiltersVisibility();
     }
 
     createIssueElement(issue) {
@@ -2523,6 +2583,66 @@ class GitHubIssuesManager {
         }
     }
 
+    // Repository-specific cache methods
+    loadRepositoryFromCache(repoName) {
+        try {
+            const cacheKey = `github_repo_${repoName}_cache`;
+            const cached = localStorage.getItem(cacheKey);
+            if (!cached) return null;
+            
+            const data = JSON.parse(cached);
+            
+            // Check if cache is less than configured duration old
+            const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
+            const cacheAge = Date.now() - data.timestamp;
+            if (cacheAge > maxAge) {
+                console.log(`Repository cache expired for ${repoName} (${Math.round(cacheAge / 60000)} minutes old, max age: ${this.cacheConfig.duration} minutes)`);
+                // Remove expired cache
+                localStorage.removeItem(cacheKey);
+                return null;
+            }
+            
+            console.log(`Loaded repository ${repoName} from cache (${Math.round(cacheAge / 60000)} minutes old)`);
+            return data;
+        } catch (error) {
+            console.warn(`Failed to load repository ${repoName} from cache:`, error);
+            return null;
+        }
+    }
+
+    saveRepositoryToCache(repoName, issues, metadata) {
+        try {
+            const cacheKey = `github_repo_${repoName}_cache`;
+            const cacheData = {
+                issues: issues,
+                metadata: metadata,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+            console.log(`Saved repository ${repoName} to cache (${issues.length} issues)`);
+        } catch (error) {
+            console.warn(`Failed to save repository ${repoName} to cache:`, error);
+        }
+    }
+
+    clearRepositoryCache(repoName = null) {
+        if (repoName) {
+            // Clear cache for specific repository
+            const cacheKey = `github_repo_${repoName}_cache`;
+            localStorage.removeItem(cacheKey);
+            console.log(`Cleared cache for repository: ${repoName}`);
+        } else {
+            // Clear all repository caches
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+                if (key.startsWith('github_repo_') && key.endsWith('_cache')) {
+                    localStorage.removeItem(key);
+                }
+            });
+            console.log('Cleared all repository caches');
+        }
+    }
+
     // Search functionality
     performSearch() {
         const searchInput = document.getElementById('searchInput');
@@ -2547,6 +2667,91 @@ class GitHubIssuesManager {
         this.filterAndDisplayIssues();
     }
 
+    debouncedSearch(searchTerm) {
+        // Clear previous timer
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+
+        // Set new timer
+        this.searchDebounceTimer = setTimeout(() => {
+            this.filters.search = searchTerm.trim();
+            this.currentPage = 1;
+            this.updateHash();
+            this.saveToCache();
+            this.filterAndDisplayIssues();
+            
+            // Show/hide clear button
+            const clearBtn = document.getElementById('clearSearch');
+            if (this.filters.search) {
+                clearBtn.style.display = 'inline-block';
+            } else {
+                clearBtn.style.display = 'none';
+            }
+        }, this.searchDebounceDelay);
+    }
+
+    clearAllFilters() {
+        // Clear the debounce timer
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+
+        // Reset only filter buttons to default values (keep repo and search unchanged)
+        this.filters.sort = 'updated';
+        this.filters.assignee = 'all';
+        this.filters.state = 'open';
+        this.filters.label = 'all';
+
+        // Update filter buttons
+        this.updateSortButton();
+        this.updateAssigneeButton();
+        this.updateStateButton();
+        this.updateLabelButton();
+
+        // Reset pagination
+        this.currentPage = 1;
+
+        // Update URL and cache
+        this.updateHash();
+        this.saveToCache();
+
+        // Apply filters
+        this.filterAndDisplayIssues();
+
+        // Show notification
+        this.showNotification('Filter buttons cleared', 'info');
+        
+        // Update Clear All Filters button visibility
+        this.updateClearAllFiltersVisibility();
+    }
+
+    // Check if any filter buttons are different from defaults and show/hide Clear All Filters button
+    updateClearAllFiltersVisibility() {
+        const clearAllBtn = document.getElementById('clearAllFiltersBtn');
+        if (!clearAllBtn) return;
+        
+        // Define default values for filter buttons only (excluding repo and search)
+        const defaults = {
+            sort: 'updated',
+            assignee: 'all',
+            state: 'open',
+            label: 'all'
+        };
+        
+        // Check if any filter button differs from default
+        const hasNonDefaultFilters = Object.keys(defaults).some(key => {
+            return this.filters[key] !== defaults[key];
+        });
+        
+        // Show/hide the Clear All Filters button
+        if (hasNonDefaultFilters) {
+            clearAllBtn.style.display = 'inline-block';
+        } else {
+            clearAllBtn.style.display = 'none';
+        }
+    }
+
     // View management
     setView(viewType, savePreference = true) {
         this.currentView = viewType;
@@ -2563,7 +2768,8 @@ class GitHubIssuesManager {
         }
     }
 
-    // Filters expand/collapse management
+    // Filters expand/collapse management - commented out (now using header search button instead)
+    /*
     expandFilters() {
         const filtersSection = document.getElementById('filtersSection');
         filtersSection.classList.add('expanded');
@@ -2573,6 +2779,7 @@ class GitHubIssuesManager {
         const filtersSection = document.getElementById('filtersSection');
         filtersSection.classList.remove('expanded');
     }
+    */
 
     // UI helpers
     showLoading(show) {
