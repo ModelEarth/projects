@@ -102,7 +102,6 @@ class GitHubIssuesManager {
         const scripts = document.getElementsByTagName('script');
         for (let script of scripts) {
             if (script.src && script.src.includes('issues.js')) {
-                alert(script.src)
                 const srcAttribute = script.getAttribute('src');
                 // If script src starts with ../js/ (from hub directory)
                 if (srcAttribute && srcAttribute.startsWith('../js/')) {
@@ -583,6 +582,54 @@ class GitHubIssuesManager {
         }
     }
 
+    async detectEntityType() {
+        const cacheKey = `github_entity_type_${this.owner}`;
+        const cacheTimeKey = `github_entity_type_time_${this.owner}`;
+        
+        // Check cache first (valid for 24 hours)
+        const cachedType = localStorage.getItem(cacheKey);
+        const cacheTime = localStorage.getItem(cacheTimeKey);
+        
+        if (cachedType && cacheTime) {
+            const age = Date.now() - parseInt(cacheTime);
+            const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours
+            
+            if (age < twentyFourHours) {
+                console.log(`Using cached entity type for ${this.owner}: ${cachedType}`);
+                return cachedType;
+            }
+        }
+        
+        // Try to detect if it's an organization or user
+        try {
+            // First try organization endpoint
+            try {
+                await this.apiRequest(`/orgs/${this.owner}`);
+                console.log(`${this.owner} is an organization`);
+                localStorage.setItem(cacheKey, 'org');
+                localStorage.setItem(cacheTimeKey, Date.now().toString());
+                return 'org';
+            } catch (orgError) {
+                // If org fails, try user endpoint
+                try {
+                    await this.apiRequest(`/users/${this.owner}`);
+                    console.log(`${this.owner} is a user account`);
+                    localStorage.setItem(cacheKey, 'user');
+                    localStorage.setItem(cacheTimeKey, Date.now().toString());
+                    return 'user';
+                } catch (userError) {
+                    console.warn(`Could not determine entity type for ${this.owner}, defaulting to user`);
+                    localStorage.setItem(cacheKey, 'user');
+                    localStorage.setItem(cacheTimeKey, Date.now().toString());
+                    return 'user';
+                }
+            }
+        } catch (error) {
+            console.warn(`Error detecting entity type for ${this.owner}:`, error);
+            return 'user'; // Default fallback
+        }
+    }
+
     async loadAllRepositoriesFromGitHub() {
         const cacheKey = 'github_all_repos';
         const cacheTimeKey = 'github_all_repos_time';
@@ -609,18 +656,20 @@ class GitHubIssuesManager {
 
         //try {
             console.log('Fetching all repositories from GitHub API...');
+            
+            // Detect if this is an organization or user account
+            const entityType = await this.detectEntityType();
+            const endpoint = entityType === 'org' 
+                ? `/orgs/${this.owner}/repos` 
+                : `/users/${this.owner}/repos`;
+            
             const repos = [];
             let page = 1;
             const perPage = 100;
 
             while (true) {
-                const response = await this.apiRequest(`/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`);
+                const pageRepos = await this.apiRequest(`${endpoint}?per_page=${perPage}&page=${page}&type=all&sort=name`);
                 
-                if (!response.ok) {
-                    throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
-                }
-
-                const pageRepos = await response.json();
                 if (pageRepos.length === 0) break;
 
                 // Add repos that have issues
@@ -1518,7 +1567,7 @@ class GitHubIssuesManager {
         }
 
         const response = await fetch(`${this.baseURL}${endpoint}`, { headers });
-        
+
         // Extract rate limit information from headers
         if (response.headers.get('X-RateLimit-Remaining')) {
             this.rateLimitInfo.remaining = parseInt(response.headers.get('X-RateLimit-Remaining'));
