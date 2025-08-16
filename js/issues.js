@@ -614,14 +614,7 @@ class GitHubIssuesManager {
             const perPage = 100;
 
             while (true) {
-                const response = await this.makeGitHubRequest(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
-                // The following returned 404 error even though pasting the link works. Revert to the line above which works.
-                //const response = await fetch(`${this.baseURL}/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`, {
-                    headers: {
-                        'Accept': 'application/vnd.github.v3+json',
-                        ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
-                    }
-                });
+                const response = await this.apiRequest(`/orgs/${this.owner}/repos?per_page=${perPage}&page=${page}&type=all&sort=name`);
                 
                 if (!response.ok) {
                     throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`);
@@ -1230,8 +1223,9 @@ class GitHubIssuesManager {
             if (age < fiveMinutes) {
                 this.repositoryIssueCounts = JSON.parse(cachedCounts);
                 this.lastRefreshTime = new Date(parseInt(cacheTime));
-                console.log('Using cached repository issue counts');
+                console.log('Using cached repository issue counts, refresh time:', this.lastRefreshTime);
                 this.updateRepositoryDropdown();
+                this.updateHeaderRefreshDisplay(); // Ensure display is updated
                 return;
             }
         }
@@ -1264,8 +1258,9 @@ class GitHubIssuesManager {
             localStorage.setItem(cacheKey, JSON.stringify(counts));
             localStorage.setItem(cacheTimeKey, Date.now().toString());
 
-            console.log('Finished loading all repository issue counts');
+            console.log('Finished loading all repository issue counts, refresh time:', this.lastRefreshTime);
             this.updateRepositoryDropdown();
+            this.updateHeaderRefreshDisplay(); // Ensure display is updated
         } catch (error) {
             console.error('Error loading repository issue counts:', error);
         }
@@ -1660,6 +1655,7 @@ class GitHubIssuesManager {
 
     updateHeaderRefreshDisplay() {
         const headerRefreshTimeSpan = document.getElementById('headerRefreshTime');
+        const headerLastRefreshTime = document.getElementById('headerLastRefreshTime');
         
         if (this.lastRefreshTime && headerRefreshTimeSpan) {
             const timeString = this.lastRefreshTime.toLocaleTimeString([], { 
@@ -1668,6 +1664,16 @@ class GitHubIssuesManager {
                 hour12: true 
             });
             headerRefreshTimeSpan.textContent = timeString;
+            
+            // Show the refresh time display when we have a date
+            if (headerLastRefreshTime) {
+                headerLastRefreshTime.style.display = 'inline';
+            }
+        } else {
+            // Hide the refresh time display when there's no date (Never)
+            if (headerLastRefreshTime) {
+                headerLastRefreshTime.style.display = 'none';
+            }
         }
     }
 
