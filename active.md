@@ -163,7 +163,7 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 -->
 
 
-- [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha
+- [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha, Savar (Tree Canopy Decline)
 - [Process Industry NAICS by Zip Code](/community-zipcodes/mail) - DONE Yunbo
 - [Open Data Panels - YAML Display](/profile) - Microsoft Plug and Play - TO DO
 - [State Regions using Sets of Counties](/community-data/us/edd/) - Dinesh
