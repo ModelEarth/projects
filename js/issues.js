@@ -124,10 +124,10 @@ class GitHubIssuesManager {
             return 'projects'; // Default fallback
         }
 
-        // If current folder is one of the multi-repo roots, default to 'all'
+        // Always default to 'projects' repo for ModelEarth instead of loading all repos
         if (this.multiRepoRoots.includes(this.currentFolder)) {
-            console.log(`Detected multi-repo root '${this.currentFolder}', defaulting to 'all' repositories`);
-            return 'all';
+            console.log(`Detected multi-repo root '${this.currentFolder}', defaulting to 'projects' repository`);
+            return 'projects';
         }
 
         // If current folder exists and is not a multi-repo root, use it as default
@@ -1105,6 +1105,9 @@ class GitHubIssuesManager {
             
             this.showNotification('Token saved successfully', 'success');
             
+            // Check if issues previously failed due to rate limiting and refresh them
+            await this.refreshIssuesAfterTokenSave();
+            
             // Reload repositories with new token to populate all available repos
             try {
                 await this.loadRepositoriesFromCSVToUI();
@@ -1120,6 +1123,46 @@ class GitHubIssuesManager {
         // Hide the token section after saving
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('subtitleDescription').style.display = 'none';
+    }
+
+    async refreshIssuesAfterTokenSave() {
+        try {
+            // Check if we currently have a rate limit exceeded state or error state
+            const issuesList = document.getElementById('issuesList');
+            const errorMessage = document.getElementById('errorMessage');
+            const currentErrorMessage = issuesList ? issuesList.innerHTML : '';
+            const hasErrorDisplay = errorMessage && errorMessage.style.display !== 'none';
+            
+            const hasRateLimitError = currentErrorMessage.includes('API Rate Limit Exceeded') || 
+                                    currentErrorMessage.includes('rate limit') ||
+                                    currentErrorMessage.includes('no-issues') ||
+                                    hasErrorDisplay ||
+                                    this.allIssues.length === 0;
+            
+            // Check if rate limit was previously exceeded (stored in rateLimitInfo)
+            const wasRateLimited = this.rateLimitInfo.remaining === 0 || 
+                                 localStorage.getItem('github_rate_limit_exceeded') === 'true';
+            
+            // Check if we have no repository data loaded due to rate limiting
+            const hasNoRepoData = this.repositories.length === 0;
+            
+            if (hasRateLimitError || wasRateLimited || hasNoRepoData) {
+                this.showNotification('Refreshing issues with new token...', 'info');
+                
+                // Clear any rate limit flags
+                localStorage.removeItem('github_rate_limit_exceeded');
+                
+                // Force refresh the data now that we have a token
+                await this.loadData(true);
+                
+                this.showNotification('Issues refreshed successfully!', 'success');
+            } else {
+                console.log('No refresh needed - issues appear to be loaded already');
+            }
+        } catch (error) {
+            console.error('Error refreshing issues after token save:', error);
+            this.showNotification('Issues refreshed, but some data may still be loading', 'warning');
+        }
     }
 
     clearToken() {
@@ -1248,9 +1291,9 @@ class GitHubIssuesManager {
             console.log(`Loaded ${this.repositories.length} repositories from CSV`);
         }
 
-        // If we have a valid token, default to "all" repositories
+        // Default to "projects" repository instead of loading all repositories
         if (this.githubToken && this.filters.repo === 'modelearth') {
-            this.filters.repo = 'all';
+            this.filters.repo = 'projects';
         }
 
         // Load issue counts for all repositories
@@ -1588,6 +1631,9 @@ class GitHubIssuesManager {
                 }
                 this.saveRateLimitToCache();
                 this.updateRateLimitDisplay();
+                
+                // Flag that rate limit was exceeded for later token refresh detection
+                localStorage.setItem('github_rate_limit_exceeded', 'true');
             }
             
             throw new Error(`GitHub API Error: ${response.status} - ${errorData.message || response.statusText}`);
@@ -1618,6 +1664,11 @@ class GitHubIssuesManager {
         this.updateRateLimitDisplay();
         this.updateCacheStatusDisplay();
         this.filterAndDisplayIssues();
+        
+        // Clear rate limit exceeded flag if we successfully loaded data
+        if (this.allIssues.length > 0 || this.repositories.length > 0) {
+            localStorage.removeItem('github_rate_limit_exceeded');
+        }
         
         // Keep filters hidden by default - user can toggle with search button
         // document.getElementById('filtersSection').style.display = 'block';
@@ -2550,6 +2601,8 @@ class GitHubIssuesManager {
                 this.showNotification('Refresh timed out', 'warning');
             } else if (error.message.includes('403')) {
                 this.showNotification('API rate limit exceeded', 'error');
+                // Flag that rate limit was exceeded for later token refresh detection
+                localStorage.setItem('github_rate_limit_exceeded', 'true');
             } else {
                 this.showNotification('Failed to refresh issue', 'error');
             }
