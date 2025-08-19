@@ -39,7 +39,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
-[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure your Server](../team/admin/server/)
+[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure Your Local Server](../team/admin/server/)
 
 ### RealityStream updates in progress
 
