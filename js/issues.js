@@ -26,8 +26,6 @@ class GitHubIssuesManager {
         this.repositories = [];
         this.repositoryIssues = {}; // Cache for repository-specific issues
         this.repositoryIssueCounts = {}; // Cache for repository issue counts
-        this.loadedAllRepositories = false; // Track if we've loaded all repos or just primary ones
-        this.totalRepositoryCount = null; // Cache total repo count for UI display
         this.lastRefreshTime = null;
         this.autoRefreshInterval = null;
         this.assignees = new Set();
@@ -167,6 +165,7 @@ class GitHubIssuesManager {
     createHeaderHTML() {
         return `
             <div class="issues-header">
+                <i class="fas fa-search header-search-btn" onclick="issuesManager.toggleFilters()" title="Toggle Filters"></i>
                 <i class="fas fa-expand header-fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="Toggle Fullscreen"></i>
                 
                 <div class="header-content">
@@ -252,52 +251,49 @@ class GitHubIssuesManager {
 
     createFiltersHTML() {
         return `
-            <!-- Always visible filters row -->
-            <div class="filters-always-visible">
-                <div class="filter-group">
-                    <select id="repoFilter" class="filter-select">
-                        <option value="all">All Repositories</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <button id="sortButton" class="filter-button">
-                        <i class="fas fa-sort"></i> Sort by: Updated
-                        <i class="fas fa-chevron-down"></i>
+            <div class="filters-section" id="filtersSection" style="display: none;">
+                <button class="filters-close-btn" id="filtersCloseBtn" onclick="issuesManager.hideFilters()" title="Close Filters">
+                    <i class="fas fa-times"></i>
+                </button>
+                <!-- Row 1: Repository filter and Clear All Filters button -->
+                <div class="filters-row filters-primary-row">
+                    <div class="filter-group">
+                        <select id="repoFilter" class="filter-select">
+                            <option value="all">All Repositories</option>
+                        </select>
+                    </div>
+                    
+                    <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
+                        <i class="fas fa-times-circle"></i> Clear All Filters
                     </button>
-                    <div class="dropdown-menu" id="sortDropdown">
-                        <div class="dropdown-item" data-sort="updated">
-                            <i class="fas fa-calendar-alt"></i> Updated Date
-                        </div>
-                        <div class="dropdown-item" data-sort="created">
-                            <i class="fas fa-plus"></i> Created Date
-                        </div>
-                        <div class="dropdown-item" data-sort="comments">
-                            <i class="fas fa-comments"></i> Comment Count
-                        </div>
-                        <div class="dropdown-item" data-sort="title">
-                            <i class="fas fa-sort-alpha-down"></i> Title (A-Z)
-                        </div>
-                        <div class="dropdown-item" data-sort="number">
-                            <i class="fas fa-hashtag"></i> Issue Number
+                </div>
+
+                <!-- Row 2: Filter buttons -->
+                <div class="filters-row filters-secondary-row additional-filters">
+                    <div class="filter-group">
+                        <button id="sortButton" class="filter-button">
+                            <i class="fas fa-sort"></i> Sort by: Updated
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="sortDropdown">
+                            <div class="dropdown-item" data-sort="updated">
+                                <i class="fas fa-calendar-alt"></i> Updated Date
+                            </div>
+                            <div class="dropdown-item" data-sort="created">
+                                <i class="fas fa-plus"></i> Created Date
+                            </div>
+                            <div class="dropdown-item" data-sort="comments">
+                                <i class="fas fa-comments"></i> Comment Count
+                            </div>
+                            <div class="dropdown-item" data-sort="title">
+                                <i class="fas fa-sort-alpha-down"></i> Title (A-Z)
+                            </div>
+                            <div class="dropdown-item" data-sort="number">
+                                <i class="fas fa-hashtag"></i> Issue Number
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters">
-                    <i class="fas fa-search"></i>
-                    <span class="toggle-text">More Filters</span>
-                </button>
-                
-                <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
-                    Clear
-                </button>
-            </div>
 
-            <!-- Collapsible additional filters section -->
-            <div class="filters-section" id="filtersSection" style="display: none;">
-                <!-- Additional filter buttons -->
-                <div class="filters-row filters-secondary-row additional-filters">
                     <div class="filter-group">
                         <button id="assigneeButton" class="filter-button">
                             <i class="fas fa-user"></i> Assigned to: All
@@ -344,7 +340,7 @@ class GitHubIssuesManager {
                     </div>
                 </div>
 
-                <!-- Search row -->
+                <!-- Row 3: Search -->
                 <div class="filters-row filters-tertiary-row">
                     <div class="search-container">
                         <div class="search-group">
@@ -357,6 +353,7 @@ class GitHubIssuesManager {
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
         `;
@@ -633,10 +630,9 @@ class GitHubIssuesManager {
         }
     }
 
-    async loadRepositoriesFromGitHub(specificRepos = null) {
-        const isLoadingAll = specificRepos === null;
-        const cacheKey = isLoadingAll ? 'github_all_repos' : `github_repos_${specificRepos.join('_')}`;
-        const cacheTimeKey = isLoadingAll ? 'github_all_repos_time' : `github_repos_${specificRepos.join('_')}_time`;
+    async loadAllRepositoriesFromGitHub() {
+        const cacheKey = 'github_all_repos';
+        const cacheTimeKey = 'github_all_repos_time';
         
         // Check if we have cached data that's less than 1 hour old
         const cachedData = localStorage.getItem(cacheKey);
@@ -647,20 +643,18 @@ class GitHubIssuesManager {
             const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
             
             if (age < oneHour) {
-                console.log(`Using cached GitHub repositories (${isLoadingAll ? 'all' : specificRepos.join(', ')})`);
+                console.log('Using cached GitHub repositories');
                 return JSON.parse(cachedData);
             }
         }
 
         // Fetch fresh data from GitHub API
         if (!this.githubToken) {
-            console.log('No GitHub token available for fetching repositories');
+            console.log('No GitHub token available for fetching all repositories');
             return null;
         }
 
-        const repos = [];
-
-        if (isLoadingAll) {
+        //try {
             console.log('Fetching all repositories from GitHub API...');
             
             // Detect if this is an organization or user account
@@ -669,6 +663,7 @@ class GitHubIssuesManager {
                 ? `/orgs/${this.owner}/repos` 
                 : `/users/${this.owner}/repos`;
             
+            const repos = [];
             let page = 1;
             const perPage = 100;
 
@@ -693,136 +688,16 @@ class GitHubIssuesManager {
             }
 
             console.log(`Fetched ${repos.length} repositories with issues from GitHub API`);
-        } else {
-            console.log(`Fetching specific repositories from GitHub API: ${specificRepos.join(', ')}`);
-            
-            // Fetch specific repositories
-            for (const repoName of specificRepos) {
-                try {
-                    const repo = await this.apiRequest(`/repos/${this.owner}/${repoName}`);
-                    if (repo.has_issues && !repo.archived) {
-                        repos.push({
-                            repo_name: repo.name,
-                            display_name: repo.name,
-                            description: repo.description || '',
-                            default_branch: repo.default_branch || 'main',
-                            open_issues_count: repo.open_issues_count,
-                            html_url: repo.html_url
-                        });
-                    }
-                } catch (error) {
-                    console.warn(`Failed to fetch repository ${repoName}:`, error);
-                }
-            }
 
-            console.log(`Fetched ${repos.length} specific repositories from GitHub API`);
-        }
-
-        // Cache the results
-        localStorage.setItem(cacheKey, JSON.stringify(repos));
-        localStorage.setItem(cacheTimeKey, Date.now().toString());
-
-        return repos;
-    }
-
-    async loadAllRepositories() {
-        if (this.loadedAllRepositories) {
-            console.log('All repositories already loaded');
-            return;
-        }
-
-        console.log('Loading all repositories...');
-        this.updateLoadingStatus('Loading all repositories...');
-        
-        try {
-            const allRepos = await this.loadRepositoriesFromGitHub(null); // null = load all
-            
-            if (allRepos && allRepos.length > 0) {
-                this.repositories = allRepos.map(apiRepo => ({
-                    name: apiRepo.repo_name,
-                    displayName: apiRepo.display_name,
-                    description: apiRepo.description,
-                    defaultBranch: apiRepo.default_branch,
-                    openIssueCount: apiRepo.open_issues_count,
-                    totalIssueCount: null,
-                    repository_url: apiRepo.html_url || `https://github.com/${this.owner}/${apiRepo.repo_name}`
-                }));
-                
-                this.loadedAllRepositories = true;
-                console.log(`Loaded all ${this.repositories.length} repositories`);
-                
-                // Update UI
-                this.populateRepositoryFilter();
-                this.showNotification(`Loaded ${this.repositories.length} repositories`, 'success');
-            }
-        } catch (error) {
-            console.error('Error loading all repositories:', error);
-            this.showNotification('Failed to load all repositories', 'error');
-        }
-    }
-
-    async getRepositoryCount() {
-        // Check if we have cached count that's less than 1 hour old
-        const cacheKey = 'github_repo_count';
-        const cacheTimeKey = 'github_repo_count_time';
-        
-        const cachedCount = localStorage.getItem(cacheKey);
-        const cacheTime = localStorage.getItem(cacheTimeKey);
-        
-        if (cachedCount && cacheTime) {
-            const age = Date.now() - parseInt(cacheTime);
-            const oneHour = 60 * 60 * 1000;
-            
-            if (age < oneHour) {
-                console.log('Using cached repository count');
-                return parseInt(cachedCount);
-            }
-        }
-
-        if (!this.githubToken) {
-            return null;
-        }
-
-        try {
-            // Detect if this is an organization or user account
-            const entityType = await this.detectEntityType();
-            const endpoint = entityType === 'org' 
-                ? `/orgs/${this.owner}`
-                : `/users/${this.owner}`;
-            
-            const entity = await this.apiRequest(endpoint);
-            const totalRepos = entity.public_repos || 0;
-            
-            // For more accurate count, make one API call to get first page and total
-            const reposEndpoint = entityType === 'org' 
-                ? `/orgs/${this.owner}/repos`
-                : `/users/${this.owner}/repos`;
-                
-            const firstPage = await this.apiRequest(`${reposEndpoint}?per_page=1&type=all`);
-            
-            // Get the actual count from Link header or estimate based on public_repos
-            let actualCount = totalRepos;
-            
-            // Filter for repositories with issues enabled (rough estimate)
-            if (firstPage && firstPage.length > 0) {
-                // Make a small sample to estimate percentage with issues
-                const sample = await this.apiRequest(`${reposEndpoint}?per_page=10&type=all`);
-                const withIssues = sample.filter(repo => repo.has_issues && !repo.archived).length;
-                const percentage = withIssues / sample.length;
-                actualCount = Math.round(totalRepos * percentage);
-            }
-            
-            console.log(`Estimated ${actualCount} repositories with issues`);
-            
-            // Cache the result
-            localStorage.setItem(cacheKey, actualCount.toString());
+            // Cache the results
+            localStorage.setItem(cacheKey, JSON.stringify(repos));
             localStorage.setItem(cacheTimeKey, Date.now().toString());
-            
-            return actualCount;
-        } catch (error) {
-            console.warn('Failed to get repository count:', error);
-            return null;
-        }
+
+            return repos;
+        //} catch (error) {
+        //    console.error('Error fetching repositories from GitHub API:', error);
+        //    return null;
+        //}
     }
 
     parseCSV(csvText) {
@@ -1003,17 +878,7 @@ class GitHubIssuesManager {
 
         // Filters
         document.getElementById('repoFilter').addEventListener('change', async (e) => {
-            const selectedValue = e.target.value;
-            
-            // Handle special load_all option
-            if (selectedValue === 'load_all') {
-                await this.loadAllRepositories();
-                // Reset to the current filter after loading
-                e.target.value = this.filters.repo;
-                return;
-            }
-            
-            this.filters.repo = selectedValue;
+            this.filters.repo = e.target.value;
             this.updateHash();
             this.saveToCache();
             
@@ -1088,11 +953,6 @@ class GitHubIssuesManager {
         // Clear all filters button
         document.getElementById('clearAllFiltersBtn').addEventListener('click', () => {
             this.clearAllFilters();
-        });
-
-        // Toggle filters button
-        document.getElementById('toggleFiltersBtn').addEventListener('click', () => {
-            this.toggleFilters();
         });
 
         // View controls
@@ -1395,20 +1255,10 @@ class GitHubIssuesManager {
     }
 
     async loadRepositoriesFromCSVToUI() {
-        // Try to load repositories from GitHub API first if we have a token
+        // Try to load all repositories from GitHub API first if we have a token
         let allRepos = null;
         if (this.githubToken) {
-            // For fast initial load, only fetch the projects repo
-            const primaryRepos = ['projects'];
-            allRepos = await this.loadRepositoriesFromGitHub(primaryRepos);
-            this.loadedAllRepositories = false;
-            
-            // Get total repository count for UI display
-            try {
-                this.totalRepositoryCount = await this.getRepositoryCount();
-            } catch (error) {
-                console.warn('Could not get total repository count:', error);
-            }
+            allRepos = await this.loadAllRepositoriesFromGitHub();
         }
 
         if (allRepos && allRepos.length > 0) {
@@ -1438,7 +1288,6 @@ class GitHubIssuesManager {
                 repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`
             }));
             
-            this.loadedAllRepositories = true; // CSV contains all available repos
             console.log(`Loaded ${this.repositories.length} repositories from CSV`);
         }
 
@@ -1870,35 +1719,6 @@ class GitHubIssuesManager {
             console.log('📂 Adding repo to dropdown:', repo);
             select.appendChild(option);
         });
-        
-        // Add loading options if we haven't loaded all repositories yet
-        if (!this.loadedAllRepositories && this.githubToken) {
-            // Add separator
-            const separator = document.createElement('option');
-            separator.disabled = true;
-            separator.textContent = '─────────────────';
-            select.appendChild(separator);
-            
-            // Add load primary repos option
-            const loadPrimaryOption = document.createElement('option');
-            loadPrimaryOption.value = 'load_primary';
-            const primaryCount = this.repositories.length;
-            loadPrimaryOption.textContent = `Load Primary ${primaryCount} Repos (current)`;
-            loadPrimaryOption.disabled = true; // Already loaded
-            loadPrimaryOption.style.color = '#666';
-            select.appendChild(loadPrimaryOption);
-            
-            // Add load all repos option
-            const loadAllOption = document.createElement('option');
-            loadAllOption.value = 'load_all';
-            if (this.totalRepositoryCount !== null) {
-                loadAllOption.textContent = `Load All ${this.totalRepositoryCount} Repos (slower)`;
-            } else {
-                loadAllOption.textContent = 'Load All Repos (slower)';
-            }
-            loadAllOption.style.fontStyle = 'italic';
-            select.appendChild(loadAllOption);
-        }
         
         // Add "All Repositories" option at the end
         const allOption = document.createElement('option');
@@ -2697,33 +2517,25 @@ class GitHubIssuesManager {
 
     toggleFilters() {
         const filtersSection = document.getElementById('filtersSection');
-        const toggleBtn = document.querySelector('.toggle-filters-btn');
-        const toggleText = document.querySelector('.toggle-text');
+        const closeBtn = document.getElementById('filtersCloseBtn');
         
         if (!filtersSection) return;
         
-        // Use the show-filters class instead of style.display to override !important CSS
-        const isHidden = !filtersSection.classList.contains('show-filters');
-        
-        if (isHidden) {
-            filtersSection.classList.add('show-filters');
-            if (toggleBtn) toggleBtn.classList.add('active');
-            if (toggleText) toggleText.textContent = 'Hide Filters';
-        } else {
+        if (filtersSection.classList.contains('show-filters')) {
             filtersSection.classList.remove('show-filters');
-            if (toggleBtn) toggleBtn.classList.remove('active');
-            if (toggleText) toggleText.textContent = 'More Filters';
+            if (closeBtn) closeBtn.style.display = 'none';
+        } else {
+            filtersSection.classList.add('show-filters');
+            if (closeBtn) closeBtn.style.display = 'block';
         }
     }
 
     hideFilters() {
         const filtersSection = document.getElementById('filtersSection');
-        const toggleBtn = document.querySelector('.toggle-filters-btn');
-        const toggleText = document.querySelector('.toggle-text');
+        const closeBtn = document.getElementById('filtersCloseBtn');
         
         if (filtersSection) filtersSection.classList.remove('show-filters');
-        if (toggleBtn) toggleBtn.classList.remove('active');
-        if (toggleText) toggleText.textContent = 'More Filters';
+        if (closeBtn) closeBtn.style.display = 'none';
     }
 
     // Issue menu functionality
