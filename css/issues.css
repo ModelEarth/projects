@@ -638,6 +638,15 @@
     container-type: inline-size;
 }
 
+/* Ensure filters start hidden by default */
+#filtersSection {
+    display: none !important;
+}
+
+/* Only show when explicitly toggled */
+#filtersSection.show-filters {
+    display: block !important;
+}
 
 .dark .filters-section {
     background: var(--light-color);
@@ -2610,47 +2619,4 @@ body.widget-fullscreen-active {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
-}
-.fullscreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: white;
-    z-index: 9999;
-    overflow: auto;
-}
-
-
-#issuesContainer {
-  display: block !important;
-}
-
-#statsSection {
-  display: flex !important;
-}
-
-.issue-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.issue-table td {
-    padding: 8px;
-    border: 1px solid #ccc;
-}
-
-.card-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.issue-card {
-    border: 1px solid #ccc;
-    padding: 12px;
-    width: 220px;
-    border-radius: 6px;
-    box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
 }
