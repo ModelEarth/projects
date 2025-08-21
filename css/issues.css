@@ -479,6 +479,20 @@
     border-left: 4px solid #ff6f00;
 }
 
+/* Stack rate limit warning vertically on narrow screens */
+@media (max-width: 768px) {
+    .rate-limit-warning {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i {
+        align-self: flex-start;
+    }
+}
+
 .dark .rate-limit-warning {
     background: linear-gradient(135deg, #d39e00, #cc8500);
     color: #fff;
@@ -785,6 +799,38 @@
         max-width: calc(100vw - 200px);
     }
     
+    /* This media query is now redundant with the 900px one above */
+    /* Keeping for any edge cases but content moved to 900px breakpoint */
+    
+    /* Ensure select dropdown arrow doesn't duplicate */
+    .filter-select {
+        /* Remove any potential duplicate arrows */
+        position: relative;
+        z-index: 1;
+    }
+    
+    .filter-select::-ms-expand {
+        display: none; /* Remove IE dropdown arrow */
+    }
+    
+    /* Debug floating elements - check for any absolutely positioned elements */
+    .filters-always-visible {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Ensure FontAwesome icons in buttons don't overlap */
+    .filter-button i {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Fix potential dropdown arrow conflicts */
+    .filter-button .fa-chevron-down {
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
     /* Additional filters dropdown buttons */
     .additional-filters .filter-button {
         width: auto;
@@ -979,15 +1025,28 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
+    background-repeat: no-repeat !important;
     background-position: right 0.7rem center;
     background-size: 1em;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .dark .filter-select {
     background: var(--light-color);
     color: var(--dark-color);
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9d1d9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right 0.7rem center;
+    background-size: 1em;
 }
 
 .filter-button {
@@ -1241,6 +1300,7 @@
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     background: var(--light-color);
+    flex-wrap: wrap; /* Allow wrapping on narrow screens */
 }
 
 /* Ensure all filter elements have consistent height and alignment */
@@ -1250,6 +1310,106 @@
     display: flex;
     align-items: center;
     height: 38px; /* Consistent height for all filter elements */
+}
+
+/* Repo filter and assignee button layout - base styles for wide screens */
+.filters-always-visible .filter-group:first-child {
+    flex: 1 1 auto;
+    min-width: 200px;
+}
+
+/* Assignee button next to repo filter */
+.filters-always-visible .filter-group:nth-child(2) {
+    flex: 1 1 auto;
+    min-width: 180px;
+}
+
+/* Sort button can wrap to next line on narrow screens */
+.filters-always-visible .filter-group:nth-child(3) {
+    flex: 0 0 auto;
+    min-width: 150px;
+}
+
+/* Force elements to fit on one line when needed */
+@media (max-width: 1100px) {
+    .filters-always-visible {
+        flex-wrap: wrap;
+    }
+    
+    /* At medium width, start forcing repo and assignee to share space */
+    .filters-always-visible .filter-group:first-child,
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem) !important;
+        max-width: calc(50% - 0.5rem) !important;
+        width: calc(50% - 0.5rem) !important;
+    }
+    
+    /* Ensure the select and button elements inside also respect the width constraint */
+    .filters-always-visible .filter-group:first-child .filter-select,
+    .filters-always-visible .filter-group:nth-child(2) .filter-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+    
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* On very narrow screens, allow the sort button to take full width on new line */
+@media (max-width: 600px) {
+    .filters-always-visible {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .filters-always-visible .filter-group {
+        width: 100%;
+    }
+    
+    .filters-always-visible .filter-group .filter-select,
+    .filters-always-visible .filter-group .filter-button {
+        width: 100%;
+    }
+}
+
+/* Additional responsive behavior for three-element layout */
+@media (max-width: 900px) {
+    .filters-always-visible {
+        flex-wrap: wrap;
+    }
+    
+    /* Override the base min-widths to allow proper half-width behavior */
+    .filters-always-visible .filter-group:first-child {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    /* Sort button wraps to next line and takes full width */
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100%;
+        margin-top: 0.5rem;
+        min-width: 150px;
+    }
+}
+
+/* Ensure proper alignment when wrapped */
+@media (max-width: 600px) {
+    .filters-always-visible .filter-group:nth-child(3) {
+        margin-top: 0;
+    }
 }
 
 .filters-always-visible .filter-select,

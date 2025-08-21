@@ -97,7 +97,7 @@ We're pulling images and video via [our FeedPlayer](../feed) which can be pointe
 TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons) - Vishnupriya and our GDC team
 -->
 
-## 2. Planet Langchain - LLM Interface
+## 2. CodeChat - RAG Interface for LLMs
 
 Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
 

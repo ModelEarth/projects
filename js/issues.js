@@ -264,6 +264,21 @@ class GitHubIssuesManager {
                 </div>
                 
                 <div class="filter-group">
+                    <button id="assigneeButton" class="filter-button">
+                        <i class="fas fa-user"></i> Assigned to: All
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-menu" id="assigneeDropdown">
+                        <div class="dropdown-item" data-assignee="all">
+                            <i class="fas fa-users"></i> All Users
+                        </div>
+                        <div class="dropdown-item" data-assignee="unassigned">
+                            <i class="fas fa-user-slash"></i> Unassigned
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
                     <button id="sortButton" class="filter-button">
                         <i class="fas fa-sort"></i> Sort by: Updated
                         <i class="fas fa-chevron-down"></i>
@@ -301,21 +316,6 @@ class GitHubIssuesManager {
             <div class="filters-section" id="filtersSection" style="display: none;">
                 <!-- Additional filter buttons -->
                 <div class="filters-row filters-secondary-row additional-filters">
-                    <div class="filter-group">
-                        <button id="assigneeButton" class="filter-button">
-                            <i class="fas fa-user"></i> Assigned to: All
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <div class="dropdown-menu" id="assigneeDropdown">
-                            <div class="dropdown-item" data-assignee="all">
-                                <i class="fas fa-users"></i> All Users
-                            </div>
-                            <div class="dropdown-item" data-assignee="unassigned">
-                                <i class="fas fa-user-slash"></i> Unassigned
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="filter-group">
                         <button id="stateButton" class="filter-button">
                             <i class="fas fa-exclamation-circle"></i> State: Open
@@ -1016,6 +1016,19 @@ class GitHubIssuesManager {
                 return;
             }
             
+            // Warn user about rate limits when selecting "All Repositories" without token
+            if (selectedValue === 'all' && !this.githubToken) {
+                const remaining = this.rateLimitInfo.remaining || 60; // Default rate limit without token
+                const warning = `⚠️ Warning: Loading all repositories without a GitHub token may exhaust your remaining ${remaining} API requests.\n\nEnter your GitHub Token above for more robust requests (5,000/hour vs 60/hour).\n\nProceed anyway?`;
+                
+                if (!confirm(warning)) {
+                    // Reset to projects if user cancels
+                    e.target.value = 'projects';
+                    this.filters.repo = 'projects';
+                    return;
+                }
+            }
+            
             this.filters.repo = selectedValue;
             this.updateHash();
             this.saveToCache();
@@ -1412,6 +1425,9 @@ class GitHubIssuesManager {
             } catch (error) {
                 console.warn('Could not get total repository count:', error);
             }
+        } else {
+            // Without token, only load projects repo from CSV to avoid rate limiting
+            console.log('No GitHub token available - loading only projects repo from CSV to conserve rate limits');
         }
 
         if (allRepos && allRepos.length > 0) {
@@ -1428,21 +1444,43 @@ class GitHubIssuesManager {
             
             console.log(`Loaded ${this.repositories.length} repositories from GitHub API`);
         } else {
-            // Fallback to CSV data
+            // Fallback to CSV data - but without token, only show projects repo to conserve rate limits
             const csvRepos = await this.loadRepositoriesFromCSV();
             
-            this.repositories = csvRepos.map(csvRepo => ({
-                name: csvRepo.repo_name,
-                displayName: csvRepo.display_name,
-                description: csvRepo.description,
-                defaultBranch: csvRepo.default_branch,
-                openIssueCount: null, // Will be loaded on demand
-                totalIssueCount: null,
-                repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`
-            }));
-            
-            this.loadedAllRepositories = true; // CSV contains all available repos
-            console.log(`Loaded ${this.repositories.length} repositories from CSV`);
+            if (!this.githubToken) {
+                // Filter to only show projects repo to avoid exhausting rate limits
+                const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
+                if (projectsRepo) {
+                    this.repositories = [{
+                        name: projectsRepo.repo_name,
+                        displayName: projectsRepo.display_name,
+                        description: projectsRepo.description,
+                        defaultBranch: projectsRepo.default_branch,
+                        openIssueCount: null, // Will be loaded on demand
+                        totalIssueCount: null,
+                        repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`
+                    }];
+                    console.log('Loaded only projects repo from CSV (no token - conserving rate limits)');
+                } else {
+                    console.warn('Projects repo not found in CSV');
+                    this.repositories = [];
+                }
+                this.loadedAllRepositories = false; // Don't load all without token
+            } else {
+                // With token, load all repos from CSV
+                this.repositories = csvRepos.map(csvRepo => ({
+                    name: csvRepo.repo_name,
+                    displayName: csvRepo.display_name,
+                    description: csvRepo.description,
+                    defaultBranch: csvRepo.default_branch,
+                    openIssueCount: null, // Will be loaded on demand
+                    totalIssueCount: null,
+                    repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`
+                }));
+                
+                this.loadedAllRepositories = true; // CSV contains all available repos
+                console.log(`Loaded ${this.repositories.length} repositories from CSV`);
+            }
         }
 
         // Default to "projects" repository instead of loading all repositories
@@ -1874,33 +1912,43 @@ class GitHubIssuesManager {
             select.appendChild(option);
         });
         
-        // Add loading options if we haven't loaded all repositories yet
-        if (!this.loadedAllRepositories && this.githubToken) {
+        // Add loading options based on repository and token status
+        if (!this.loadedAllRepositories) {
             // Add separator
             const separator = document.createElement('option');
             separator.disabled = true;
             separator.textContent = '─────────────────';
             select.appendChild(separator);
             
-            // Add load primary repos option
-            const loadPrimaryOption = document.createElement('option');
-            loadPrimaryOption.value = 'load_primary';
-            const primaryCount = this.repositories.length;
-            loadPrimaryOption.textContent = `Load Primary ${primaryCount} Repos (current)`;
-            loadPrimaryOption.disabled = true; // Already loaded
-            loadPrimaryOption.style.color = '#666';
-            select.appendChild(loadPrimaryOption);
-            
-            // Add load all repos option
-            const loadAllOption = document.createElement('option');
-            loadAllOption.value = 'load_all';
-            if (this.totalRepositoryCount !== null) {
-                loadAllOption.textContent = `Load All ${this.totalRepositoryCount} Repos (slower)`;
+            if (this.githubToken) {
+                // Add load primary repos option
+                const loadPrimaryOption = document.createElement('option');
+                loadPrimaryOption.value = 'load_primary';
+                const primaryCount = this.repositories.length;
+                loadPrimaryOption.textContent = `Load Primary ${primaryCount} Repos (current)`;
+                loadPrimaryOption.disabled = true; // Already loaded
+                loadPrimaryOption.style.color = '#666';
+                select.appendChild(loadPrimaryOption);
+                
+                // Add load all repos option
+                const loadAllOption = document.createElement('option');
+                loadAllOption.value = 'load_all';
+                if (this.totalRepositoryCount !== null) {
+                    loadAllOption.textContent = `Load All ${this.totalRepositoryCount} Repos (slower)`;
+                } else {
+                    loadAllOption.textContent = 'Load All Repos (slower)';
+                }
+                loadAllOption.style.fontStyle = 'italic';
+                select.appendChild(loadAllOption);
             } else {
-                loadAllOption.textContent = 'Load All Repos (slower)';
+                // Without token, show option to load all but with warning
+                const tokenHint = document.createElement('option');
+                tokenHint.disabled = true;
+                tokenHint.textContent = '⚠️ Add GitHub Token for full repo access';
+                tokenHint.style.fontSize = '0.85em';
+                tokenHint.style.color = '#dc3545';
+                select.appendChild(tokenHint);
             }
-            loadAllOption.style.fontStyle = 'italic';
-            select.appendChild(loadAllOption);
         }
         
         // Add "All Repositories" option at the end
