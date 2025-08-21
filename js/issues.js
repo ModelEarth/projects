@@ -523,8 +523,12 @@ class GitHubIssuesManager {
         
         await this.loadData();
         
-        // Start auto-refresh timer
-        this.startAutoRefreshTimer();
+        // Start auto-refresh timer only if we have a token
+        if (this.githubToken) {
+            this.startAutoRefreshTimer();
+        } else {
+            console.log('Auto-refresh disabled: No GitHub token available to avoid rate limit exhaustion');
+        }
     }
 
     detectOwner() {
@@ -881,6 +885,12 @@ class GitHubIssuesManager {
 
     // Cache management functions
     setupCacheExpirationTimer(timeUntilExpiration) {
+        // Don't set auto-refresh timer without a token
+        if (!this.githubToken) {
+            console.log('Cache expiration timer disabled: No GitHub token available');
+            return;
+        }
+        
         // Clear existing timer
         if (this.cacheExpireTimer) {
             clearTimeout(this.cacheExpireTimer);
@@ -2043,6 +2053,12 @@ class GitHubIssuesManager {
     }
 
     startAutoRefreshTimer() {
+        // Don't start auto-refresh without a token to conserve rate limits
+        if (!this.githubToken) {
+            console.log('Auto-refresh disabled: No GitHub token available');
+            return;
+        }
+        
         // Clear existing timer
         if (this.autoRefreshInterval) {
             clearInterval(this.autoRefreshInterval);
@@ -2720,9 +2736,11 @@ class GitHubIssuesManager {
         };
         localStorage.setItem('github_issues_cache', JSON.stringify(cacheData));
         
-        // Set up cache expiration timer for auto-refresh
-        if (this.cacheConfig.autoRefresh) {
+        // Set up cache expiration timer for auto-refresh (only with token)
+        if (this.cacheConfig.autoRefresh && this.githubToken) {
             this.setupCacheExpirationTimer(this.cacheConfig.duration * 60 * 1000);
+        } else if (!this.githubToken) {
+            console.log('Cache auto-refresh disabled: No GitHub token available');
         }
         
         // Update cache status display
@@ -2986,9 +3004,11 @@ class GitHubIssuesManager {
                 this.filters = { ...this.filters, ...data.filters };
             }
 
-            // Set up cache expiration timer if auto-refresh is enabled
-            if (this.cacheConfig.autoRefresh) {
+            // Set up cache expiration timer if auto-refresh is enabled and we have a token
+            if (this.cacheConfig.autoRefresh && this.githubToken) {
                 this.setupCacheExpirationTimer(maxAge - cacheAge);
+            } else if (!this.githubToken) {
+                console.log('Cache auto-refresh disabled: No GitHub token available');
             }
 
             console.log(`Loaded from cache (${Math.round(cacheAge / 60000)} minutes old)`);
