@@ -961,8 +961,13 @@ class GitHubIssuesManager {
             const minutesLeft = Math.ceil(timeLeft / 60000);
             const remaining = this.rateLimitInfo.remaining;
 
-            // Only show warning when running low on requests or recently hit limit
-            const shouldShowWarning = remaining < 100 || (remaining === 0 && timeLeft > 0);
+            // Show warning when running low on requests, recently hit limit, or no token
+            const isLowOnRequests = remaining < 100;
+            const isRateLimited = remaining === 0 && timeLeft > 0;
+            const isWithoutToken = !this.githubToken && remaining <= 60; // Anonymous limit is 60
+            
+            const shouldShowWarning = isLowOnRequests || isRateLimited;
+            const shouldShowInfo = isWithoutToken && !isRateLimited;
 
             if (shouldShowWarning && timeLeft > 0) {
                 rateLimitDiv.innerHTML = `
@@ -970,6 +975,16 @@ class GitHubIssuesManager {
                         <i class="fas fa-clock"></i>
                         <strong>API Rate Limit Warning:</strong> ${remaining} requests remaining.
                         Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})
+                    </div>
+                `;
+                rateLimitDiv.style.display = 'block';
+            } else if (shouldShowInfo) {
+                // Show informational rate limit for users without token
+                rateLimitDiv.innerHTML = `
+                    <div class="rate-limit-info-display">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>API Rate Limit:</strong> ${remaining} requests remaining (without token).
+                        ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}
                     </div>
                 `;
                 rateLimitDiv.style.display = 'block';
@@ -1428,6 +1443,13 @@ class GitHubIssuesManager {
         } else {
             // Without token, only load projects repo from CSV to avoid rate limiting
             console.log('No GitHub token available - loading only projects repo from CSV to conserve rate limits');
+            
+            // Initialize rate limit display for anonymous users (60 requests/hour)
+            if (this.rateLimitInfo.remaining === null) {
+                this.rateLimitInfo.remaining = 60; // GitHub's anonymous rate limit
+                this.rateLimitInfo.resetTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+                this.updateRateLimitDisplay();
+            }
         }
 
         if (allRepos && allRepos.length > 0) {
@@ -1809,6 +1831,14 @@ class GitHubIssuesManager {
             this.rateLimitInfo.resetTime = new Date(parseInt(response.headers.get('X-RateLimit-Reset')) * 1000);
             this.saveRateLimitToCache();
             this.updateRateLimitDisplay();
+        } else if (!this.githubToken) {
+            // For anonymous users, assume default rate limit if headers not available
+            // This happens when using cached data or when GitHub doesn't return headers
+            if (this.rateLimitInfo.remaining === null) {
+                this.rateLimitInfo.remaining = 60;
+                this.rateLimitInfo.resetTime = new Date(Date.now() + 60 * 60 * 1000);
+                this.updateRateLimitDisplay();
+            }
         }
         
         if (!response.ok) {

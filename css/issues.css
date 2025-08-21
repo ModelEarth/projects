@@ -507,6 +507,56 @@
     font-weight: 600;
 }
 
+/* Rate limit info display (for informational purposes, not warning) */
+.rate-limit-info-display {
+    background: linear-gradient(135deg, #17a2b8, #007bff);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--box-shadow);
+    border-left: 4px solid #0056b3;
+}
+
+.dark .rate-limit-info-display {
+    background: linear-gradient(135deg, #138496, #0062cc);
+    color: #fff;
+}
+
+.rate-limit-info-display i {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.rate-limit-info-display strong {
+    font-weight: 600;
+}
+
+/* Responsive behavior for both rate limit displays */
+@media (max-width: 768px) {
+    .rate-limit-warning,
+    .rate-limit-info-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i,
+    .rate-limit-info-display i {
+        align-self: flex-start;
+    }
+    
+    /* Ensure the label text appears on its own line */
+    .rate-limit-warning strong,
+    .rate-limit-info-display strong {
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+}
+
 /* Last Refresh Info */
 .last-refresh-info {
     text-align: center;
