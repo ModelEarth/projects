@@ -67,7 +67,7 @@ Consider focusing on one of the following:
 1. [Complete Flask+Colab install script](/cloud/run/)
 2. [Test install of Apache & PHP in our SuiteCRM .sh script](/profile/crm/)
 3. [Add python to RealityStream for Google Data Commons DCIDs](/realitystream/)
-4. [Finish converting LanchainJS to static site](/planet/langchain/)
+4. [Apply best of Planet Lanchain](/planet/langchain/) to [Team Repo AI Insights](../team/projects/)
 5. [UX with our Azure backend and Rust API](/profile/crm) - [Admin Dashboard](/team/admin/)
 <!--
 https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lovable-dev-and-azure-openai-accelerate-apps-that-change-li/4413375
@@ -80,7 +80,7 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-IN PROGRESS: [Javascript Timelines from Google Data Commons API](/data-commons/docs/data/) - Everyone, Priyanka, Niranjan, Kirthika<!--Mehul, Aishwrya, Vishnupriya-->
+TO DO: [Moving Javascript Timelines from Google Data Commons API]() <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
 We're pulling images and video via [our FeedPlayer](../feed) which can be pointed at a Github repo or any API.
 
