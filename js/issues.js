@@ -973,8 +973,10 @@ class GitHubIssuesManager {
                 rateLimitDiv.innerHTML = `
                     <div class="rate-limit-warning">
                         <i class="fas fa-clock"></i>
-                        <strong>API Rate Limit Warning:</strong> ${remaining} requests remaining.
-                        Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})
+                        <div class="rate-limit-content">
+                            <div class="rate-limit-title">API Rate Limit Warning:</div>
+                            <div class="rate-limit-details">${remaining} requests remaining. Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})</div>
+                        </div>
                     </div>
                 `;
                 rateLimitDiv.style.display = 'block';
@@ -983,8 +985,10 @@ class GitHubIssuesManager {
                 rateLimitDiv.innerHTML = `
                     <div class="rate-limit-info-display">
                         <i class="fas fa-info-circle"></i>
-                        <strong>API Rate Limit:</strong> ${remaining} requests remaining (without token).
-                        ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}
+                        <div class="rate-limit-content">
+                            <div class="rate-limit-title">API Rate Limit:</div>
+                            <div class="rate-limit-details">${remaining} requests remaining (without token). ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}</div>
+                        </div>
                     </div>
                 `;
                 rateLimitDiv.style.display = 'block';

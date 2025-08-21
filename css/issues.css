@@ -534,6 +534,24 @@
     font-weight: 600;
 }
 
+/* Rate limit content structure */
+.rate-limit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rate-limit-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.rate-limit-details {
+    font-weight: normal;
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
 /* Responsive behavior for both rate limit displays */
 @media (max-width: 768px) {
     .rate-limit-warning,
@@ -549,11 +567,9 @@
         align-self: flex-start;
     }
     
-    /* Ensure the label text appears on its own line */
-    .rate-limit-warning strong,
-    .rate-limit-info-display strong {
-        display: block;
-        margin-bottom: 0.25rem;
+    /* On narrow screens, force vertical layout */
+    .rate-limit-content {
+        width: 100%;
     }
 }
 
@@ -1083,6 +1099,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 100%; /* Ensure it doesn't exceed container */
 }
 
 .filter-select:hover {
@@ -1380,33 +1397,42 @@
     min-width: 150px;
 }
 
-/* Force elements to fit on one line when needed */
+/* Force elements to fit on one line when needed - STRONGER CONSTRAINTS */
 @media (max-width: 1100px) {
     .filters-always-visible {
-        flex-wrap: wrap;
+        flex-wrap: wrap !important;
+        display: flex !important;
     }
     
-    /* At medium width, start forcing repo and assignee to share space */
+    /* FORCE exact half-width behavior */
     .filters-always-visible .filter-group:first-child,
     .filters-always-visible .filter-group:nth-child(2) {
-        flex: 1 1 calc(50% - 0.5rem);
+        flex: 0 0 calc(50% - 0.5rem) !important;
         min-width: calc(50% - 0.5rem) !important;
         max-width: calc(50% - 0.5rem) !important;
         width: calc(50% - 0.5rem) !important;
+        box-sizing: border-box !important;
     }
     
-    /* Ensure the select and button elements inside also respect the width constraint */
+    /* FORCE the inner elements to respect container width */
     .filters-always-visible .filter-group:first-child .filter-select,
     .filters-always-visible .filter-group:nth-child(2) .filter-button {
         width: 100% !important;
         min-width: 0 !important;
         max-width: 100% !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+        flex-shrink: 1 !important;
+    }
+    
+    /* Override any conflicting select styling */
+    .filters-always-visible .filter-group:first-child .filter-select {
+        padding-right: 2rem !important; /* Reduce right padding to fit arrow */
     }
     
     .filters-always-visible .filter-group:nth-child(3) {
-        flex: 1 1 100%;
+        flex: 1 1 100% !important;
         margin-top: 0.5rem;
+        width: 100% !important;
     }
 }
 
