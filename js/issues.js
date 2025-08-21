@@ -1,6 +1,9 @@
 /**
  * GitHub Issues Manager
  * Advanced issue tracking and management for ModelEarth repositories
+ * 
+ * Note: Uses 'modelearth' (lowercase) as GitHub user account to avoid 
+ * organization OAuth requirements that would cause 401 authentication errors.
  */
 
 class GitHubIssuesManager {
@@ -68,7 +71,7 @@ class GitHubIssuesManager {
 
     parseConfiguration(container, options) {
         const config = {
-            githubOwner: 'ModelEarth',
+            githubOwner: 'modelearth',
             detectCurrentFolder: true,
             multiRepoRoots: ['webroot', 'modelearth']
         };
@@ -528,7 +531,7 @@ class GitHubIssuesManager {
         // Try to detect owner from URL or use default
         const hostname = window.location.hostname;
         if (hostname.includes('modelearth') || hostname.includes('model.earth')) {
-            this.owner = 'ModelEarth';
+            this.owner = 'modelearth';
         }
         // Could add more detection logic here
     }
