@@ -61,6 +61,7 @@ class GitHubIssuesManager {
         // UI state
         this.currentView = 'list'; // Default view
         this.isFullscreen = false;
+        this.currentRefreshIssueId = null;
         
         // Search debouncing
         this.searchDebounceTimer = null;
@@ -483,6 +484,27 @@ class GitHubIssuesManager {
                     </div>
                     <div class="modal-body" id="modalBody">
                         <!-- Issue details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Refresh Dialog -->
+            <div class="modal-overlay" id="refreshDialog" style="display: none;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2 id="refreshDialogTitle">Refresh Issue</h2>
+                        <button class="modal-close" id="refreshDialogClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Do you want to refresh this issue with the latest data from GitHub?</p>
+                        <div class="refresh-dialog-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn btn-secondary" id="refreshDialogCancel">Cancel</button>
+                            <button class="btn btn-primary" id="refreshDialogConfirm">
+                                <i class="fas fa-sync-alt"></i> Refresh Issue
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1045,6 +1067,7 @@ class GitHubIssuesManager {
                 return;
             }
             
+            
             // Warn user about rate limits when selecting "All Repositories" without token
             if (selectedValue === 'all' && !this.githubToken) {
                 const remaining = this.rateLimitInfo.remaining || 60; // Default rate limit without token
@@ -1153,6 +1176,14 @@ class GitHubIssuesManager {
         document.getElementById('modalClose').addEventListener('click', () => this.closeModal());
         document.getElementById('issueModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('issueModal')) this.closeModal();
+        });
+        
+        // Refresh Dialog
+        document.getElementById('refreshDialogClose').addEventListener('click', () => this.closeRefreshDialog());
+        document.getElementById('refreshDialogCancel').addEventListener('click', () => this.closeRefreshDialog());
+        document.getElementById('refreshDialogConfirm').addEventListener('click', () => this.confirmRefreshDialog());
+        document.getElementById('refreshDialog').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('refreshDialog')) this.closeRefreshDialog();
         });
 
         // Retry button
@@ -1387,6 +1418,13 @@ class GitHubIssuesManager {
                 if (cached && cached.repositories && cached.repositories.length > 0 && cached.issues && cached.issues.length > 0) {
                     this.repositories = cached.repositories;
                     this.allIssues = cached.issues;
+                    
+                    // Set initial last_refreshed timestamp for cached issues that don't have it
+                    this.allIssues.forEach(issue => {
+                        if (!issue.last_refreshed) {
+                            issue.last_refreshed = new Date().toISOString();
+                        }
+                    });
                     
                     // Rebuild assignees and labels from cached data
                     this.assignees = new Set();
@@ -1653,6 +1691,13 @@ class GitHubIssuesManager {
                     repo.totalIssueCount = cachedData.metadata.totalIssueCount;
                 }
                 
+                // Set initial last_refreshed timestamp for cached issues that don't have it
+                cachedData.issues.forEach(issue => {
+                    if (!issue.last_refreshed) {
+                        issue.last_refreshed = new Date().toISOString();
+                    }
+                });
+                
                 // Update assignees and labels from cached data
                 cachedData.issues.forEach(issue => {
                     if (issue.assignees && issue.assignees.length > 0) {
@@ -1669,21 +1714,40 @@ class GitHubIssuesManager {
 
         try {
             this.showNotification(`Loading issues for ${repoName}...`, 'info');
-            const issues = await this.fetchRepositoryIssues(repoName);
+            const result = await this.fetchRepositoryIssues(repoName);
+            const issues = result.issues;
+            const apiResponse = result.apiResponse;
+            
             this.repositoryIssues[repoName] = issues;
             
             // Update the repository object with issue counts
             const repo = this.repositories.find(r => r.name === repoName);
             if (repo) {
                 const openIssues = issues.filter(issue => issue.state === 'open');
-                repo.openIssueCount = openIssues.length;
-                repo.totalIssueCount = issues.length;
-                console.log(`Repository ${repoName}: ${issues.length} total issues, ${openIssues.length} open`);
+                
+                // Special handling for projects repository: 0 issues likely means fetch failed
+                if (repoName === 'projects' && issues.length === 0) {
+                    console.warn(`⚠️ Projects repository returned 0 issues - likely fetch failed (projects should always have issues)`);
+                    // Don't update counts to preserve any existing values or leave as null to indicate unknown state
+                    repo.openIssueCount = null;
+                    repo.totalIssueCount = null;
+                } else {
+                    repo.openIssueCount = openIssues.length;
+                    repo.totalIssueCount = issues.length;
+                }
             }
             
             // Add to allIssues if not already there
             const existingIssueIds = new Set(this.allIssues.map(issue => issue.id));
             const newIssues = issues.filter(issue => !existingIssueIds.has(issue.id));
+            
+            // Set initial last_refreshed timestamp for new issues
+            newIssues.forEach(issue => {
+                if (!issue.last_refreshed) {
+                    issue.last_refreshed = new Date().toISOString();
+                }
+            });
+            
             this.allIssues.push(...newIssues);
             
             // Collect assignees and labels
@@ -1699,11 +1763,11 @@ class GitHubIssuesManager {
             this.populateAssigneeFilter();
             this.populateLabelFilter();
             
-            // Save repository data to cache
+            // Save repository data to cache with API response metadata
             this.saveRepositoryToCache(repoName, issues, {
                 openIssueCount: repo ? repo.openIssueCount : 0,
                 totalIssueCount: repo ? repo.totalIssueCount : 0
-            });
+            }, apiResponse);
             
             return issues;
         } catch (error) {
@@ -1721,10 +1785,21 @@ class GitHubIssuesManager {
             const repoName = option.value;
             if (repoName !== 'all') {
                 const repo = this.repositories.find(r => r.name === repoName);
-                if (repo && repo.openIssueCount !== null) {
-                    const issueText = `(${repo.openIssueCount})`;
-                    const displayName = repo.displayName || repo.name;
-                    option.textContent = `${displayName} ${issueText}`;
+                const displayName = repo?.displayName || repo?.name || repoName;
+                
+                if (repo) {
+                    if (repo.openIssueCount !== null) {
+                        const issueText = `(${repo.openIssueCount})`;
+                        option.textContent = `${displayName} ${issueText}`;
+                    } else if (repoName === 'projects') {
+                        // Special indicator for projects repo when fetch failed
+                        option.textContent = `${displayName} (?)`;
+                        option.title = 'Issue count unknown - fetch may have failed';
+                    } else {
+                        option.textContent = displayName;
+                    }
+                } else {
+                    option.textContent = displayName;
                 }
             }
         });
@@ -1783,12 +1858,16 @@ class GitHubIssuesManager {
         const issues = [];
         let page = 1;
         let hasMore = true;
+        let lastApiResponse = null; // Track the last successful API response for caching decisions
 
         while (hasMore) {
             try {
-                const response = await this.apiRequest(
+                const apiResult = await this.apiRequestWithMetadata(
                     `/repos/${this.owner}/${repoName}/issues?state=all&per_page=100&page=${page}`
                 );
+                
+                lastApiResponse = apiResult.metadata;
+                const response = apiResult.data;
                 
                 if (response.length === 0) {
                     hasMore = false;
@@ -1820,12 +1899,76 @@ class GitHubIssuesManager {
                 }
             } catch (error) {
                 console.error(`Error fetching issues for ${repoName}, page ${page}:`, error);
+                
+                // Capture error information for caching decisions
+                if (error.response) {
+                    lastApiResponse = {
+                        status: error.response.status,
+                        rateLimitRemaining: this.rateLimitInfo.remaining,
+                        isError: true,
+                        errorMessage: error.message
+                    };
+                }
                 hasMore = false;
             }
         }
 
-        console.log(`Fetched ${issues.length} issues for repository ${repoName}`);
-        return issues;
+        // Return both issues and API response metadata for intelligent caching
+        return { issues, apiResponse: lastApiResponse };
+    }
+
+    /**
+     * Enhanced API request that returns both data and response metadata
+     * for intelligent caching decisions
+     */
+    async apiRequestWithMetadata(endpoint) {
+        const headers = {
+            'Accept': 'application/vnd.github.v3+json',
+        };
+        if (this.githubToken) {
+            headers['Authorization'] = `token ${this.githubToken}`;
+        }
+        
+        const response = await fetch(`${this.baseURL}${endpoint}`, { headers });
+        
+        // Extract rate limit information from headers
+        let rateLimitRemaining = null;
+        if (response.headers.get('X-RateLimit-Remaining')) {
+            rateLimitRemaining = parseInt(response.headers.get('X-RateLimit-Remaining'));
+            this.rateLimitInfo.remaining = rateLimitRemaining;
+            this.rateLimitInfo.resetTime = new Date(parseInt(response.headers.get('X-RateLimit-Reset')) * 1000);
+            this.saveRateLimitToCache();
+            this.updateRateLimitDisplay();
+        }
+
+        const metadata = {
+            status: response.status,
+            rateLimitRemaining: rateLimitRemaining,
+            isError: false
+        };
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            
+            // Handle rate limit exceeded
+            if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
+                this.rateLimitInfo.startTime = new Date();
+                this.rateLimitInfo.remaining = 0;
+                if (response.headers.get('X-RateLimit-Reset')) {
+                    this.rateLimitInfo.resetTime = new Date(parseInt(response.headers.get('X-RateLimit-Reset')) * 1000);
+                }
+                this.saveRateLimitToCache();
+                this.updateRateLimitDisplay();
+                localStorage.setItem('github_rate_limit_exceeded', 'true');
+            }
+            
+            const error = new Error(`GitHub API Error: ${response.status} - ${errorData.message || response.statusText}`);
+            error.response = metadata;
+            throw error;
+        }
+        
+        const data = await response.json();
+        return { data, metadata };
     }
 
     async apiRequest(endpoint) {
@@ -1944,15 +2087,19 @@ class GitHubIssuesManager {
             // Use cached issue counts if available
             const counts = this.repositoryIssueCounts[repo.name];
             let issueText = '';
+            
             if (counts && counts.total > 0) {
                 issueText = ` (${counts.total})`;
             } else if (repo.openIssueCount !== null) {
                 issueText = ` (${repo.openIssueCount})`;
+            } else if (repo.name === 'projects') {
+                // Special indicator for projects repo when fetch failed
+                issueText = ' (?)';
+                option.title = 'Issue count unknown - fetch may have failed';
             }
             
             const repoName = repo.displayName || repo.name || 'Unknown';
             option.textContent = `${repoName}${issueText}`;
-            console.log('📂 Adding repo to dropdown:', repo);
             select.appendChild(option);
         });
         
@@ -2407,7 +2554,7 @@ class GitHubIssuesManager {
     }
 
     async showIssueDetails(issueId) {
-        const issue = this.allIssues.find(i => i.id === issueId);
+        const issue = this.allIssues.find(i => i.id == issueId);
         if (!issue) return;
 
         const modal = document.getElementById('issueModal');
@@ -2462,6 +2609,11 @@ class GitHubIssuesManager {
                         <div class="issue-dates">
                             <div><i class="fas fa-plus"></i> Created: ${this.formatDate(issue.created_at)}</div>
                             <div><i class="fas fa-clock"></i> Updated: ${this.formatDate(issue.updated_at)}</div>
+                            <div><i class="fas fa-sync-alt"></i> Last Refreshed: 
+                                <a href="#" onclick="issuesManager.showRefreshDialog('${issue.id}'); return false;" class="refresh-link" title="Click to refresh this issue">
+                                    ${issue.last_refreshed ? this.formatFullDateTime(issue.last_refreshed) : this.formatFullDateTime(issue.created_at)}
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2510,6 +2662,43 @@ class GitHubIssuesManager {
 
     closeModal() {
         document.getElementById('issueModal').style.display = 'none';
+    }
+    
+    showRefreshDialog(issueId) {
+        this.currentRefreshIssueId = issueId;
+        const issue = this.allIssues.find(i => i.id == issueId);
+        if (!issue) return;
+        
+        document.getElementById('refreshDialogTitle').textContent = `Refresh Issue #${issue.number}`;
+        document.getElementById('refreshDialog').style.display = 'flex';
+    }
+    
+    closeRefreshDialog() {
+        document.getElementById('refreshDialog').style.display = 'none';
+        this.currentRefreshIssueId = null;
+    }
+    
+    async confirmRefreshDialog() {
+        if (this.currentRefreshIssueId) {
+            // Store the ID before closing dialog (which sets it to null)
+            const issueIdToRefresh = this.currentRefreshIssueId;
+            
+            // Close the refresh dialog
+            this.closeRefreshDialog();
+            
+            // Refresh the issue
+            await this.refreshSingleIssue(issueIdToRefresh);
+            
+            // Update the modal if it's still open
+            const modal = document.getElementById('issueModal');
+            if (modal.style.display !== 'none') {
+                const issue = this.allIssues.find(i => i.id == issueIdToRefresh);
+                if (issue) {
+                    // Re-render the modal with updated data
+                    this.showIssueDetails(issueIdToRefresh);
+                }
+            }
+        }
     }
 
     updatePagination() {
@@ -2604,6 +2793,11 @@ class GitHubIssuesManager {
         if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
         
         return date.toLocaleDateString();
+    }
+
+    formatFullDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString();
     }
 
     formatMarkdown(text) {
@@ -2903,6 +3097,9 @@ class GitHubIssuesManager {
     }
 
     updateIssueInCollections(updatedIssue) {
+        // Add last refreshed timestamp
+        updatedIssue.last_refreshed = new Date().toISOString();
+        
         // Update in main issues array
         const mainIndex = this.allIssues.findIndex(issue => issue.id == updatedIssue.id);
         if (mainIndex !== -1) {
@@ -3046,20 +3243,76 @@ class GitHubIssuesManager {
         }
     }
 
-    saveRepositoryToCache(repoName, issues, metadata) {
+    /**
+     * DEFENSIVE CACHING IMPLEMENTATION - STRICT MODE
+     * 
+     * This function implements the requirement: "When there are no issues found, 
+     * avoid saving any issues, so blank issues are not mistakes for saved actual 
+     * issues when requests are available again."
+     * 
+     * KEY FEATURES:
+     * 1. Always caches non-empty results (repositories with actual issues)
+     * 2. NEVER caches empty results regardless of API status (strict defensive mode)
+     * 3. Prevents false "no issues" states from being persisted in cache
+     * 4. Stores API response metadata for debugging and future smart cache decisions
+     * 
+     * STRATEGY: Conservative approach - only cache when we have actual data
+     * 
+     * PREVENTS ALL SCENARIOS:
+     * - Empty result from any cause → never cached → always fetches fresh on next request
+     * - Ensures users always see real-time data when repositories actually have issues
+     * - No risk of stale empty cache hiding legitimate issues
+     */
+    saveRepositoryToCache(repoName, issues, metadata, apiResponse = null) {
         try {
+            // Defensive caching: Only cache when we're confident the data is legitimate
+            const shouldCache = this.shouldCacheEmptyResult(issues, apiResponse);
+            
+            if (!shouldCache) {
+                return;
+            }
+
             const cacheKey = `github_repo_${repoName}_cache`;
             const cacheData = {
                 issues: issues,
                 metadata: metadata,
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                apiStatus: apiResponse ? {
+                    status: apiResponse.status,
+                    hasData: issues.length > 0,
+                    rateLimitRemaining: apiResponse.rateLimitRemaining
+                } : null
             };
             localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-            console.log(`Saved repository ${repoName} to cache (${issues.length} issues)`);
         } catch (error) {
             console.warn(`Failed to save repository ${repoName} to cache:`, error);
         }
     }
+
+    /**
+     * Determines if empty results should be cached - STRICT DEFENSIVE MODE
+     * NEVER caches empty results regardless of API status for maximum safety
+     * 
+     * STRICT POLICY - ALL SCENARIOS:
+     * ✅ Cache: Non-empty results (repositories with actual issues) - ANY status
+     * ❌ Don't Cache: Empty results (0 issues) - ALL statuses including 200 OK
+     * 
+     * REASONING: 
+     * - Conservative approach prevents any false "no issues" cache states
+     * - Always forces fresh API calls for empty results
+     * - Eliminates risk of users missing legitimate issues due to cached empty states
+     * - Better user experience at cost of slightly more API calls for empty repositories
+     */
+    shouldCacheEmptyResult(issues, apiResponse) {
+        // If we have issues, always cache regardless of API status
+        if (issues && issues.length > 0) {
+            return true;
+        }
+
+        // STRICT DEFENSIVE MODE: NEVER cache empty results regardless of status
+        return false;
+    }
+
 
     clearRepositoryCache(repoName = null) {
         if (repoName) {
