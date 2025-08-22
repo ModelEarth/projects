@@ -61,6 +61,7 @@ class GitHubIssuesManager {
         // UI state
         this.currentView = 'list'; // Default view
         this.isFullscreen = false;
+        this.currentRefreshIssueId = null;
         
         // Search debouncing
         this.searchDebounceTimer = null;
@@ -483,6 +484,27 @@ class GitHubIssuesManager {
                     </div>
                     <div class="modal-body" id="modalBody">
                         <!-- Issue details will be loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Refresh Dialog -->
+            <div class="modal-overlay" id="refreshDialog" style="display: none;">
+                <div class="modal-content" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h2 id="refreshDialogTitle">Refresh Issue</h2>
+                        <button class="modal-close" id="refreshDialogClose">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Do you want to refresh this issue with the latest data from GitHub?</p>
+                        <div class="refresh-dialog-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                            <button class="btn btn-secondary" id="refreshDialogCancel">Cancel</button>
+                            <button class="btn btn-primary" id="refreshDialogConfirm">
+                                <i class="fas fa-sync-alt"></i> Refresh Issue
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1155,6 +1177,14 @@ class GitHubIssuesManager {
         document.getElementById('issueModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('issueModal')) this.closeModal();
         });
+        
+        // Refresh Dialog
+        document.getElementById('refreshDialogClose').addEventListener('click', () => this.closeRefreshDialog());
+        document.getElementById('refreshDialogCancel').addEventListener('click', () => this.closeRefreshDialog());
+        document.getElementById('refreshDialogConfirm').addEventListener('click', () => this.confirmRefreshDialog());
+        document.getElementById('refreshDialog').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('refreshDialog')) this.closeRefreshDialog();
+        });
 
         // Retry button
         document.getElementById('retryButton').addEventListener('click', () => this.loadData(true));
@@ -1388,6 +1418,13 @@ class GitHubIssuesManager {
                 if (cached && cached.repositories && cached.repositories.length > 0 && cached.issues && cached.issues.length > 0) {
                     this.repositories = cached.repositories;
                     this.allIssues = cached.issues;
+                    
+                    // Set initial last_refreshed timestamp for cached issues that don't have it
+                    this.allIssues.forEach(issue => {
+                        if (!issue.last_refreshed) {
+                            issue.last_refreshed = new Date().toISOString();
+                        }
+                    });
                     
                     // Rebuild assignees and labels from cached data
                     this.assignees = new Set();
@@ -1654,6 +1691,13 @@ class GitHubIssuesManager {
                     repo.totalIssueCount = cachedData.metadata.totalIssueCount;
                 }
                 
+                // Set initial last_refreshed timestamp for cached issues that don't have it
+                cachedData.issues.forEach(issue => {
+                    if (!issue.last_refreshed) {
+                        issue.last_refreshed = new Date().toISOString();
+                    }
+                });
+                
                 // Update assignees and labels from cached data
                 cachedData.issues.forEach(issue => {
                     if (issue.assignees && issue.assignees.length > 0) {
@@ -1696,6 +1740,14 @@ class GitHubIssuesManager {
             // Add to allIssues if not already there
             const existingIssueIds = new Set(this.allIssues.map(issue => issue.id));
             const newIssues = issues.filter(issue => !existingIssueIds.has(issue.id));
+            
+            // Set initial last_refreshed timestamp for new issues
+            newIssues.forEach(issue => {
+                if (!issue.last_refreshed) {
+                    issue.last_refreshed = new Date().toISOString();
+                }
+            });
+            
             this.allIssues.push(...newIssues);
             
             // Collect assignees and labels
@@ -2502,7 +2554,7 @@ class GitHubIssuesManager {
     }
 
     async showIssueDetails(issueId) {
-        const issue = this.allIssues.find(i => i.id === issueId);
+        const issue = this.allIssues.find(i => i.id == issueId);
         if (!issue) return;
 
         const modal = document.getElementById('issueModal');
@@ -2557,6 +2609,11 @@ class GitHubIssuesManager {
                         <div class="issue-dates">
                             <div><i class="fas fa-plus"></i> Created: ${this.formatDate(issue.created_at)}</div>
                             <div><i class="fas fa-clock"></i> Updated: ${this.formatDate(issue.updated_at)}</div>
+                            <div><i class="fas fa-sync-alt"></i> Last Refreshed: 
+                                <a href="#" onclick="issuesManager.showRefreshDialog('${issue.id}'); return false;" class="refresh-link" title="Click to refresh this issue">
+                                    ${issue.last_refreshed ? this.formatFullDateTime(issue.last_refreshed) : this.formatFullDateTime(issue.created_at)}
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2605,6 +2662,43 @@ class GitHubIssuesManager {
 
     closeModal() {
         document.getElementById('issueModal').style.display = 'none';
+    }
+    
+    showRefreshDialog(issueId) {
+        this.currentRefreshIssueId = issueId;
+        const issue = this.allIssues.find(i => i.id == issueId);
+        if (!issue) return;
+        
+        document.getElementById('refreshDialogTitle').textContent = `Refresh Issue #${issue.number}`;
+        document.getElementById('refreshDialog').style.display = 'flex';
+    }
+    
+    closeRefreshDialog() {
+        document.getElementById('refreshDialog').style.display = 'none';
+        this.currentRefreshIssueId = null;
+    }
+    
+    async confirmRefreshDialog() {
+        if (this.currentRefreshIssueId) {
+            // Store the ID before closing dialog (which sets it to null)
+            const issueIdToRefresh = this.currentRefreshIssueId;
+            
+            // Close the refresh dialog
+            this.closeRefreshDialog();
+            
+            // Refresh the issue
+            await this.refreshSingleIssue(issueIdToRefresh);
+            
+            // Update the modal if it's still open
+            const modal = document.getElementById('issueModal');
+            if (modal.style.display !== 'none') {
+                const issue = this.allIssues.find(i => i.id == issueIdToRefresh);
+                if (issue) {
+                    // Re-render the modal with updated data
+                    this.showIssueDetails(issueIdToRefresh);
+                }
+            }
+        }
     }
 
     updatePagination() {
@@ -2699,6 +2793,11 @@ class GitHubIssuesManager {
         if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
         
         return date.toLocaleDateString();
+    }
+
+    formatFullDateTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString();
     }
 
     formatMarkdown(text) {
@@ -2998,6 +3097,9 @@ class GitHubIssuesManager {
     }
 
     updateIssueInCollections(updatedIssue) {
+        // Add last refreshed timestamp
+        updatedIssue.last_refreshed = new Date().toISOString();
+        
         // Update in main issues array
         const mainIndex = this.allIssues.findIndex(issue => issue.id == updatedIssue.id);
         if (mainIndex !== -1) {
