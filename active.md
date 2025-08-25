@@ -203,7 +203,7 @@ For our [International Trade Flow](/profile/trade/) we can integrate our [Exioba
 
 #### US EPA State Impacts
 
-TO DO: Pull into SQL DuckDB
+TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Gary
 
 [Javascript updates for US EPA impact reports](/useeio.js/footprint/) - Lakshit, Abhishek N, Hitesh R
 [React Team - Mosaic column checkboxes](/io/charts)  - Pallavi 
