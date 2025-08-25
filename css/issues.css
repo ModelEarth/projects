@@ -26,6 +26,20 @@
     --bg-overlay: rgba(0, 0, 0, 0.8);
 }
 
+/* Refresh link styling */
+.refresh-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.refresh-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
 /* Base Layout */
 .issues-header {
     background: linear-gradient(135deg, var(--primary-color), #0553c7);
@@ -479,6 +493,20 @@
     border-left: 4px solid #ff6f00;
 }
 
+/* Stack rate limit warning vertically on narrow screens */
+@media (max-width: 768px) {
+    .rate-limit-warning {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i {
+        align-self: flex-start;
+    }
+}
+
 .dark .rate-limit-warning {
     background: linear-gradient(135deg, #d39e00, #cc8500);
     color: #fff;
@@ -491,6 +519,72 @@
 
 .rate-limit-warning strong {
     font-weight: 600;
+}
+
+/* Rate limit info display (for informational purposes, not warning) */
+.rate-limit-info-display {
+    background: linear-gradient(135deg, #17a2b8, #007bff);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--box-shadow);
+    border-left: 4px solid #0056b3;
+}
+
+.dark .rate-limit-info-display {
+    background: linear-gradient(135deg, #138496, #0062cc);
+    color: #fff;
+}
+
+.rate-limit-info-display i {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.rate-limit-info-display strong {
+    font-weight: 600;
+}
+
+/* Rate limit content structure */
+.rate-limit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rate-limit-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.rate-limit-details {
+    font-weight: normal;
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+/* Responsive behavior for both rate limit displays */
+@media (max-width: 768px) {
+    .rate-limit-warning,
+    .rate-limit-info-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i,
+    .rate-limit-info-display i {
+        align-self: flex-start;
+    }
+    
+    /* On narrow screens, force vertical layout */
+    .rate-limit-content {
+        width: 100%;
+    }
 }
 
 /* Last Refresh Info */
@@ -777,6 +871,38 @@
         max-width: calc(100vw - 200px);
     }
     
+    /* This media query is now redundant with the 900px one above */
+    /* Keeping for any edge cases but content moved to 900px breakpoint */
+    
+    /* Ensure select dropdown arrow doesn't duplicate */
+    .filter-select {
+        /* Remove any potential duplicate arrows */
+        position: relative;
+        z-index: 1;
+    }
+    
+    .filter-select::-ms-expand {
+        display: none; /* Remove IE dropdown arrow */
+    }
+    
+    /* Debug floating elements - check for any absolutely positioned elements */
+    .filters-always-visible {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Ensure FontAwesome icons in buttons don't overlap */
+    .filter-button i {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Fix potential dropdown arrow conflicts */
+    .filter-button .fa-chevron-down {
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
     /* Additional filters dropdown buttons */
     .additional-filters .filter-button {
         width: auto;
@@ -971,15 +1097,29 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
+    background-repeat: no-repeat !important;
     background-position: right 0.7rem center;
     background-size: 1em;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%; /* Ensure it doesn't exceed container */
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 .dark .filter-select {
     background: var(--light-color);
     color: var(--dark-color);
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9d1d9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right 0.7rem center;
+    background-size: 1em;
 }
 
 .filter-button {
@@ -1222,6 +1362,202 @@
 }
 
 .dark .issues-header-bar {
+    background: #262c36;
+}
+
+/* Always visible filters row */
+.filters-always-visible {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--light-color);
+    flex-wrap: wrap; /* Allow wrapping on narrow screens */
+}
+
+/* Ensure all filter elements have consistent height and alignment */
+.filters-always-visible .filter-group,
+.filters-always-visible .toggle-filters-btn,
+.filters-always-visible .clear-filters-btn {
+    display: flex;
+    align-items: center;
+    height: 38px; /* Consistent height for all filter elements */
+}
+
+/* Repo filter and assignee button layout - base styles for wide screens */
+.filters-always-visible .filter-group:first-child {
+    flex: 1 1 auto;
+    min-width: 200px;
+}
+
+/* Assignee button next to repo filter */
+.filters-always-visible .filter-group:nth-child(2) {
+    flex: 1 1 auto;
+    min-width: 180px;
+}
+
+/* Sort button can wrap to next line on narrow screens */
+.filters-always-visible .filter-group:nth-child(3) {
+    flex: 0 0 auto;
+    min-width: 150px;
+}
+
+/* Force elements to fit on one line when needed - STRONGER CONSTRAINTS */
+@media (max-width: 1100px) {
+    .filters-always-visible {
+        flex-wrap: wrap !important;
+        display: flex !important;
+    }
+    
+    /* FORCE exact half-width behavior */
+    .filters-always-visible .filter-group:first-child,
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 0 0 calc(50% - 0.5rem) !important;
+        min-width: calc(50% - 0.5rem) !important;
+        max-width: calc(50% - 0.5rem) !important;
+        width: calc(50% - 0.5rem) !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* FORCE the inner elements to respect container width */
+    .filters-always-visible .filter-group:first-child .filter-select,
+    .filters-always-visible .filter-group:nth-child(2) .filter-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        flex-shrink: 1 !important;
+    }
+    
+    /* Override any conflicting select styling */
+    .filters-always-visible .filter-group:first-child .filter-select {
+        padding-right: 2rem !important; /* Reduce right padding to fit arrow */
+    }
+    
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100% !important;
+        margin-top: 0.5rem;
+        width: 100% !important;
+    }
+}
+
+/* On very narrow screens, allow the sort button to take full width on new line */
+@media (max-width: 600px) {
+    .filters-always-visible {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .filters-always-visible .filter-group {
+        width: 100%;
+    }
+    
+    .filters-always-visible .filter-group .filter-select,
+    .filters-always-visible .filter-group .filter-button {
+        width: 100%;
+    }
+}
+
+/* Additional responsive behavior for three-element layout */
+@media (max-width: 900px) {
+    .filters-always-visible {
+        flex-wrap: wrap;
+    }
+    
+    /* Override the base min-widths to allow proper half-width behavior */
+    .filters-always-visible .filter-group:first-child {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    /* Sort button wraps to next line and takes full width */
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100%;
+        margin-top: 0.5rem;
+        min-width: 150px;
+    }
+}
+
+/* Ensure proper alignment when wrapped */
+@media (max-width: 600px) {
+    .filters-always-visible .filter-group:nth-child(3) {
+        margin-top: 0;
+    }
+}
+
+.filters-always-visible .filter-select,
+.filters-always-visible .filter-button {
+    height: 38px;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+}
+
+/* Toggle filters button */
+.toggle-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--form-background);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.toggle-filters-btn:hover {
+    background: var(--hover-color);
+}
+
+.toggle-filters-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Clear filters button - compact style */
+.clear-filters-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+    height: 38px !important;
+    box-sizing: border-box;
+}
+
+.dark .filters-always-visible {
+    background: #262c36;
+}
+
+/* Collapsible filters section */
+.filters-section {
+    background: var(--light-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.filters-section .filters-row {
+    margin-bottom: 1rem;
+}
+
+.filters-section .filters-row:last-child {
+    margin-bottom: 0;
+}
+
+.dark .filters-section {
     background: #262c36;
 }
 

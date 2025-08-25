@@ -32,13 +32,16 @@
 		.bucket {
 		    box-shadow: var(--box-shadow);
 		    margin-bottom: 30px;
-		  }
+		}
 		  .bucketcontent {
 		    padding: 15px 30px;
 		    border-bottom-left-radius: var(--border-radius);
 		    border-bottom-right-radius: var(--border-radius);
 		    border-right: 1px solid #eee;
 		    border-left: 1px solid #eee;
+		  }
+		  .dark .bucketcontent {
+		  	border-bottom: 1px solid #ccc;
 		  }
 		  #activeDiv h2 {
 		    border-top-left-radius: 18px;
@@ -51,6 +54,9 @@
 		    padding-left: 15px;
 		    color: #333;
 		    line-heightX: 27px !important;
+		  }
+		  .dark #activeDiv h2 {
+		  	color: #000 !important;
 		  }
 		  .dark #readmeDiv h2 {
 		    background-color: #000;
@@ -182,7 +188,7 @@
 			<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	        <div id="issuesWidget" 
 	             data-container-id="issuesWidget"
-	             data-github-owner="ModelEarth"
+	             data-github-owner="modelearth"
 	             data-detect-current-folder="true"
 	             data-multi-repo-roots="webroot,PartnerTools,MaterialScience,modelearth"></div>
 	        <script src="js/issues.js"></script>
