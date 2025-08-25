@@ -2956,3 +2956,9 @@ body.widget-fullscreen-active {
         scroll-behavior: auto !important;
     }
 }
+/* Show the modal when JS adds the .show class */
+.modal-overlay.show {
+  display: flex;
+}
+
+
