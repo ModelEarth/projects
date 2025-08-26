@@ -166,6 +166,8 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 
 - [Update Farm Fresh Data pull](/community-data/process/python/farmfresh/) - Bhavna - DONE
 - [Push EPA date to Google Data Commons API](https://docs.datacommons.org/api/)
+- TODO: Clean data for tree canopy decline analysis - Savar
+- Set up EDA and regression for predicting future loss of data 
 
 
 ## 4. International Trade Flow - SQL, Python, Javascript (IO)
