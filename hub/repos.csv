@@ -1,0 +1,35 @@
+repo_name,display_name,description,default_branch
+modelearth,ModelEarth,Main ModelEarth repository,master
+localsite,LocalSite,Core CSS/JS utilities,main
+realitystream,RealityStream,ML Models and Visualization,main
+feed,Feed,FeedPlayer video/gallery,main
+swiper,Swiper,UI swiper components,main
+comparison,Comparison,Trade Flow tools,main
+codechat,CodeChat,Code chat interface,main
+home,Home,Home page content,main
+cloud,Cloud,Cloud platform tools,main
+projects,Projects,Project showcases,main
+team,Team,Rust REST API for Azure,main
+MaterialScience,MaterialScience,MaterialScience webroot,main
+products,Products,Products frontend and python,main
+products-data,Products Data,Products data output,main
+profile,Profile,Profile frontend analysis,main
+exiobase,Exiobase,Trade flow output to .csv and SQL,main
+io,IO,Input-output analysis,main
+useeio.js,USEEIO.JS,JavaScript footprint tools,dev
+useeio-widgets,USEEIO Widgets,USEEIO React widgets,master
+useeio-widgets-without-react,USEEIO Widgets Without React,USEEIO widgets without React,master
+useeiopy,USEEIO Python,Python USEEIO library,master
+useeio_api,USEEIO API,USEEIO REST API,master
+useeio,USEEIO Core,Core USEEIO model,master
+useeior,USEEIO R,R package for USEEIO,master
+useeio-state,USEEIO State,State-level USEEIO data,main
+useeio-json,USEEIO JSON,USEEIO JSON data,main
+mario,Mario,Multi-regional input-output,main
+webroot,Webroot,PartnerTools webroot,main
+data-pipeline,Data Pipeline,Python data processing pipeline,main
+community-data,Community data,Community-level data outputs,master
+community-timelines,Community Timeline,Timeline data for communities,main
+community-zipcodes,Community Zipcodes,ZIP code level community data,main
+community-forecasting,Community Forecasting,Forecasting frontend,main
+dataflow,Data flow,Data flow NextJS UX,main

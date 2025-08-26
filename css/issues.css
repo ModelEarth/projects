@@ -1,0 +1,2958 @@
+/* GitHub Issues Manager Styles */
+
+:root {
+    --primary-color: #0366d6;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-color: #e1e4e8;
+    --text-muted: #6a737d;
+    --bg-overlay: rgba(0, 0, 0, 0.5);
+    --border-radius: 6px;
+    --box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
+    --transition: all 0.2s ease-in-out;
+}
+
+/* Dark theme support */
+.dark {
+    --primary-color: #58a6ff;
+    --light-color: #21262d;
+    --dark-color: #c9d1d9;
+    --border-color: #30363d;
+    --text-muted: #8b949e;
+    --bg-overlay: rgba(0, 0, 0, 0.8);
+}
+
+/* Refresh link styling */
+.refresh-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.refresh-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+/* Base Layout */
+.issues-header {
+    background: linear-gradient(135deg, var(--primary-color), #0553c7);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.issues-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+}
+
+.issues-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.issues-header .subtitle {
+    margin: 0;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.issues-header .subtitle a {
+    color: #ffffff;
+    text-decoration: underline;
+    opacity: 1;
+}
+
+.issues-header .subtitle a:hover {
+    color: #f0f6ff;
+    text-decoration: none;
+}
+
+.issues-header .subtitle-description {
+    margin: 0;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Header fullscreen button - hidden by default, shown in narrow view */
+.header-fullscreen-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: white !important;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    z-index: 10;
+}
+
+.header-fullscreen-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+/* Header search button - positioned to the left of fullscreen button */
+.header-search-btn {
+    position: absolute;
+    top: 1rem;
+    right: 3.5rem; /* Position to the left of fullscreen button */
+    color: white !important;
+    font-size: 1.2rem;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    z-index: 1000;
+}
+
+.header-search-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+/* Cache status section */
+.cache-status-section {
+    background: var(--light-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #2d3748 !important; /* Much darker text */
+}
+
+.cache-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cache-info {
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark .cache-status-section {
+    background: var(--dark-color);
+    border-color: var(--border-color);
+    color: #e2e8f0 !important; /* Much lighter text for dark theme */
+}
+
+.dark .cache-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Issue Actions Menu */
+.issue-actions-menu {
+    position: relative;
+    display: inline-block;
+    margin-left: auto;
+}
+
+.issue-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    color: var(--text-muted);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+}
+
+.issue-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--primary-color);
+}
+
+.dark .issue-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.issue-menu-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+    min-width: 160px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    pointer-events: none;
+}
+
+.issue-menu-dropdown.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.dark .issue-menu-dropdown {
+    background: var(--dark-color);
+    border-color: var(--border-color);
+}
+
+.menu-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+.menu-item:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+}
+
+.dark .menu-item {
+    color: var(--light-color);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--primary-color);
+}
+
+.menu-item i {
+    width: 14px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* Issue loading states */
+.issue-refreshing {
+    position: relative;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.issue-refresh-loader {
+    position: absolute;
+    top: 0.5rem;
+    right: 3rem;
+    color: var(--primary-color);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.dark .issue-refresh-loader {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.issue-refresh-loader i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.issues-header {
+    position: relative;
+}
+
+.token-toggle-link {
+    color: white !important;
+    text-decoration: none !important;
+    border-bottom: 2px dotted rgba(255, 255, 255, 0.6);
+    transition: var(--transition);
+    padding-bottom: 2px;
+    cursor: pointer;
+}
+
+.token-toggle-link:hover {
+    border-bottom-color: white;
+    opacity: 1;
+}
+
+.issues-header i {
+    color: white;
+}
+
+/* Authentication Section */
+.auth-section {
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.auth-input input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--border-radius);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: monospace;
+}
+
+.auth-input input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-help {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auth-help a {
+    color: #ffd700;
+    text-decoration: none;
+}
+
+.auth-help a:hover {
+    text-decoration: underline;
+}
+
+.token-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #ffd700 !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(255, 215, 0, 0.1);
+    transition: var(--transition);
+}
+
+.token-link:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.auth-instructions summary .token-link {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.auth-instructions {
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.auth-instructions details {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-instructions summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.auth-instructions summary span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.auth-instructions summary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.instructions-content {
+    padding: 0 1rem 1rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.instructions-content ol {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+    line-height: 1.6;
+}
+
+.instructions-content li {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.instructions-content code {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.instructions-content .note {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.instructions-content .note i {
+    margin-top: 0.1rem;
+    color: #ffd700;
+}
+
+/* Rate Limit Information */
+.rate-limit-info {
+    margin: 1rem 0;
+    padding: 0;
+}
+
+.rate-limit-warning {
+    background: linear-gradient(135deg, #ffc107, #ff9800);
+    color: #212529;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--box-shadow);
+    border-left: 4px solid #ff6f00;
+}
+
+/* Stack rate limit warning vertically on narrow screens */
+@media (max-width: 768px) {
+    .rate-limit-warning {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i {
+        align-self: flex-start;
+    }
+}
+
+.dark .rate-limit-warning {
+    background: linear-gradient(135deg, #d39e00, #cc8500);
+    color: #fff;
+}
+
+.rate-limit-warning i {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.rate-limit-warning strong {
+    font-weight: 600;
+}
+
+/* Rate limit info display (for informational purposes, not warning) */
+.rate-limit-info-display {
+    background: linear-gradient(135deg, #17a2b8, #007bff);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--box-shadow);
+    border-left: 4px solid #0056b3;
+}
+
+.dark .rate-limit-info-display {
+    background: linear-gradient(135deg, #138496, #0062cc);
+    color: #fff;
+}
+
+.rate-limit-info-display i {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.rate-limit-info-display strong {
+    font-weight: 600;
+}
+
+/* Rate limit content structure */
+.rate-limit-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rate-limit-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.rate-limit-details {
+    font-weight: normal;
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+/* Responsive behavior for both rate limit displays */
+@media (max-width: 768px) {
+    .rate-limit-warning,
+    .rate-limit-info-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .rate-limit-warning i,
+    .rate-limit-info-display i {
+        align-self: flex-start;
+    }
+    
+    /* On narrow screens, force vertical layout */
+    .rate-limit-content {
+        width: 100%;
+    }
+}
+
+/* Last Refresh Info */
+.last-refresh-info {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.last-refresh-info .text-muted {
+    color: var(--text-muted);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-overlay);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+/* Loading Content (inside issues container) */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--dark-color);
+}
+
+.loading-content .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    border: 4px solid var(--light-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-content .loading-progress {
+    width: 100%;
+    max-width: 300px;
+    height: 4px;
+    background: var(--light-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.loading-content .progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.loading-content .loading-status {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+
+/* Dark theme support for loading content */
+.dark .loading-content {
+    color: var(--dark-color);
+}
+
+.dark .loading-content .spinner {
+    border: 4px solid #30363d;
+    border-top: 4px solid var(--primary-color);
+}
+
+.dark .loading-content .loading-progress {
+    background: #30363d;
+}
+
+.loading-spinner {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    min-width: 300px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    border: 4px solid var(--light-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--light-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.loading-status {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+
+/* Filters Section */
+.filters-section {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+    position: relative;
+    container-type: inline-size;
+}
+
+/* Ensure filters start hidden by default */
+#filtersSection {
+    display: none !important;
+}
+
+/* Only show when explicitly toggled */
+#filtersSection.show-filters {
+    display: block !important;
+}
+
+.dark .filters-section {
+    background: var(--light-color);
+    border-color: var(--border-color);
+}
+
+/* Close button for collapsed filters */
+.filters-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    z-index: 10;
+}
+
+.filters-close-btn:hover {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.dark .filters-close-btn:hover {
+    background: #30363d;
+}
+
+/* More Filters button - commented out (now using header search button instead) */
+/*
+.more-filters-btn {
+    white-space: nowrap;
+    width: auto;
+    flex: none;
+    align-self: flex-start;
+}
+*/
+
+/* Clear All Filters button */
+.clear-filters-btn {
+    white-space: nowrap;
+    width: auto;
+    flex: none;
+    align-self: flex-start;
+    margin-left: 0.5rem;
+    background: var(--light-color);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+    transition: var(--transition);
+}
+
+.clear-filters-btn:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.dark .clear-filters-btn {
+    background: var(--light-color);
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.dark .clear-filters-btn:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+/* Responsive filters - narrow container */
+@container (max-width: 768px) {
+    .filters-section {
+        padding: 1rem;
+        padding-right: 2.5rem; /* Make room for X button */
+    }
+    
+    /* Hide additional filters by default on narrow screens */
+    .additional-filters {
+        display: none;
+    }
+    
+    /* Show additional filters when search button opens filter section */
+    .filters-section.show-filters .additional-filters {
+        display: flex;
+    }
+    
+    /* Show More Filters button on narrow screens - commented out */
+    /*
+    .more-filters-btn {
+        display: inline-flex !important;
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+        white-space: nowrap;
+        min-width: auto;
+        width: auto;
+        flex: none;
+        flex-shrink: 0;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    */
+    
+    /* When filters are expanded, show additional filters and close button - commented out */
+    /*
+    .filters-section.expanded .additional-filters {
+        display: flex;
+    }
+    
+    .filters-section.expanded .filters-close-btn {
+        display: block !important;
+    }
+    */
+    
+    /* .filters-section.expanded .more-filters-btn {
+        display: none !important;
+    } */
+    
+    /* Adjust layout for narrow screens */
+    .filters-primary-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+    
+    .filters-primary-row .filter-group:first-child {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .filters-primary-row .filter-group:first-child .filter-select {
+        width: 100%;
+        min-width: 120px;
+        max-width: calc(100vw - 200px);
+    }
+    
+    /* This media query is now redundant with the 900px one above */
+    /* Keeping for any edge cases but content moved to 900px breakpoint */
+    
+    /* Ensure select dropdown arrow doesn't duplicate */
+    .filter-select {
+        /* Remove any potential duplicate arrows */
+        position: relative;
+        z-index: 1;
+    }
+    
+    .filter-select::-ms-expand {
+        display: none; /* Remove IE dropdown arrow */
+    }
+    
+    /* Debug floating elements - check for any absolutely positioned elements */
+    .filters-always-visible {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Ensure FontAwesome icons in buttons don't overlap */
+    .filter-button i {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Fix potential dropdown arrow conflicts */
+    .filter-button .fa-chevron-down {
+        margin-left: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Additional filters dropdown buttons */
+    .additional-filters .filter-button {
+        width: auto;
+        min-width: 140px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* Allow additional filters to wrap to next line */
+    .filters-row .additional-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    .filters-secondary-row {
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    /* Search container and group adjustments */
+    .search-container {
+        width: 95%;
+        margin: 0;
+    }
+    
+    .search-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .search-group input {
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .search-group #searchButton {
+        flex-shrink: 0;
+        width: auto;
+    }
+    
+    /* View controls compact layout */
+    .view-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-shrink: 0;
+    }
+    
+}
+
+/* Specific range fix for repo filter width between 767px and 850px */
+@container (min-width: 600px) and (max-width: 850px) {
+    .filters-primary-row .filter-group:first-child .filter-select {
+        min-width: 200px !important;
+        width: auto !important;
+    }
+}
+
+/* Media query fallback for the range fix */
+@media (min-width: 600px) and (max-width: 850px) {
+    .filters-primary-row .filter-group:first-child .filter-select {
+        min-width: 200px !important;
+        width: auto !important;
+    }
+}
+
+/* Fallback for browsers without container queries */
+@media (max-width: 768px) {
+    .filters-section .additional-filters {
+        display: none;
+    }
+    
+    /* Show additional filters when search button opens filter section */
+    .filters-section.show-filters .additional-filters {
+        display: flex;
+    }
+    
+    /* .filters-section .more-filters-btn {
+        display: inline-flex !important;
+        width: auto;
+        flex: none;
+    } */
+    
+    .additional-filters .filter-button {
+        width: auto;
+        min-width: 140px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* Allow additional filters to wrap in media query fallback */
+    .filters-row .additional-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    /* .filters-section.expanded .additional-filters {
+        display: flex;
+    }
+    
+    .filters-section.expanded .filters-close-btn {
+        display: block !important;
+    } */
+    
+    /* .filters-section.expanded .more-filters-btn {
+        display: none !important;
+    } */
+}
+
+.filters-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    margin-right: 0.7rem;
+}
+
+.filters-row:last-child {
+    margin-bottom: 0;
+}
+
+/* Primary row (Row 1): Repository filter and Clear All Filters */
+.filters-primary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    margin-right: 0.7rem;
+}
+
+.filters-primary-row .filter-group:first-child {
+    flex: 1;
+}
+
+.filters-primary-row .clear-filters-btn {
+    flex-shrink: 0;
+}
+
+/* Secondary row (Row 2): Filter buttons */
+.filters-secondary-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    margin-right: 0.7rem;
+}
+
+/* Tertiary row (Row 3): Search */
+.filters-tertiary-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0;
+    margin-right: 0.7rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: relative;
+}
+
+.filter-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--dark-color);
+}
+
+.filter-select {
+    padding: 0.5rem 2.5rem 0.5rem 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: white;
+    min-width: 180px;
+    font-size: 0.9rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%; /* Ensure it doesn't exceed container */
+}
+
+.filter-select:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.dark .filter-select {
+    background: var(--light-color);
+    color: var(--dark-color);
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9d1d9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right 0.7rem center;
+    background-size: 1em;
+}
+
+.filter-button {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    min-width: 160px;
+    justify-content: space-between;
+    white-space: nowrap;
+}
+
+.dark .filter-button {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.filter-button:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+/* Dropdown Menus */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dark .dropdown-menu {
+    background: var(--light-color);
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: var(--light-color);
+}
+
+.dark .dropdown-item:hover {
+    background: #30363d;
+}
+
+/* Search Container and Group */
+.search-container {
+    flex: 1;
+    display: flex;
+}
+
+.search-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+.search-group input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+}
+
+.dark .search-group input {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+/* Search button - make it square around the search icon */
+#searchButton, #clearSearch {
+    width: auto;
+    min-width: auto;
+    flex-shrink: 0;
+    margin: 0px !important;
+}
+
+#searchButton {
+    padding: 0.5rem;
+}
+
+/* View Controls */
+.view-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.view-btn {
+    background: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: var(--transition);
+    border-right: 1px solid var(--border-color);
+}
+
+.dark .view-btn {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.view-btn:last-child {
+    border-right: none;
+}
+
+.view-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.view-btn:hover:not(.active) {
+    background: var(--light-color);
+}
+
+/* Statistics Section */
+.stats-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 200px;
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+}
+
+.dark .stat-card {
+    background: var(--light-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(27, 31, 35, 0.15);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.stat-card:nth-child(1) .stat-icon { background: var(--info-color); }
+.stat-card:nth-child(2) .stat-icon { background: var(--success-color); }
+.stat-card:nth-child(3) .stat-icon { background: var(--danger-color); }
+.stat-card:nth-child(4) .stat-icon { background: var(--warning-color); }
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Issues Container */
+.issues-container {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 15px;
+}
+
+.dark .issues-container {
+    background: var(--light-color);
+}
+
+/* Issues header bar with view controls */
+.issues-header-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--light-color);
+}
+
+.dark .issues-header-bar {
+    background: #262c36;
+}
+
+/* Always visible filters row */
+.filters-always-visible {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--light-color);
+    flex-wrap: wrap; /* Allow wrapping on narrow screens */
+}
+
+/* Ensure all filter elements have consistent height and alignment */
+.filters-always-visible .filter-group,
+.filters-always-visible .toggle-filters-btn,
+.filters-always-visible .clear-filters-btn {
+    display: flex;
+    align-items: center;
+    height: 38px; /* Consistent height for all filter elements */
+}
+
+/* Repo filter and assignee button layout - base styles for wide screens */
+.filters-always-visible .filter-group:first-child {
+    flex: 1 1 auto;
+    min-width: 200px;
+}
+
+/* Assignee button next to repo filter */
+.filters-always-visible .filter-group:nth-child(2) {
+    flex: 1 1 auto;
+    min-width: 180px;
+}
+
+/* Sort button can wrap to next line on narrow screens */
+.filters-always-visible .filter-group:nth-child(3) {
+    flex: 0 0 auto;
+    min-width: 150px;
+}
+
+/* Force elements to fit on one line when needed - STRONGER CONSTRAINTS */
+@media (max-width: 1100px) {
+    .filters-always-visible {
+        flex-wrap: wrap !important;
+        display: flex !important;
+    }
+    
+    /* FORCE exact half-width behavior */
+    .filters-always-visible .filter-group:first-child,
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 0 0 calc(50% - 0.5rem) !important;
+        min-width: calc(50% - 0.5rem) !important;
+        max-width: calc(50% - 0.5rem) !important;
+        width: calc(50% - 0.5rem) !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* FORCE the inner elements to respect container width */
+    .filters-always-visible .filter-group:first-child .filter-select,
+    .filters-always-visible .filter-group:nth-child(2) .filter-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        flex-shrink: 1 !important;
+    }
+    
+    /* Override any conflicting select styling */
+    .filters-always-visible .filter-group:first-child .filter-select {
+        padding-right: 2rem !important; /* Reduce right padding to fit arrow */
+    }
+    
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100% !important;
+        margin-top: 0.5rem;
+        width: 100% !important;
+    }
+}
+
+/* On very narrow screens, allow the sort button to take full width on new line */
+@media (max-width: 600px) {
+    .filters-always-visible {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    
+    .filters-always-visible .filter-group {
+        width: 100%;
+    }
+    
+    .filters-always-visible .filter-group .filter-select,
+    .filters-always-visible .filter-group .filter-button {
+        width: 100%;
+    }
+}
+
+/* Additional responsive behavior for three-element layout */
+@media (max-width: 900px) {
+    .filters-always-visible {
+        flex-wrap: wrap;
+    }
+    
+    /* Override the base min-widths to allow proper half-width behavior */
+    .filters-always-visible .filter-group:first-child {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    .filters-always-visible .filter-group:nth-child(2) {
+        flex: 1 1 calc(50% - 0.5rem);
+        min-width: calc(50% - 0.5rem);
+        max-width: calc(50% - 0.5rem);
+    }
+    
+    /* Sort button wraps to next line and takes full width */
+    .filters-always-visible .filter-group:nth-child(3) {
+        flex: 1 1 100%;
+        margin-top: 0.5rem;
+        min-width: 150px;
+    }
+}
+
+/* Ensure proper alignment when wrapped */
+@media (max-width: 600px) {
+    .filters-always-visible .filter-group:nth-child(3) {
+        margin-top: 0;
+    }
+}
+
+.filters-always-visible .filter-select,
+.filters-always-visible .filter-button {
+    height: 38px;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+}
+
+/* Toggle filters button */
+.toggle-filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--form-background);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.toggle-filters-btn:hover {
+    background: var(--hover-color);
+}
+
+.toggle-filters-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Clear filters button - compact style */
+.clear-filters-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap;
+    height: 38px !important;
+    box-sizing: border-box;
+}
+
+.dark .filters-always-visible {
+    background: #262c36;
+}
+
+/* Collapsible filters section */
+.filters-section {
+    background: var(--light-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.filters-section .filters-row {
+    margin-bottom: 1rem;
+}
+
+.filters-section .filters-row:last-child {
+    margin-bottom: 0;
+}
+
+.dark .filters-section {
+    background: #262c36;
+}
+
+/* Prevent excessive height on formatMe container */
+#formatMe {
+    min-height: auto !important;
+    height: auto !important;
+}
+
+/* Fullscreen widget styles */
+.widget-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background: white !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    box-sizing: border-box !important;
+}
+
+.dark .widget-fullscreen {
+    background: var(--light-color) !important;
+}
+
+/* Hide other content when widget is fullscreen */
+body.widget-fullscreen-active {
+    overflow: hidden;
+}
+
+/* Minimize button in fullscreen mode */
+.minimize-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem; /* Position to the right of search icon (search icon is at 3.5rem) */
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10000;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.minimize-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+
+/* Fullscreen toggle button in pagination */
+.fullscreen-btn:hover {
+    transform: scale(1.2);
+    transition: var(--transition);
+}
+
+.issues-list {
+    min-height: 400px;
+}
+
+/* Issue Items */
+.issue-item {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1.5rem;
+    transition: var(--transition);
+    position: relative;
+    container-type: inline-size;
+}
+
+.issue-item:last-child {
+    border-bottom: none;
+}
+
+.issue-item:hover {
+    background: var(--light-color);
+}
+
+.dark .issue-item:hover {
+    background: #262c36;
+}
+
+.issue-header {
+    margin-bottom: 1rem;
+}
+
+.issue-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.issue-title {
+    flex: 1;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.issue-title a {
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.issue-title a:hover {
+    color: var(--primary-color);
+}
+
+.issue-number {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 1.25rem;
+    white-space: nowrap;
+}
+
+.dark .issue-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+
+.issue-open {
+    color: var(--success-color);
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.issue-closed {
+    color: var(--danger-color);
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.issue-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+}
+
+.issue-meta i {
+    width: 14px;
+    text-align: center;
+}
+
+.repo-name a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.repo-name a:hover {
+    text-decoration: underline;
+}
+
+.issue-body {
+    margin-top: 1rem;
+}
+
+.issue-description {
+    color: var(--dark-color);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.issue-labels {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.issue-label {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.issue-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.issue-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.issue-assignees {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.assignee-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-left: -8px;
+}
+
+.assignee-avatar:first-child {
+    margin-left: 0;
+}
+
+.issue-actions {
+    display: flex;
+    gap: 0.5rem;
+    width: auto;
+    flex-shrink: 0;
+}
+
+/* Wide view - show button text */
+@container (min-width: 769px) {
+    .card-view .issue-actions .btn span {
+        display: inline !important;
+    }
+}
+
+/* Media query fallback for wide view */
+@media (min-width: 769px) {
+    .card-view .issue-actions .btn span {
+        display: inline !important;
+    }
+}
+
+/* Repository Images */
+.repo-images {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.repo-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+/* Buttons */
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0256cc;
+}
+
+.btn-secondary {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #333;
+}
+
+.btn-secondary:link,
+.btn-secondary:visited,
+.contentpadding .btn-secondary:link,
+.contentpadding .btn-secondary:visited,
+.btn-secondary {
+    color: var(--primary-color) !important;
+}
+
+.btn-secondary:hover {
+    background: #e6e6e6;
+}
+
+.dark .btn-secondary {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #666;
+}
+
+.dark .btn-secondary:link,
+.dark .btn-secondary:visited,
+.dark .contentpadding .btn-secondary:link,
+.dark .contentpadding .btn-secondary:visited,
+.dark .btn-secondary {
+    color: var(--primary-color) !important;
+}
+
+.dark .btn-secondary:hover {
+    background: #30363d;
+}
+
+/* Force btn-secondary in issue actions to have blue text */
+.issue-actions-detail .btn-secondary,
+.issue-actions-detail .btn-secondary:link,
+.issue-actions-detail .btn-secondary:visited,
+.contentpadding .issue-actions-detail .btn-secondary,
+.contentpadding .issue-actions-detail .btn-secondary:link,
+.contentpadding .issue-actions-detail .btn-secondary:visited {
+    color: var(--primary-color) !important;
+}
+
+.dark .issue-actions-detail .btn-secondary,
+.dark .issue-actions-detail .btn-secondary:link,
+.dark .issue-actions-detail .btn-secondary:visited,
+.dark .contentpadding .issue-actions-detail .btn-secondary,
+.dark .contentpadding .issue-actions-detail .btn-secondary:link,
+.dark .contentpadding .issue-actions-detail .btn-secondary:visited {
+    color: var(--primary-color) !important;
+}
+
+/* Clear search button - same size as primary button but secondary styling */
+.btn-clear-search {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 1px solid #333;
+    padding: 0.2rem 0.5rem; /* Same as btn-primary */
+    font-size: 0.9rem; /* Same as btn-primary */
+}
+
+.btn-clear-search:link,
+.btn-clear-search:visited,
+.contentpadding .btn-clear-search:link,
+.contentpadding .btn-clear-search:visited {
+    color: var(--primary-color) !important;
+}
+
+.btn-clear-search:hover {
+    background: #e6e6e6;
+}
+
+.dark .btn-clear-search {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border: 2px solid #666;
+}
+
+.dark .btn-clear-search:link,
+.dark .btn-clear-search:visited,
+.dark .contentpadding .btn-clear-search:link,
+.dark .contentpadding .btn-clear-search:visited {
+    color: var(--primary-color) !important;
+}
+
+.dark .btn-clear-search:hover {
+    background: #30363d;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Issue action buttons - make GitHub button match Details button style */
+.issue-actions .btn-outline:last-child {
+    background: white;
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color);
+}
+
+.issue-actions .btn-outline:last-child:hover {
+    background: var(--primary-color);
+    color: white !important;
+}
+
+.dark .issue-actions .btn-outline:last-child {
+    background: var(--light-color);
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color);
+}
+
+.dark .issue-actions .btn-outline:last-child:hover {
+    background: var(--primary-color);
+    color: white !important;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.btn.disabled,
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Pagination */
+.pagination-container {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pagination-info {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    order: 1;
+}
+
+.pagination-info .pagination-left {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.pagination-info .pagination-right {
+    flex-shrink: 0;
+    text-align: right;
+}
+
+/* Show header fullscreen icon in narrow containers */
+@container (max-width: 768px) {
+    
+    .pagination-info {
+        display: block;
+        position: relative;
+    }
+    
+    .pagination-info .pagination-left {
+        display: block;
+        margin-bottom: 0.5rem;
+        text-align: left;
+    }
+    
+    .pagination-info .pagination-right {
+        position: static;
+        display: block;
+        text-align: left;
+    }
+}
+.widget-fullscreen-active .header-fullscreen-btn {
+    display: none !important;
+}
+
+
+/* Media query fallback */
+@media (max-width: 480px) {
+    .header-fullscreen-btn {
+        display: none !important;
+    }
+    
+    /* Keep search button visible on mobile since it's essential for accessing filters */
+    .header-search-btn {
+        right: 1rem !important; /* Move to where fullscreen button was */
+        display: block !important;
+    }
+    
+    .pagination-info {
+        display: block;
+        position: relative;
+    }
+    
+    .pagination-info .pagination-left {
+        display: block;
+        margin-bottom: 0.5rem;
+        text-align: left;
+    }
+    
+    .pagination-info .pagination-right {
+        position: static;
+        display: block;
+        text-align: left;
+    }
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.25rem;
+    align-self: center;
+    order: 2;
+}
+
+.pagination-btn {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    background: white;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.dark .pagination-btn {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.pagination-btn:hover:not(.disabled):not(.active) {
+    background: var(--light-color);
+    border-color: var(--primary-color);
+}
+
+.pagination-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* No Issues State */
+.no-issues {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+
+.no-issues i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.no-issues h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Error Message */
+.error-message {
+    background: white;
+    border: 1px solid var(--danger-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem 0;
+    box-shadow: var(--box-shadow);
+}
+
+.dark .error-message {
+    background: var(--light-color);
+}
+
+.error-icon {
+    color: var(--danger-color);
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.error-content h3 {
+    color: var(--danger-color);
+    margin: 0 0 1rem 0;
+}
+
+.error-content p {
+    color: var(--text-muted);
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-overlay);
+    display: none;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 9999;
+    padding: 2rem;
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-top: 2rem;
+}
+
+.dark .modal-content {
+    background: var(--light-color);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.modal-body {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+/* Issue Detail Modal Content */
+.issue-header-detail {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.issue-meta-detail {
+    flex: 1;
+}
+
+.repo-info {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.repo-info i {
+    margin-right: 0.5rem;
+}
+
+.repo-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.issue-dates {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.issue-section {
+    margin-bottom: 2rem;
+}
+
+.issue-section h4 {
+    margin: 0 0 1rem 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.issue-description-full {
+    line-height: 1.6;
+    color: var(--dark-color);
+}
+
+.issue-labels-detail {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.assignees-detail {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.assignee-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+}
+
+.comments-section {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.comment-header {
+    background: var(--light-color);
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.comment-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.comment-date {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.comment-body {
+    padding: 1rem;
+    line-height: 1.5;
+}
+
+.issue-actions-detail {
+    display: flex;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Row View */
+.issues-list.row-view .issue-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.issues-list.row-view .issue-item:last-child {
+    border-bottom: none;
+}
+
+.issues-list.row-view .issue-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.issues-list.row-view .issue-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
+
+.issues-list.row-view .issue-meta,
+.issues-list.row-view .issue-footer {
+    display: none;
+}
+
+/* Card View */
+.issues-list.card-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.card-view .issue-item {
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+}
+
+.card-view .issue-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(27, 31, 35, 0.15);
+}
+
+/* Hide narrow-specific content in wider card view */
+.card-view .issue-repo-name,
+.card-view .issue-body-preview {
+    display: none;
+}
+
+/* Wide card view - show all details like list view */
+.issues-list.card-view .issue-item {
+    padding: 1.5rem;
+}
+
+.issues-list.card-view .issue-meta,
+.issues-list.card-view .issue-body,
+.issues-list.card-view .issue-footer {
+    display: block !important;
+}
+
+.issues-list.card-view .issue-repo-name,
+.issues-list.card-view .issue-body-preview {
+    display: none !important;
+}
+
+/* Narrow card view - two columns with compact squares */
+@container (max-width: 768px) {
+    .issues-list.card-view {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .card-view .issue-item {
+        padding: 0.75rem;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .card-view .issue-title {
+        font-size: 0.9rem;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .card-view .issue-meta,
+    .card-view .issue-body {
+        display: none;
+    }
+    
+    /* Show footer but modify for compact layout */
+    .card-view .issue-footer {
+        display: block;
+        margin-top: 0.5rem;
+    }
+    
+    /* Hide author and assignees in narrow view */
+    .card-view .issue-author,
+    .card-view .issue-assignees {
+        display: none;
+    }
+    
+    .card-view .issue-repo-name {
+        display: block !important;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-view .issue-body-preview {
+        display: -webkit-box !important;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.3;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Narrow card view - compact buttons with larger icons only */
+    .card-view .issue-actions {
+        display: flex !important;
+        gap: 0.25rem;
+        margin-top: auto;
+    }
+    
+    .card-view .issue-actions .btn {
+        padding: 0.4rem;
+        font-size: 1rem;
+        min-width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: auto;
+    }
+    
+    .card-view .issue-actions .btn span {
+        display: none;
+    }
+    
+    .card-view .issue-actions .btn i {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    /* Move Details button to extreme right in card view */
+    .card-view .issue-actions {
+        justify-content: flex-end;
+    }
+}
+
+/* Fallback for media queries */
+@media (max-width: 768px) {
+    .issues-list.card-view {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .card-view .issue-item {
+        padding: 0.75rem;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .card-view .issue-title {
+        font-size: 0.9rem;
+        line-height: 1.2;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .card-view .issue-meta,
+    .card-view .issue-body {
+        display: none;
+    }
+    
+    /* Show footer but modify for compact layout */
+    .card-view .issue-footer {
+        display: block;
+        margin-top: 0.5rem;
+    }
+    
+    /* Hide author and assignees in narrow view */
+    .card-view .issue-author,
+    .card-view .issue-assignees {
+        display: none;
+    }
+    
+    .card-view .issue-repo-name {
+        display: block !important;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-view .issue-body-preview {
+        display: -webkit-box !important;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.3;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Narrow card view - compact buttons with larger icons only */
+    .card-view .issue-actions {
+        display: flex !important;
+        gap: 0.25rem;
+        margin-top: auto;
+    }
+    
+    .card-view .issue-actions .btn {
+        padding: 0.4rem;
+        font-size: 1rem;
+        min-width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        width: auto;
+    }
+    
+    .card-view .issue-actions .btn span {
+        display: none;
+    }
+    
+    .card-view .issue-actions .btn i {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    /* Move Details button to extreme right in card view */
+    .card-view .issue-actions {
+        justify-content: flex-end;
+    }
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 10000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 350px;
+}
+
+/* Inline notifications (inside issues container) */
+.inline-notification {
+    background: rgba(248, 249, 250, 0.8);
+    border: 1px solid rgba(225, 228, 232, 0.3);
+    border-radius: var(--border-radius);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: var(--transition);
+    min-height: auto;
+    line-height: 1.2;
+}
+
+.inline-notification i {
+    opacity: 0.7;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.inline-notification .inline-spinner {
+    animation: spin 1s linear infinite;
+    opacity: 0.8;
+}
+
+.dark .inline-notification {
+    background: rgba(33, 38, 45, 0.6);
+    border-color: rgba(48, 54, 61, 0.3);
+    color: var(--text-muted);
+}
+
+.inline-notification.success {
+    background: rgba(212, 237, 218, 0.5);
+    border-color: rgba(40, 167, 69, 0.2);
+    color: #155724;
+}
+
+.inline-notification.info {
+    background: rgba(209, 236, 241, 0.5);
+    border-color: rgba(23, 162, 184, 0.2);
+    color: #0c5460;
+}
+
+.inline-notification.error {
+    background: rgba(248, 215, 218, 0.5);
+    border-color: rgba(220, 53, 69, 0.2);
+    color: #721c24;
+}
+
+.dark .inline-notification.success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #75b894;
+}
+
+.dark .inline-notification.info {
+    background: rgba(23, 162, 184, 0.1);
+    color: #7bc9d9;
+}
+
+.dark .inline-notification.error {
+    background: rgba(220, 53, 69, 0.1);
+    color: #f1aeb5;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.success {
+    border-color: var(--success-color);
+    background: #d4edda;
+    color: #155724;
+}
+
+.notification.info {
+    border-color: var(--info-color);
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.notification.error {
+    border-color: var(--danger-color);
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Responsive Design for narrow containers */
+@container (max-width: 500px) {
+    .issue-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .issue-actions {
+        order: 3;
+        align-self: flex-start;
+        margin-top: 0;
+    }
+    
+    .issue-assignees {
+        order: 2;
+        align-self: flex-start;
+    }
+    
+    .issue-author {
+        order: 1;
+    }
+}
+
+/* Fallback for browsers that don't support @container queries */
+@media (max-width: 500px) {
+    .issue-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .issue-actions {
+        align-self: flex-start;
+        width: auto;
+        margin-top: 0;
+    }
+    
+    .issue-assignees {
+        align-self: flex-start;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .issues-header {
+        padding: 1.5rem;
+    }
+    
+    .issues-header h1 {
+        font-size: 2rem;
+    }
+    
+    .filters-row {
+        /* flex-direction: column; */
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-select,
+    .filter-button {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .search-group {
+        flex-direction: row;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .view-controls {
+        justify-content: center;
+    }
+    
+    .stats-section {
+        flex-direction: column;
+    }
+    
+    .stat-card {
+        min-width: auto;
+    }
+    
+    .issue-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .issue-actions {
+        flex-wrap: wrap;
+    }
+    
+    .issues-list.card-view {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .modal-overlay {
+        padding: 1rem;
+    }
+    
+    .modal-content {
+        margin-top: 1rem;
+    }
+    
+    .modal-header {
+        padding: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .pagination-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .assignees-detail {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .issue-actions-detail {
+        flex-direction: column;
+    }
+    
+    .notification {
+        right: 1rem;
+        top: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-input {
+        flex-direction: column;
+    }
+    
+    .auth-help span {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .token-link {
+        display: inline-flex;
+        margin-top: 0.5rem;
+    }
+    
+    .instructions-content ol {
+        padding-left: 1rem;
+    }
+    
+    .issue-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .issue-title {
+        font-size: 1.1rem;
+    }
+    
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .auth-section,
+    .filters-section,
+    .view-controls,
+    .pagination-container,
+    .issue-actions,
+    .modal-overlay {
+        display: none !important;
+    }
+    
+    .issues-header {
+        background: none !important;
+        color: black !important;
+        border: 1px solid #ccc;
+    }
+    
+    .issue-item {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #000;
+        --text-muted: #333;
+    }
+    
+    .filter-button,
+    .btn-secondary {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

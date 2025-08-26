@@ -21,24 +21,31 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 # Active Projects
 
-### Webroots for RAG training and IO Data Pipeline
+### Webroot for Claude Code CLI
 
-[CodeChat](../codechat/) - Overview of webroots for developer insights RAG training
+[Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
+[CodeChat](../codechat/) - RAG training documentation, after overview of webroot submodule repos
+<!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
-[MaterialScience webroot](https://model.earth/materialscience/) - International and state tradeflow for Claude Code CLI
-[Model.earth Data Pipeline](/data-pipeline/) - Recent notes in Discord
+-->
 
-### MemberCommons for Teams
+### New IO Data Pipeline
+
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Report](../profile/footprint/sample.html)
+[Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
+
+
+### PartnerTools for Teams
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
-[Admin Dashboard](../team/admin/) and our [Model Team List](../team/projects#list=modelteam)  
-[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure your Server](../team/admin/server/)
+[Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
+[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure Your Local Server](../team/admin/server/)
 
 ### RealityStream updates in progress
 
-[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) - Prathuyusha
-RealityStream industry titles in importance report - Abivish
-Tree Canopy density as forecasting target - Sai Thanmayi
+[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
+RealityStream industry titles in importance report <!-- Abivish -->
+Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
 ### Resources
 
@@ -60,7 +67,7 @@ Consider focusing on one of the following:
 1. [Complete Flask+Colab install script](/cloud/run/)
 2. [Test install of Apache & PHP in our SuiteCRM .sh script](/profile/crm/)
 3. [Add python to RealityStream for Google Data Commons DCIDs](/realitystream/)
-4. [Finish converting LanchainJS to static site](/planet/langchain/)
+4. [Apply best of Planet Lanchain](/planet/langchain/) to [Team Repo AI Insights](../team/projects/)
 5. [UX with our Azure backend and Rust API](/profile/crm) - [Admin Dashboard](/team/admin/)
 <!--
 https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lovable-dev-and-azure-openai-accelerate-apps-that-change-li/4413375
@@ -73,7 +80,7 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-IN PROGRESS: [Javascript Timelines from Google Data Commons API](/data-commons/docs/data/) - Everyone, Priyanka, Niranjan, Kirthika<!--Mehul, Aishwrya, Vishnupriya-->
+TO DO: [Moving Javascript Timelines from Google Data Commons API]() <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
 We're pulling images and video via [our FeedPlayer](../feed) which can be pointed at a Github repo or any API.
 
@@ -90,10 +97,13 @@ We're pulling images and video via [our FeedPlayer](../feed) which can be pointe
 TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons) - Vishnupriya and our GDC team
 -->
 
-## 2. Planet Langchain - LLM Interface
+## 2. CodeChat - RAG Interface for LLMs
 
-Recent work is also underway in [earthscape Anything LLM](https://model.earth/earthscape) and [Team AI Insights](https://model.earth/team/)
+Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
 
+Our work within Planet Langchain is being replaced with the [Team Projects Page](https://model.earth/team/projects) which allows any data feed to be sent to our AI Insights process using Claude and Gemini.
+
+When you're ready to jump in, start with the setup steps in [modelearth webroot](https://model.earth/webroot)
 
 - [Planet Langchain Dev](/planet) within our [Planet Repo](https://github.com/modelearth/planet) for using [LangchainJS](https://github.com/langchain-ai/langchainjs).
 
@@ -195,7 +205,7 @@ For our [International Trade Flow](/profile/trade/) we can integrate our [Exioba
 
 #### US EPA State Impacts
 
-TO DO: Pull into SQL DuckDB
+TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Gary
 
 [Javascript updates for US EPA impact reports](/useeio.js/footprint/) - Lakshit, Abhishek N, Hitesh R
 [React Team - Mosaic column checkboxes](/io/charts)  - Pallavi 

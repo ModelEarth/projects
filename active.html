@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Active Projects</title>
+<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link type="text/css" rel="stylesheet" href="/localsite/css/base.css" id="/localsite/css/base.css" />
+<link type="text/css" rel="stylesheet" href="css/issues.css" />
+
+<script type="text/javascript" src="/localsite/js/localsite.js?showheader=true&showsearch=true"></script>
+
+<style>
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+  }
+  .bucket {
+    box-shadow: var(--box-shadow);
+    margin-bottom: 30px;
+  }
+  .bucketcontent {
+    padding: 15px 30px;
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+  }
+  #readmeDiv h2 {
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    background-color: #ddd;
+    margin-top: 0px !important;
+    padding-top: 6px !important;
+    padding-bottom: 2px !important;
+    margin-bottom: 0px !important;
+    padding-left: 15px;
+    color: #333;
+    line-heightX: 27px !important;
+  }
+  .dark #readmeDiv h2 {
+    background-color: #000;
+    border-bottom: 0px;
+  }
+</style>
+
+
+<script>
+loadMarkdown("active.md", "readmeDiv", "_parent");
+</script>
+
+</head>
+
+<body>
+<div class="content contentpadding large-list">
+  <div id="readmeDiv"></div>
+</div>
+</body>
+</html>
