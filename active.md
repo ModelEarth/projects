@@ -189,7 +189,7 @@ NEW: Update javascript report to use json generated from our Exiobase in CoLabs.
 
 TO DO:  Find and embed/fork existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
 
-IN PROGRESS: [Chord Chart json object](https://model.earth/useeio.js/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
+IN PROGRESS: [Chord Chart json object](https://model.earth/trade/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
 
 TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
 
@@ -205,7 +205,7 @@ For our [International Trade Flow](/profile/trade/) we can integrate our [Exioba
 
 TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Gary
 
-[Javascript updates for US EPA impact reports](/useeio.js/footprint/) - Lakshit, Abhishek N, Hitesh R
+[Javascript updates for US EPA impact reports](/trade/footprint/) - Lakshit, Abhishek N, Hitesh R
 [React Team - Mosaic column checkboxes](/io/charts)  - Pallavi 
 [React Team - Commodity Totals](/localsite/info/data/totals/) in [Jobs Reports](/localsite/info/#indicators=JOBS)
 [Impact Label Pipeline](/apps/impact) - Starting point for duplicating US EPA RStudio in python
