@@ -1893,6 +1893,12 @@ class GitHubIssuesManager {
                     }
                 });
                 
+                // Add cached issues to allIssues if they aren't already there
+                const existingIds = new Set(this.allIssues.map(issue => issue.id));
+                const newCachedIssues = validCachedIssues.filter(issue => !existingIds.has(issue.id));
+                this.allIssues.push(...newCachedIssues);
+                console.log(`Added ${newCachedIssues.length} cached issues to allIssues (${this.allIssues.length} total)`);
+                
                 return cachedData.issues;
             }
         }
@@ -2064,6 +2070,7 @@ class GitHubIssuesManager {
                            this.filters.projectstatus === 'closed' ? 'closed' : 'open';
 
         console.log(`Fetching ${stateToFetch} issues for ${repoName} (filter: ${this.filters.projectstatus})`);
+        console.log(`API URL will be: /repos/${this.owner}/${repoName}/issues?state=${stateToFetch}&per_page=100&page=1`);
 
         while (hasMore) {
             try {
@@ -2514,14 +2521,23 @@ class GitHubIssuesManager {
 
     filterAndDisplayIssues() {
         console.log(`Filtering ${this.allIssues.length} total issues with filters:`, this.filters);
+        
+        let repositoryFilteredOut = 0;
+        let statusFilteredOut = 0;
+        let assigneeFilteredOut = 0;
+        let labelFilteredOut = 0;
+        let searchFilteredOut = 0;
+        
         this.filteredIssues = this.allIssues.filter(issue => {
             // Repository filter
             if (this.filters.repo !== 'all' && issue.repository !== this.filters.repo) {
+                repositoryFilteredOut++;
                 return false;
             }
 
             // Project status filter
             if (this.filters.projectstatus !== 'all' && issue.state !== this.filters.projectstatus) {
+                statusFilteredOut++;
                 return false;
             }
 
@@ -2562,6 +2578,15 @@ class GitHubIssuesManager {
         });
 
         console.log(`After filtering: ${this.filteredIssues.length} issues match the filters`);
+        
+        // Debug output
+        console.log(`Filter results: ${this.filteredIssues.length} issues passed filtering out of ${this.allIssues.length} total`);
+        console.log(`Filtered out - Repository: ${repositoryFilteredOut}, Status: ${statusFilteredOut}, Assignee: ${assigneeFilteredOut}, Label: ${labelFilteredOut}, Search: ${searchFilteredOut}`);
+        
+        if (this.filteredIssues.length === 0 && this.allIssues.length > 0) {
+            console.warn('⚠️ All issues were filtered out! Check your filter settings.');
+        }
+        
         this.sortIssues();
         this.displayIssues();
     }
@@ -3085,10 +3110,12 @@ class GitHubIssuesManager {
         const hash = window.location.hash.substring(1);
         if (!hash) return;
 
+        console.log(`Loading from hash: "${hash}"`);
         const params = new URLSearchParams(hash);
         let customRepo = null;
         
         params.forEach((value, key) => {
+            console.log(`Hash param: "${key}" = "${value}"`);
             if (key === 'repo') {
                 // Handle custom repository from URL hash
                 customRepo = value;
