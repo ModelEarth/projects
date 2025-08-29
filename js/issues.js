@@ -3115,11 +3115,14 @@ class GitHubIssuesManager {
         let customRepo = null;
         
         params.forEach((value, key) => {
-            console.log(`Hash param: "${key}" = "${value}"`);
             if (key === 'repo') {
                 // Handle custom repository from URL hash
                 customRepo = value;
-                this.filters[key] = value;
+                // Extract just the repo name for dropdown compatibility
+                // For "modelearth/realitystream" → "realitystream"
+                // For "realitystream" → "realitystream"  
+                const repoName = value.includes('/') ? value.split('/')[1] : value;
+                this.filters[key] = repoName;
             } else if (this.filters.hasOwnProperty(key)) {
                 this.filters[key] = value;
             }
@@ -3127,7 +3130,33 @@ class GitHubIssuesManager {
 
         // If we have a custom repo from the hash, add it to the repository list
         if (customRepo && customRepo !== 'all') {
-            await this.addCustomRepositoryFromHash(customRepo);
+            // Extract just the repo name for consistency
+            const repoName = customRepo.includes('/') ? customRepo.split('/')[1] : customRepo;
+            try {
+                await this.addCustomRepositoryFromHash(repoName);
+            } catch (error) {
+                this.showNotification(`Repository "${repoName}" not found on ModelEarth GitHub. Please check the repository name.`, 'error');
+                // Reset to 'all' filter to show available repositories
+                this.filters.repo = 'all';
+                this.updateFilterUI();
+                return;
+            }
+            
+            // Load issues for the selected repository if not already cached
+            if (!this.repositoryIssues[this.filters.repo]) {
+                try {
+                    await this.loadIssuesForRepository(this.filters.repo);
+                    this.updateRepositoryDropdownCounts();
+                } catch (error) {
+                    this.showNotification(`Repository "${this.filters.repo}" not found on ModelEarth GitHub. Please check the repository name.`, 'error');
+                    // Reset to 'all' filter to show available repositories
+                    this.filters.repo = 'all';
+                    return;
+                }
+            }
+            
+            // Filter and display issues for the selected repository
+            this.filterAndDisplayIssues();
         }
 
         this.updateFilterUI();
@@ -3140,7 +3169,6 @@ class GitHubIssuesManager {
             return; // Already exists
         }
 
-        console.log(`Adding custom repository from URL hash: ${repoName}`);
 
         // If repo doesn't contain a slash, assume it's in the modelearth account
         const fullRepoPath = repoName.includes('/') ? repoName : `${this.owner}/${repoName}`;
@@ -3162,7 +3190,6 @@ class GitHubIssuesManager {
                     repository_url: repoInfo.html_url
                 });
                 
-                console.log(`Successfully added custom repository: ${repo}`);
                 
                 // Update the dropdown to include the new repository
                 this.populateRepositoryFilter();
@@ -3179,27 +3206,16 @@ class GitHubIssuesManager {
                     repository_url: `https://github.com/${fullRepoPath}`
                 });
                 
-                console.log(`Added custom repository placeholder: ${repo} (no token - limited info)`);
                 
                 // Update the dropdown
                 this.populateRepositoryFilter();
             }
             
         } catch (error) {
-            console.warn(`Failed to add custom repository ${fullRepoPath}:`, error);
             
-            // Add as placeholder anyway so the user can see it in the dropdown
-            this.repositories.push({
-                name: repo,
-                displayName: repo,
-                description: `Repository: ${fullRepoPath} (info unavailable)`,
-                defaultBranch: 'main',
-                openIssueCount: null,
-                totalIssueCount: null,
-                repository_url: `https://github.com/${fullRepoPath}`
-            });
-            
-            this.populateRepositoryFilter();
+            // Don't add non-existent repositories to avoid confusion
+            // The error will be handled in the calling function
+            throw new Error(`Repository "${fullRepoPath}" not found on GitHub`);
         }
     }
 
