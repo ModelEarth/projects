@@ -53,7 +53,7 @@ class GitHubIssuesManager {
             repo: this.defaultRepo,
             sort: 'updated',
             assignee: 'all',
-            state: 'open',
+            projectstatus: 'open',
             label: 'all',
             search: ''
         };
@@ -319,17 +319,17 @@ class GitHubIssuesManager {
                 <div class="filters-row filters-secondary-row additional-filters">
                     <div class="filter-group">
                         <button id="stateButton" class="filter-button">
-                            <i class="fas fa-exclamation-circle"></i> State: Open
+                            <i class="fas fa-exclamation-circle"></i> Active
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="dropdown-menu" id="stateDropdown">
-                            <div class="dropdown-item" data-state="open">
-                                <i class="fas fa-exclamation-circle"></i> Open Issues
+                            <div class="dropdown-item" data-projectstatus="open">
+                                <i class="fas fa-exclamation-circle"></i> Active Issues
                             </div>
-                            <div class="dropdown-item" data-state="closed">
+                            <div class="dropdown-item" data-projectstatus="closed">
                                 <i class="fas fa-check-circle"></i> Closed Issues
                             </div>
-                            <div class="dropdown-item" data-state="all">
+                            <div class="dropdown-item" data-projectstatus="all">
                                 <i class="fas fa-list"></i> All Issues
                             </div>
                         </div>
@@ -345,6 +345,12 @@ class GitHubIssuesManager {
                                 <i class="fas fa-tags"></i> All Labels
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="filter-group" style="margin-left: auto;">
+                        <button id="clearCacheButton" class="btn btn-secondary">
+                            Clear Cache
+                        </button>
                     </div>
                 </div>
 
@@ -780,6 +786,9 @@ class GitHubIssuesManager {
                 this.loadedAllRepositories = true;
                 console.log(`Loaded all ${this.repositories.length} repositories`);
                 
+                // Load issue counts for all repositories when explicitly loading all
+                await this.loadRepositoryIssueCountsForDisplayed();
+                
                 // Update UI
                 this.populateRepositoryFilter();
                 this.showNotification(`Loaded ${this.repositories.length} repositories`, 'success');
@@ -986,6 +995,21 @@ class GitHubIssuesManager {
         const rateLimitDiv = document.getElementById('rateLimitInfo');
         if (!rateLimitDiv) return;
 
+        // Always show invalid token message if present
+        if (this.invalidTokenMessage) {
+            rateLimitDiv.innerHTML = `
+                <div class="rate-limit-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="rate-limit-content">
+                        <div class="rate-limit-title">Invalid GitHub Token</div>
+                        <div class="rate-limit-details">${this.invalidTokenMessage}</div>
+                    </div>
+                </div>
+            `;
+            rateLimitDiv.style.display = 'block';
+            return; // Don't show rate limit info if token is invalid
+        }
+
         if (this.rateLimitInfo.remaining !== null) {
             const resetTime = new Date(this.rateLimitInfo.resetTime);
             const now = new Date();
@@ -1006,8 +1030,7 @@ class GitHubIssuesManager {
                     <div class="rate-limit-warning">
                         <i class="fas fa-clock"></i>
                         <div class="rate-limit-content">
-                            <div class="rate-limit-title">API Rate Limit Warning:</div>
-                            <div class="rate-limit-details">${remaining} requests remaining. Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})</div>
+                            <div class="rate-limit-title">API Rate Limit Warning: ${remaining} requests remaining. Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})</div>
                         </div>
                     </div>
                 `;
@@ -1018,8 +1041,7 @@ class GitHubIssuesManager {
                     <div class="rate-limit-info-display">
                         <i class="fas fa-info-circle"></i>
                         <div class="rate-limit-content">
-                            <div class="rate-limit-title">API Rate Limit:</div>
-                            <div class="rate-limit-details">${remaining} requests remaining (without token). ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}</div>
+                            <div class="rate-limit-title">API Rate Limit: ${remaining} requests remaining (without token). ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}</div>
                         </div>
                     </div>
                 `;
@@ -1033,6 +1055,25 @@ class GitHubIssuesManager {
         
         // Update the header text with current rate limit info
         this.updateTokenSectionUI();
+    }
+
+    showInvalidTokenMessage(message) {
+        const rateLimitDiv = document.getElementById('rateLimitInfo');
+        if (!rateLimitDiv) return;
+
+        // Store the invalid token message to show alongside rate limit info
+        this.invalidTokenMessage = `${message}. Please update your token above or remove it to use anonymous access (60 requests/hour).`;
+
+        rateLimitDiv.innerHTML = `
+            <div class="rate-limit-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="rate-limit-content">
+                    <div class="rate-limit-title">Invalid GitHub Token</div>
+                    <div class="rate-limit-details">${this.invalidTokenMessage}</div>
+                </div>
+            </div>
+        `;
+        rateLimitDiv.style.display = 'block';
     }
 
     startRateLimitTimer() {
@@ -1118,11 +1159,26 @@ class GitHubIssuesManager {
             this.filterAndDisplayIssues();
         });
 
-        this.setupDropdown('stateButton', 'stateDropdown', (value) => {
-            this.filters.state = value;
+        this.setupDropdown('stateButton', 'stateDropdown', async (value) => {
+            const previousState = this.filters.projectstatus;
+            this.filters.projectstatus = value;
             this.updateStateButton();
             this.updateHash();
             this.saveToCache();
+            
+            // If state changed, clear memory cache and reload issues with new state
+            if (previousState !== value) {
+                console.log(`Project status filter changed from ${previousState} to ${value}, clearing cache and reloading issues`);
+                this.repositoryIssues = {}; // Clear all cached issues
+                
+                // Reload issues for current repository with new state
+                if (this.filters.repo !== 'all') {
+                    await this.loadIssuesForRepository(this.filters.repo);
+                } else {
+                    await this.loadIssuesForAllRepositories();
+                }
+            }
+            
             this.filterAndDisplayIssues();
         });
 
@@ -1156,6 +1212,11 @@ class GitHubIssuesManager {
         // Clear all filters button
         document.getElementById('clearAllFiltersBtn').addEventListener('click', () => {
             this.clearAllFilters();
+        });
+        
+        // Clear cache button
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            this.clearAllCache();
         });
 
         // Toggle filters button
@@ -1266,6 +1327,29 @@ class GitHubIssuesManager {
         }
     }
 
+    showTokenSectionAndOpenTab() {
+        // First scroll to top and reveal auth section
+        const authSection = document.getElementById('authSection');
+        const subtitleDescription = document.getElementById('subtitleDescription');
+        
+        // Show the token section
+        if (authSection) {
+            authSection.style.display = 'block';
+        }
+        if (subtitleDescription) {
+            subtitleDescription.style.display = 'block';
+        }
+        
+        // Scroll to top smoothly to show the auth section
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+        
+        // Open the token URL in new tab immediately
+        window.open('https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org', '_blank');
+    }
+
     updateTokenSectionUI() {
         const toggleLink = document.getElementById('toggleTokenSection');
         const benefitText = document.getElementById('tokenBenefitText');
@@ -1285,19 +1369,14 @@ class GitHubIssuesManager {
             }
             
             benefitText.textContent = text;
-            
-            // Show the refresh time info
-            if (headerRefreshSpan) {
-                headerRefreshSpan.style.display = 'inline';
-            }
         } else {
             toggleLink.textContent = 'Add Your GitHub Token';
             benefitText.textContent = ' to increase API rate limits from 60 to 5,000 requests per hour';
-            
-            // Hide the refresh time info when no token
-            if (headerRefreshSpan) {
-                headerRefreshSpan.style.display = 'none';
-            }
+        }
+        
+        // Always keep refresh time info hidden (now sent to console)
+        if (headerRefreshSpan) {
+            headerRefreshSpan.style.display = 'none';
         }
         
         // Update the refresh time display
@@ -1318,6 +1397,9 @@ class GitHubIssuesManager {
             
             // Clear rate limit info since new token likely has better limits
             this.clearRateLimit();
+            
+            // Clear any invalid token message
+            this.invalidTokenMessage = null;
             
             this.showNotification('Token saved successfully', 'success');
             
@@ -1417,7 +1499,11 @@ class GitHubIssuesManager {
                 const cached = this.loadFromCache();
                 if (cached && cached.repositories && cached.repositories.length > 0 && cached.issues && cached.issues.length > 0) {
                     this.repositories = cached.repositories;
-                    this.allIssues = cached.issues;
+                    
+                    // Filter out any invalid issues from cached data
+                    const validCachedIssues = cached.issues.filter(issue => this.isValidIssue(issue));
+                    console.log(`Filtered main cache issues: ${validCachedIssues.length} valid out of ${cached.issues.length} total`);
+                    this.allIssues = validCachedIssues;
                     
                     // Set initial last_refreshed timestamp for cached issues that don't have it
                     this.allIssues.forEach(issue => {
@@ -1450,8 +1536,21 @@ class GitHubIssuesManager {
             
             // Load issues for repositories
             if (this.filters.repo !== 'all') {
-                this.updateLoadingStatus(`Loading issues for ${this.filters.repo}...`);
-                await this.loadIssuesForRepository(this.filters.repo);
+                // Check if the repository exists in our list
+                const repoExists = this.repositories.find(r => r.name === this.filters.repo);
+                if (repoExists) {
+                    this.updateLoadingStatus(`Loading issues for ${this.filters.repo}...`);
+                    await this.loadIssuesForRepository(this.filters.repo);
+                } else {
+                    console.warn(`Repository ${this.filters.repo} not found in loaded repositories. Available:`, this.repositories.map(r => r.name));
+                    // Reset to first available repository or 'projects' as fallback
+                    if (this.repositories.length > 0) {
+                        this.filters.repo = this.repositories[0].name;
+                        console.log(`Switched to repository: ${this.filters.repo}`);
+                        this.updateLoadingStatus(`Loading issues for ${this.filters.repo}...`);
+                        await this.loadIssuesForRepository(this.filters.repo);
+                    }
+                }
             } else {
                 // Load issues for all repositories
                 this.updateLoadingStatus('Loading issues for all repositories...');
@@ -1521,8 +1620,9 @@ class GitHubIssuesManager {
             // Fallback to CSV data - but without token, only show projects repo to conserve rate limits
             const csvRepos = await this.loadRepositoriesFromCSV();
             
-            if (!this.githubToken) {
+            if (!this.githubToken || this.invalidTokenMessage) {
                 // Filter to only show projects repo to avoid exhausting rate limits
+                // This includes both no token and invalid token cases
                 const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
                 if (projectsRepo) {
                     this.repositories = [{
@@ -1534,14 +1634,19 @@ class GitHubIssuesManager {
                         totalIssueCount: null,
                         repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`
                     }];
-                    console.log('Loaded only projects repo from CSV (no token - conserving rate limits)');
+                    console.log('Loaded only projects repo from CSV (no valid token - conserving rate limits)');
+                    
+                    // Show cache notification on localhost
+                    if (window.location.hostname === 'localhost') {
+                        this.showNotification('Repository list loaded from browser cache (localhost)', 'info');
+                    }
                 } else {
                     console.warn('Projects repo not found in CSV');
                     this.repositories = [];
                 }
-                this.loadedAllRepositories = false; // Don't load all without token
+                this.loadedAllRepositories = false; // Don't load all without valid token
             } else {
-                // With token, load all repos from CSV
+                // With valid token, load all repos from CSV
                 this.repositories = csvRepos.map(csvRepo => ({
                     name: csvRepo.repo_name,
                     displayName: csvRepo.display_name,
@@ -1554,6 +1659,11 @@ class GitHubIssuesManager {
                 
                 this.loadedAllRepositories = true; // CSV contains all available repos
                 console.log(`Loaded ${this.repositories.length} repositories from CSV`);
+                
+                // Show cache notification on localhost
+                if (window.location.hostname === 'localhost') {
+                    this.showNotification(`Repository list (${this.repositories.length} repos) loaded from browser cache (localhost)`, 'info');
+                }
             }
         }
 
@@ -1562,8 +1672,78 @@ class GitHubIssuesManager {
             this.filters.repo = 'projects';
         }
 
-        // Load issue counts for all repositories
-        await this.loadAllRepositoryIssueCounts();
+        // Only load issue counts for repositories we're actually showing
+        // This prevents burning through API requests for repos not in the dropdown
+        await this.loadRepositoryIssueCountsForDisplayed();
+    }
+
+    async loadRepositoryIssueCountsForDisplayed() {
+        // Only load issue counts for repositories that are actually in our dropdown
+        // This prevents burning through API requests for repositories not shown to users
+        const reposToLoad = this.repositories.map(repo => repo.name);
+        
+        if (reposToLoad.length === 0) {
+            console.log('No repositories to load issue counts for');
+            return;
+        }
+        
+        console.log(`Loading issue counts for ${reposToLoad.length} displayed repositories:`, reposToLoad);
+        
+        const cacheKey = `repo_issue_counts_${reposToLoad.join('_')}`;
+        const cacheTimeKey = `repo_issue_counts_${reposToLoad.join('_')}_time`;
+        
+        // Check cache first (valid for 5 minutes)
+        const cachedCounts = localStorage.getItem(cacheKey);
+        const cacheTime = localStorage.getItem(cacheTimeKey);
+        
+        if (cachedCounts && cacheTime) {
+            const age = Date.now() - parseInt(cacheTime);
+            const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+            
+            if (age < fiveMinutes) {
+                this.repositoryIssueCounts = JSON.parse(cachedCounts);
+                this.lastRefreshTime = new Date(parseInt(cacheTime));
+                console.log('Using cached repository issue counts:', this.repositoryIssueCounts);
+                this.updateRepositoryDropdown();
+                this.updateHeaderRefreshDisplay();
+                return;
+            }
+        }
+
+        try {
+            this.lastRefreshTime = new Date();
+            const counts = {};
+            
+            for (const repoName of reposToLoad) {
+                try {
+                    const openCount = await this.getRepositoryIssueCount(repoName, 'open');
+                    const closedCount = await this.getRepositoryIssueCount(repoName, 'closed');
+                    
+                    counts[repoName] = {
+                        open: openCount,
+                        closed: closedCount,
+                        total: openCount + closedCount
+                    };
+                    
+                    console.log(`${repoName}: ${openCount} open, ${closedCount} closed`);
+                } catch (error) {
+                    console.warn(`Error loading issue counts for ${repoName}:`, error);
+                    // Continue with other repositories
+                }
+            }
+            
+            this.repositoryIssueCounts = counts;
+
+            // Cache the results with repo-specific key
+            localStorage.setItem(cacheKey, JSON.stringify(counts));
+            localStorage.setItem(cacheTimeKey, Date.now().toString());
+
+            console.log('Finished loading repository issue counts for displayed repos, refresh time:', this.lastRefreshTime);
+            this.updateRepositoryDropdown();
+            this.updateHeaderRefreshDisplay();
+        } catch (error) {
+            console.error('Error loading repository issue counts for displayed repos:', error);
+        }
     }
 
     async loadAllRepositoryIssueCounts() {
@@ -1677,12 +1857,17 @@ class GitHubIssuesManager {
             return this.repositoryIssues[repoName];
         }
         
-        // Check persistent cache for this repository
+        // Check persistent cache for this repository with current state
         if (!forceRefresh) {
-            const cachedData = this.loadRepositoryFromCache(repoName);
+            const cachedData = this.loadRepositoryFromCache(repoName, this.filters.projectstatus);
             if (cachedData) {
-                console.log(`Using cached data for repository: ${repoName}`);
-                this.repositoryIssues[repoName] = cachedData.issues;
+                console.log(`Using cached data for repository: ${repoName} (projectstatus: ${this.filters.projectstatus})`);
+                
+                // Filter out any invalid issues from cached data
+                const validCachedIssues = cachedData.issues.filter(issue => this.isValidIssue(issue));
+                console.log(`Filtered cached issues: ${validCachedIssues.length} valid out of ${cachedData.issues.length} total`);
+                
+                this.repositoryIssues[repoName] = validCachedIssues;
                 
                 // Update repository object with cached counts
                 const repo = this.repositories.find(r => r.name === repoName);
@@ -1767,7 +1952,7 @@ class GitHubIssuesManager {
             this.saveRepositoryToCache(repoName, issues, {
                 openIssueCount: repo ? repo.openIssueCount : 0,
                 totalIssueCount: repo ? repo.totalIssueCount : 0
-            }, apiResponse);
+            }, apiResponse, this.filters.projectstatus);
             
             return issues;
         } catch (error) {
@@ -1854,26 +2039,54 @@ class GitHubIssuesManager {
 
 
 
+    isValidIssue(issue) {
+        // Check if issue has required fields and is not empty/invalid
+        return issue && 
+               typeof issue.id === 'number' && 
+               typeof issue.number === 'number' &&
+               typeof issue.title === 'string' && 
+               issue.title.trim().length > 0 &&
+               typeof issue.state === 'string' &&
+               (issue.state === 'open' || issue.state === 'closed') &&
+               issue.created_at &&
+               issue.html_url;
+    }
+
     async fetchRepositoryIssues(repoName) {
         const issues = [];
         let page = 1;
         let hasMore = true;
         let lastApiResponse = null; // Track the last successful API response for caching decisions
 
+        // Determine what state to fetch based on current filter
+        // Only fetch 'all' if user specifically wants closed or all issues
+        const stateToFetch = this.filters.projectstatus === 'all' ? 'all' : 
+                           this.filters.projectstatus === 'closed' ? 'closed' : 'open';
+
+        console.log(`Fetching ${stateToFetch} issues for ${repoName} (filter: ${this.filters.projectstatus})`);
+
         while (hasMore) {
             try {
                 const apiResult = await this.apiRequestWithMetadata(
-                    `/repos/${this.owner}/${repoName}/issues?state=all&per_page=100&page=${page}`
+                    `/repos/${this.owner}/${repoName}/issues?state=${stateToFetch}&per_page=100&page=${page}`
                 );
                 
                 lastApiResponse = apiResult.metadata;
                 const response = apiResult.data;
                 
+                console.log(`API response for ${repoName} page ${page}:`, {
+                    responseLength: response.length,
+                    stateRequested: stateToFetch,
+                    rateLimitRemaining: lastApiResponse.rateLimitRemaining,
+                    hasToken: !!this.githubToken
+                });
+                
                 if (response.length === 0) {
                     hasMore = false;
                 } else {
-                    // Filter out pull requests (they appear in issues endpoint)
-                    const actualIssues = response.filter(issue => !issue.pull_request);
+                    // Filter out pull requests and invalid issues
+                    const actualIssues = response.filter(issue => !issue.pull_request && this.isValidIssue(issue));
+                    console.log(`Found ${actualIssues.length} valid issues (${response.length - actualIssues.length} pull requests/invalid issues filtered out)`);
                     
                     // Enrich each issue with additional data
                     for (const issue of actualIssues) {
@@ -1950,6 +2163,14 @@ class GitHubIssuesManager {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             
+            // Handle invalid token (401 Unauthorized)
+            if (response.status === 401) {
+                this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
+                const error = new Error(`GitHub API Error: ${response.status} - Invalid token`);
+                error.response = metadata;
+                throw error;
+            }
+            
             // Handle rate limit exceeded
             if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
                 this.rateLimitInfo.startTime = new Date();
@@ -2001,6 +2222,12 @@ class GitHubIssuesManager {
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
             
+            // Handle invalid token (401 Unauthorized)
+            if (response.status === 401) {
+                this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
+                throw new Error(`GitHub API Error: ${response.status} - Invalid token`);
+            }
+            
             // Handle rate limit exceeded
             if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
                 this.rateLimitInfo.startTime = new Date();
@@ -2043,6 +2270,9 @@ class GitHubIssuesManager {
         this.updateRateLimitDisplay();
         this.updateCacheStatusDisplay();
         this.filterAndDisplayIssues();
+        
+        // Update filter UI after repositories are loaded to ensure dropdown selections work
+        this.updateFilterUI();
         
         // Clear rate limit exceeded flag if we successfully loaded data
         if (this.allIssues.length > 0 || this.repositories.length > 0) {
@@ -2176,26 +2406,22 @@ class GitHubIssuesManager {
     }
 
     updateHeaderRefreshDisplay() {
-        const headerRefreshTimeSpan = document.getElementById('headerRefreshTime');
-        const headerLastRefreshTime = document.getElementById('headerLastRefreshTime');
-        
-        if (this.lastRefreshTime && headerRefreshTimeSpan) {
+        // Send refresh time to console instead of displaying on page
+        if (this.lastRefreshTime) {
             const timeString = this.lastRefreshTime.toLocaleTimeString([], { 
                 hour: 'numeric', 
                 minute: '2-digit', 
                 hour12: true 
             });
-            headerRefreshTimeSpan.textContent = timeString;
-            
-            // Show the refresh time display when we have a date
-            if (headerLastRefreshTime) {
-                headerLastRefreshTime.style.display = 'inline';
-            }
+            console.log(`Issue counts last updated: ${timeString}`);
         } else {
-            // Hide the refresh time display when there's no date (Never)
-            if (headerLastRefreshTime) {
-                headerLastRefreshTime.style.display = 'none';
-            }
+            console.log('Issue counts last updated: Never');
+        }
+        
+        // Keep the header refresh time display hidden
+        const headerLastRefreshTime = document.getElementById('headerLastRefreshTime');
+        if (headerLastRefreshTime) {
+            headerLastRefreshTime.style.display = 'none';
         }
     }
 
@@ -2294,8 +2520,8 @@ class GitHubIssuesManager {
                 return false;
             }
 
-            // State filter
-            if (this.filters.state !== 'all' && issue.state !== this.filters.state) {
+            // Project status filter
+            if (this.filters.projectstatus !== 'all' && issue.state !== this.filters.projectstatus) {
                 return false;
             }
 
@@ -2367,13 +2593,27 @@ class GitHubIssuesManager {
         issuesList.innerHTML = '';
 
         if (pageIssues.length === 0) {
-            issuesList.innerHTML = `
-                <div class="no-issues">
-                    <i class="fas fa-search"></i>
-                    <h3>No issues found</h3>
-                    <p>Try adjusting your filters or search terms.</p>
-                </div>
-            `;
+            // Show token prompt if no token available, otherwise show regular no issues message
+            if (!this.githubToken || this.invalidTokenMessage) {
+                issuesList.innerHTML = `
+                    <div class="no-issues">
+                        <i class="fas fa-search"></i>
+                        <h3>Add your token</h3>
+                        <p>Access more repositories and increase API rate limits</p>
+                        <button class="btn btn-primary" onclick="issuesManager.showTokenSectionAndOpenTab()" style="margin-top: 10px;">
+                            Get Your Token
+                        </button>
+                    </div>
+                `;
+            } else {
+                issuesList.innerHTML = `
+                    <div class="no-issues">
+                        <i class="fas fa-search"></i>
+                        <h3>No issues found</h3>
+                        <p>Try adjusting your filters or search terms.</p>
+                    </div>
+                `;
+            }
         } else {
             pageIssues.forEach(issue => {
                 const issueElement = this.createIssueElement(issue);
@@ -2841,18 +3081,99 @@ class GitHubIssuesManager {
         window.history.replaceState(null, null, window.location.pathname + hash);
     }
 
-    loadFromHash() {
+    async loadFromHash() {
         const hash = window.location.hash.substring(1);
         if (!hash) return;
 
         const params = new URLSearchParams(hash);
+        let customRepo = null;
+        
         params.forEach((value, key) => {
-            if (this.filters.hasOwnProperty(key)) {
+            if (key === 'repo') {
+                // Handle custom repository from URL hash
+                customRepo = value;
+                this.filters[key] = value;
+            } else if (this.filters.hasOwnProperty(key)) {
                 this.filters[key] = value;
             }
         });
 
+        // If we have a custom repo from the hash, add it to the repository list
+        if (customRepo && customRepo !== 'all') {
+            await this.addCustomRepositoryFromHash(customRepo);
+        }
+
         this.updateFilterUI();
+    }
+
+    async addCustomRepositoryFromHash(repoName) {
+        // Check if repository already exists in the list
+        const existingRepo = this.repositories.find(r => r.name === repoName);
+        if (existingRepo) {
+            return; // Already exists
+        }
+
+        console.log(`Adding custom repository from URL hash: ${repoName}`);
+
+        // If repo doesn't contain a slash, assume it's in the modelearth account
+        const fullRepoPath = repoName.includes('/') ? repoName : `${this.owner}/${repoName}`;
+        const [owner, repo] = fullRepoPath.split('/');
+
+        try {
+            // Try to fetch repository info from GitHub API
+            if (this.githubToken) {
+                const repoInfo = await this.apiRequest(`/repos/${owner}/${repo}`);
+                
+                // Add to repositories list
+                this.repositories.push({
+                    name: repo,
+                    displayName: repoInfo.name,
+                    description: repoInfo.description || '',
+                    defaultBranch: repoInfo.default_branch || 'main',
+                    openIssueCount: repoInfo.open_issues_count || null,
+                    totalIssueCount: null,
+                    repository_url: repoInfo.html_url
+                });
+                
+                console.log(`Successfully added custom repository: ${repo}`);
+                
+                // Update the dropdown to include the new repository
+                this.populateRepositoryFilter();
+                
+            } else {
+                // No token - add repository as placeholder
+                this.repositories.push({
+                    name: repo,
+                    displayName: repo,
+                    description: `Custom repository: ${fullRepoPath}`,
+                    defaultBranch: 'main',
+                    openIssueCount: null,
+                    totalIssueCount: null,
+                    repository_url: `https://github.com/${fullRepoPath}`
+                });
+                
+                console.log(`Added custom repository placeholder: ${repo} (no token - limited info)`);
+                
+                // Update the dropdown
+                this.populateRepositoryFilter();
+            }
+            
+        } catch (error) {
+            console.warn(`Failed to add custom repository ${fullRepoPath}:`, error);
+            
+            // Add as placeholder anyway so the user can see it in the dropdown
+            this.repositories.push({
+                name: repo,
+                displayName: repo,
+                description: `Repository: ${fullRepoPath} (info unavailable)`,
+                defaultBranch: 'main',
+                openIssueCount: null,
+                totalIssueCount: null,
+                repository_url: `https://github.com/${fullRepoPath}`
+            });
+            
+            this.populateRepositoryFilter();
+        }
     }
 
     updateFilterUI() {
@@ -2902,12 +3223,13 @@ class GitHubIssuesManager {
     updateStateButton() {
         const button = document.getElementById('stateButton');
         const stateNames = {
-            open: 'Open',
+            open: 'Active',
             closed: 'Closed',
             all: 'All'
         };
+        const displayText = stateNames[this.filters.projectstatus] || 'Active';
         button.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i> State: ${stateNames[this.filters.state]}
+            <i class="fas fa-exclamation-circle"></i> ${displayText}
             <i class="fas fa-chevron-down"></i>
         `;
     }
@@ -3217,9 +3539,9 @@ class GitHubIssuesManager {
     }
 
     // Repository-specific cache methods
-    loadRepositoryFromCache(repoName) {
+    loadRepositoryFromCache(repoName, projectstatus = 'open') {
         try {
-            const cacheKey = `github_repo_${repoName}_cache`;
+            const cacheKey = `github_repo_${repoName}_${projectstatus}_cache`;
             const cached = localStorage.getItem(cacheKey);
             if (!cached) return null;
             
@@ -3263,7 +3585,7 @@ class GitHubIssuesManager {
      * - Ensures users always see real-time data when repositories actually have issues
      * - No risk of stale empty cache hiding legitimate issues
      */
-    saveRepositoryToCache(repoName, issues, metadata, apiResponse = null) {
+    saveRepositoryToCache(repoName, issues, metadata, apiResponse = null, projectstatus = 'open') {
         try {
             // Defensive caching: Only cache when we're confident the data is legitimate
             const shouldCache = this.shouldCacheEmptyResult(issues, apiResponse);
@@ -3272,7 +3594,7 @@ class GitHubIssuesManager {
                 return;
             }
 
-            const cacheKey = `github_repo_${repoName}_cache`;
+            const cacheKey = `github_repo_${repoName}_${projectstatus}_cache`;
             const cacheData = {
                 issues: issues,
                 metadata: metadata,
@@ -3389,7 +3711,7 @@ class GitHubIssuesManager {
         // Reset only filter buttons to default values (keep repo and search unchanged)
         this.filters.sort = 'updated';
         this.filters.assignee = 'all';
-        this.filters.state = 'open';
+        this.filters.projectstatus = 'open';
         this.filters.label = 'all';
 
         // Update filter buttons
@@ -3415,6 +3737,29 @@ class GitHubIssuesManager {
         this.updateClearAllFiltersVisibility();
     }
 
+    clearAllCache() {
+        // Clear all cached repository issues
+        this.repositoryIssues = {};
+        this.repositoryIssueCounts = {};
+        
+        // Clear localStorage cache
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('github_issues_') || key.startsWith('github_issue_counts_')) {
+                localStorage.removeItem(key);
+            }
+        });
+        
+        // Show notification
+        this.showNotification('Cache cleared successfully', 'success');
+        
+        // Reload current repository data
+        if (this.filters.repo && this.filters.repo !== 'all') {
+            this.loadIssuesForRepository(this.filters.repo);
+        } else {
+            this.loadData(true); // Force refresh all data
+        }
+    }
+
     // Check if any filter buttons are different from defaults and show/hide Clear All Filters button
     updateClearAllFiltersVisibility() {
         const clearAllBtn = document.getElementById('clearAllFiltersBtn');
@@ -3424,7 +3769,7 @@ class GitHubIssuesManager {
         const defaults = {
             sort: 'updated',
             assignee: 'all',
-            state: 'open',
+            projectstatus: 'open',
             label: 'all'
         };
         
