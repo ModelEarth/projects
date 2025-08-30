@@ -1,0 +1,3 @@
+[submodule "products-data"]
+	path = products-data
+	url = https://github.com/modelearth/products-data
