@@ -24,8 +24,8 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 ### Webroot for Claude Code CLI
 
-[Webroot setup](https://model.earth/webroot/) - Use simple "pull" and "push" commands to send PRs from your work in submodules.  
-[CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules
+[Webroot setup](https://model.earth/webroot/) - Use simple "pull" and "push" commands to send PRs from your work.  
+[CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules.
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
