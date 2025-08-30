@@ -19,21 +19,22 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 4. NullSchool Maps + NISAR satellite data to visualize earth surface movements
 -->
 
+<a href="https://github.com/modelearth/projects/issues/" style="float:right" target="_blank">Projects List on Github</a>
 # Active Projects
 
 ### Webroot for Claude Code CLI
 
-[Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
-[CodeChat](../codechat/) - RAG training documentation, after overview of webroot submodule repos
+[Webroot setup](https://model.earth/webroot/) - Use simple "pull" and "push" commands to send PRs from your work in submodules.  
+[CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
 
 ### New IO Data Pipeline
 
-[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Report](../profile/footprint/sample.html)
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Footprint Report](../profile/footprint/sample.html) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
-
+[US State Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
 ### PartnerTools for Teams
 
@@ -80,9 +81,9 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-TO DO: [Moving Javascript Timelines from Google Data Commons API]() <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+TO DO: [Moving Javascript Timelines from Google Data Commons API](https://model.earth/data-commons/docs/data/) <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
-We're pulling images and video via [our FeedPlayer](../feed) which can be pointed at a Github repo or any API.
+We're pulling images and video via [our FeedPlayer](../feed) which can be updated to point at any Github repo or API.
 
 <!--
 **More Data Commons Visualization Projects**
