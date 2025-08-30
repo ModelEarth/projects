@@ -132,18 +132,15 @@ class GitHubIssuesManager {
 
         // Always default to 'projects' repo for ModelEarth instead of loading all repos
         if (this.multiRepoRoots.includes(this.currentFolder)) {
-            console.log(`Detected multi-repo root '${this.currentFolder}', defaulting to 'projects' repository`);
             return 'projects';
         }
 
         // If current folder exists and is not a multi-repo root, use it as default
         if (this.currentFolder) {
-            console.log(`Detected current folder '${this.currentFolder}', using as default repository`);
             return this.currentFolder;
         }
 
         // Fallback to 'projects' if no folder detected
-        console.log('No folder detected, defaulting to projects repository');
         return 'projects';
     }
 
@@ -542,7 +539,6 @@ class GitHubIssuesManager {
             const resetTime = new Date(this.rateLimitInfo.resetTime).getTime();
             // If reset time has passed, clear the old info
             if (now > resetTime) {
-                console.log('Clearing expired rate limit info');
                 this.clearRateLimit();
             }
         }
@@ -555,7 +551,6 @@ class GitHubIssuesManager {
         if (this.githubToken) {
             this.startAutoRefreshTimer();
         } else {
-            console.log('Auto-refresh disabled: No GitHub token available to avoid rate limit exhaustion');
         }
     }
 
@@ -568,6 +563,56 @@ class GitHubIssuesManager {
         // Could add more detection logic here
     }
 
+    async loadRepositoriesWithIssues() {
+        
+        // Start with projects repo as default and highest priority
+        const repositoriesWithIssues = [];
+        const csvRepos = await this.loadRepositoriesFromCSV();
+        
+        // Always add projects repo first (default selection)
+        const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
+        if (projectsRepo) {
+            repositoriesWithIssues.push({
+                name: projectsRepo.repo_name,
+                displayName: projectsRepo.display_name,
+                description: projectsRepo.description,
+                defaultBranch: projectsRepo.default_branch,
+                openIssueCount: null, // Will be loaded
+                totalIssueCount: null,
+                repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`,
+                priority: 1 // Highest priority for lazy loading
+            });
+        }
+        
+        // Check other repos for issues (excluding projects since we already added it)
+        const otherRepos = csvRepos.filter(repo => repo.repo_name !== 'projects');
+        
+        for (const repo of otherRepos) {
+            try {
+                // Quick check if repo has any open issues (most important for active repos)
+                const openCount = await this.getRepositoryIssueCount(repo.repo_name, 'open');
+                
+                // For filtering purposes, we only need to know if there are any issues
+                // Open issues are sufficient to determine if repo should be included
+                if (openCount > 0) {
+                    repositoriesWithIssues.push({
+                        name: repo.repo_name,
+                        displayName: repo.display_name,
+                        description: repo.description,
+                        defaultBranch: repo.default_branch,
+                        openIssueCount: openCount, // Set the known open count
+                        totalIssueCount: null, // Will be determined when issues are loaded
+                        repository_url: `https://github.com/${this.owner}/${repo.repo_name}`,
+                        priority: 2 // Lower priority for lazy loading
+                    });
+                }
+            } catch (error) {
+            }
+        }
+        
+        return repositoriesWithIssues;
+    }
+
     async loadRepositoriesFromCSV() {
         try {
             const response = await fetch(this.getHubPath());
@@ -575,9 +620,7 @@ class GitHubIssuesManager {
                 throw new Error(`CSV fetch failed: ${response.status}`);
             }
             const csvText = await response.text();
-            console.log('📊 CSV content:', csvText);
             const parsed = this.parseCSV(csvText);
-            console.log('📊 Parsed CSV data:', parsed);
             return parsed;
         } catch (error) {
             console.error('Error loading repositories from CSV:', error);
@@ -633,7 +676,6 @@ class GitHubIssuesManager {
             const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours
             
             if (age < twentyFourHours) {
-                console.log(`Using cached entity type for ${this.owner}: ${cachedType}`);
                 return cachedType;
             }
         }
@@ -643,7 +685,6 @@ class GitHubIssuesManager {
             // First try organization endpoint
             try {
                 await this.apiRequest(`/orgs/${this.owner}`);
-                console.log(`${this.owner} is an organization`);
                 localStorage.setItem(cacheKey, 'org');
                 localStorage.setItem(cacheTimeKey, Date.now().toString());
                 return 'org';
@@ -651,7 +692,6 @@ class GitHubIssuesManager {
                 // If org fails, try user endpoint
                 try {
                     await this.apiRequest(`/users/${this.owner}`);
-                    console.log(`${this.owner} is a user account`);
                     localStorage.setItem(cacheKey, 'user');
                     localStorage.setItem(cacheTimeKey, Date.now().toString());
                     return 'user';
@@ -682,21 +722,18 @@ class GitHubIssuesManager {
             const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
             
             if (age < oneHour) {
-                console.log(`Using cached GitHub repositories (${isLoadingAll ? 'all' : specificRepos.join(', ')})`);
                 return JSON.parse(cachedData);
             }
         }
 
         // Fetch fresh data from GitHub API
         if (!this.githubToken) {
-            console.log('No GitHub token available for fetching repositories');
             return null;
         }
 
         const repos = [];
 
         if (isLoadingAll) {
-            console.log('Fetching all repositories from GitHub API...');
             
             // Detect if this is an organization or user account
             const entityType = await this.detectEntityType();
@@ -727,9 +764,7 @@ class GitHubIssuesManager {
                 if (pageRepos.length < perPage) break; // Last page
             }
 
-            console.log(`Fetched ${repos.length} repositories with issues from GitHub API`);
         } else {
-            console.log(`Fetching specific repositories from GitHub API: ${specificRepos.join(', ')}`);
             
             // Fetch specific repositories
             for (const repoName of specificRepos) {
@@ -750,7 +785,6 @@ class GitHubIssuesManager {
                 }
             }
 
-            console.log(`Fetched ${repos.length} specific repositories from GitHub API`);
         }
 
         // Cache the results
@@ -762,11 +796,9 @@ class GitHubIssuesManager {
 
     async loadAllRepositories() {
         if (this.loadedAllRepositories) {
-            console.log('All repositories already loaded');
             return;
         }
 
-        console.log('Loading all repositories...');
         this.updateLoadingStatus('Loading all repositories...');
         
         try {
@@ -784,7 +816,6 @@ class GitHubIssuesManager {
                 }));
                 
                 this.loadedAllRepositories = true;
-                console.log(`Loaded all ${this.repositories.length} repositories`);
                 
                 // Load issue counts for all repositories when explicitly loading all
                 await this.loadRepositoryIssueCountsForDisplayed();
@@ -812,7 +843,6 @@ class GitHubIssuesManager {
             const oneHour = 60 * 60 * 1000;
             
             if (age < oneHour) {
-                console.log('Using cached repository count');
                 return parseInt(cachedCount);
             }
         }
@@ -850,7 +880,6 @@ class GitHubIssuesManager {
                 actualCount = Math.round(totalRepos * percentage);
             }
             
-            console.log(`Estimated ${actualCount} repositories with issues`);
             
             // Cache the result
             localStorage.setItem(cacheKey, actualCount.toString());
@@ -918,7 +947,6 @@ class GitHubIssuesManager {
     setupCacheExpirationTimer(timeUntilExpiration) {
         // Don't set auto-refresh timer without a token
         if (!this.githubToken) {
-            console.log('Cache expiration timer disabled: No GitHub token available');
             return;
         }
         
@@ -929,11 +957,9 @@ class GitHubIssuesManager {
 
         // Set new timer for auto-refresh
         this.cacheExpireTimer = setTimeout(() => {
-            console.log('Cache expired, auto-refreshing...');
             this.loadData(true); // Force refresh
         }, timeUntilExpiration);
 
-        console.log(`Cache expiration timer set for ${Math.round(timeUntilExpiration / 60000)} minutes`);
     }
 
     updateCacheStatusDisplay() {
@@ -1109,7 +1135,7 @@ class GitHubIssuesManager {
             }
             
             
-            // Warn user about rate limits when selecting "All Repositories" without token
+            // Warn user about rate limits when selecting "All Loaded Issues" without token
             if (selectedValue === 'all' && !this.githubToken) {
                 const remaining = this.rateLimitInfo.remaining || 60; // Default rate limit without token
                 const warning = `⚠️ Warning: Loading all repositories without a GitHub token may exhaust your remaining ${remaining} API requests.\n\nEnter your GitHub Token above for more robust requests (5,000/hour vs 60/hour).\n\nProceed anyway?`;
@@ -1128,6 +1154,21 @@ class GitHubIssuesManager {
             
             // Load issues for the selected repository if not already loaded
             if (this.filters.repo !== 'all' && !this.repositoryIssues[this.filters.repo]) {
+                // Check if repository exists in our list, if not try to add it dynamically
+                const repoExists = this.repositories.find(r => r.name === this.filters.repo);
+                if (!repoExists) {
+                    try {
+                        await this.addRepositoryDynamically(this.filters.repo);
+                    } catch (error) {
+                        console.error(`Failed to add repository ${this.filters.repo}:`, error);
+                        this.showNotification(`Repository "${this.filters.repo}" not found or has no issues`, 'error');
+                        // Reset to projects repo
+                        this.filters.repo = 'projects';
+                        e.target.value = 'projects';
+                        return;
+                    }
+                }
+                
                 await this.loadIssuesForRepository(this.filters.repo);
                 this.updateRepositoryDropdownCounts();
             } else if (this.filters.repo === 'all') {
@@ -1168,7 +1209,6 @@ class GitHubIssuesManager {
             
             // If state changed, clear memory cache and reload issues with new state
             if (previousState !== value) {
-                console.log(`Project status filter changed from ${previousState} to ${value}, clearing cache and reloading issues`);
                 this.repositoryIssues = {}; // Clear all cached issues
                 
                 // Reload issues for current repository with new state
@@ -1455,7 +1495,6 @@ class GitHubIssuesManager {
                 
                 this.showNotification('Issues refreshed successfully!', 'success');
             } else {
-                console.log('No refresh needed - issues appear to be loaded already');
             }
         } catch (error) {
             console.error('Error refreshing issues after token save:', error);
@@ -1502,7 +1541,6 @@ class GitHubIssuesManager {
                     
                     // Filter out any invalid issues from cached data
                     const validCachedIssues = cached.issues.filter(issue => this.isValidIssue(issue));
-                    console.log(`Filtered main cache issues: ${validCachedIssues.length} valid out of ${cached.issues.length} total`);
                     this.allIssues = validCachedIssues;
                     
                     // Set initial last_refreshed timestamp for cached issues that don't have it
@@ -1524,7 +1562,6 @@ class GitHubIssuesManager {
                         }
                     });
                     
-                    console.log(`Loaded ${this.repositories.length} repositories and ${this.allIssues.length} issues from cache`);
                     this.updateUI();
                     this.showLoading(false);
                     return;
@@ -1546,7 +1583,6 @@ class GitHubIssuesManager {
                     // Reset to first available repository or 'projects' as fallback
                     if (this.repositories.length > 0) {
                         this.filters.repo = this.repositories[0].name;
-                        console.log(`Switched to repository: ${this.filters.repo}`);
                         this.updateLoadingStatus(`Loading issues for ${this.filters.repo}...`);
                         await this.loadIssuesForRepository(this.filters.repo);
                     }
@@ -1580,9 +1616,8 @@ class GitHubIssuesManager {
         // Try to load repositories from GitHub API first if we have a token
         let allRepos = null;
         if (this.githubToken) {
-            // For fast initial load, only fetch the projects repo
-            const primaryRepos = ['projects'];
-            allRepos = await this.loadRepositoriesFromGitHub(primaryRepos);
+            // Load only ModelEarth repositories that have at least one issue
+            allRepos = await this.loadRepositoriesWithIssues();
             this.loadedAllRepositories = false;
             
             // Get total repository count for UI display
@@ -1593,7 +1628,6 @@ class GitHubIssuesManager {
             }
         } else {
             // Without token, only load projects repo from CSV to avoid rate limiting
-            console.log('No GitHub token available - loading only projects repo from CSV to conserve rate limits');
             
             // Initialize rate limit display for anonymous users (60 requests/hour)
             if (this.rateLimitInfo.remaining === null) {
@@ -1604,18 +1638,8 @@ class GitHubIssuesManager {
         }
 
         if (allRepos && allRepos.length > 0) {
-            // Use GitHub API data
-            this.repositories = allRepos.map(apiRepo => ({
-                name: apiRepo.repo_name,
-                displayName: apiRepo.display_name,
-                description: apiRepo.description,
-                defaultBranch: apiRepo.default_branch,
-                openIssueCount: apiRepo.open_issues_count,
-                totalIssueCount: null,
-                repository_url: apiRepo.html_url || `https://github.com/${this.owner}/${apiRepo.repo_name}`
-            }));
-            
-            console.log(`Loaded ${this.repositories.length} repositories from GitHub API`);
+            // Use repositories with issues data (already in correct format)
+            this.repositories = allRepos;
         } else {
             // Fallback to CSV data - but without token, only show projects repo to conserve rate limits
             const csvRepos = await this.loadRepositoriesFromCSV();
@@ -1634,7 +1658,6 @@ class GitHubIssuesManager {
                         totalIssueCount: null,
                         repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`
                     }];
-                    console.log('Loaded only projects repo from CSV (no valid token - conserving rate limits)');
                     
                     // Show cache notification on localhost
                     if (window.location.hostname === 'localhost') {
@@ -1646,35 +1669,130 @@ class GitHubIssuesManager {
                 }
                 this.loadedAllRepositories = false; // Don't load all without valid token
             } else {
-                // With valid token, load all repos from CSV
-                this.repositories = csvRepos.map(csvRepo => ({
-                    name: csvRepo.repo_name,
-                    displayName: csvRepo.display_name,
-                    description: csvRepo.description,
-                    defaultBranch: csvRepo.default_branch,
-                    openIssueCount: null, // Will be loaded on demand
-                    totalIssueCount: null,
-                    repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`
-                }));
-                
-                this.loadedAllRepositories = true; // CSV contains all available repos
-                console.log(`Loaded ${this.repositories.length} repositories from CSV`);
-                
-                // Show cache notification on localhost
-                if (window.location.hostname === 'localhost') {
-                    this.showNotification(`Repository list (${this.repositories.length} repos) loaded from browser cache (localhost)`, 'info');
+                // With valid token but loadRepositoriesWithIssues failed/returned empty
+                // This should not happen - fall back to projects repo only for safety
+                console.warn('loadRepositoriesWithIssues returned empty - falling back to projects repo only');
+                const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
+                if (projectsRepo) {
+                    this.repositories = [{
+                        name: projectsRepo.repo_name,
+                        displayName: projectsRepo.display_name,
+                        description: projectsRepo.description,
+                        defaultBranch: projectsRepo.default_branch,
+                        openIssueCount: null, // Will be loaded on demand
+                        totalIssueCount: null,
+                        repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`
+                    }];
+                } else {
+                    this.repositories = [];
                 }
+                this.loadedAllRepositories = false;
             }
         }
 
-        // Default to "projects" repository instead of loading all repositories
-        if (this.githubToken && this.filters.repo === 'modelearth') {
+        // Set projects as default selection if no specific repo is set
+        if (this.githubToken && (this.filters.repo === 'modelearth' || this.filters.repo === 'all')) {
             this.filters.repo = 'projects';
         }
+        
+        // Start lazy loading: first load projects repo issues, then others in background
+        if (this.githubToken) {
+            await this.startLazyLoading();
+        } else {
+            // Only load issue counts for repositories we're actually showing
+            // This prevents burning through API requests for repos not in the dropdown
+            await this.loadRepositoryIssueCountsForDisplayed();
+        }
+    }
 
-        // Only load issue counts for repositories we're actually showing
-        // This prevents burning through API requests for repos not in the dropdown
-        await this.loadRepositoryIssueCountsForDisplayed();
+    async startLazyLoading() {
+        
+        // Step 1: Immediately load and display projects repo issues
+        const projectsRepo = this.repositories.find(r => r.name === 'projects');
+        if (projectsRepo && this.filters.repo === 'projects') {
+            try {
+                await this.loadIssuesForRepository('projects');
+                this.updateRepositoryDropdownCounts();
+                this.filterAndDisplayIssues();
+                
+                // Show immediate feedback to user
+                this.showNotification('Projects issues loaded. Loading other repositories in background...', 'info');
+            } catch (error) {
+                console.error('Error loading projects repo:', error);
+            }
+        }
+        
+        // Step 2: Start background loading of other repositories
+        setTimeout(() => this.lazyLoadOtherRepositories(), 100);
+    }
+    
+    async lazyLoadOtherRepositories() {
+        
+        // Get repositories sorted by priority (projects first, others second)
+        const otherRepos = this.repositories
+            .filter(r => r.name !== 'projects')
+            .sort((a, b) => (a.priority || 2) - (b.priority || 2));
+        
+        let loadedCount = 1; // projects already loaded
+        
+        for (const repo of otherRepos) {
+            try {
+                // Add small delay between loads to prevent overwhelming the API
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                await this.loadIssuesForRepository(repo.name);
+                loadedCount++;
+                
+                // Update UI progressively
+                this.updateRepositoryDropdownCounts();
+                
+                // Update progress in console
+                
+            } catch (error) {
+            }
+        }
+        
+        this.showNotification(`All ${loadedCount} repositories loaded successfully`, 'success');
+    }
+
+    async addRepositoryDynamically(repoName) {
+        
+        // First check if it exists in the full CSV list
+        const csvRepos = await this.loadRepositoriesFromCSV();
+        const csvRepo = csvRepos.find(repo => repo.repo_name === repoName);
+        
+        if (!csvRepo) {
+            throw new Error(`Repository ${repoName} not found in ModelEarth organization`);
+        }
+        
+        // Check if it has any open issues
+        try {
+            const openCount = await this.getRepositoryIssueCount(repoName, 'open');
+            
+            if (openCount === 0) {
+                throw new Error(`Repository ${repoName} has no open issues`);
+            }
+            
+            // Add to repositories list
+            this.repositories.push({
+                name: csvRepo.repo_name,
+                displayName: csvRepo.display_name,
+                description: csvRepo.description,
+                defaultBranch: csvRepo.default_branch,
+                openIssueCount: openCount,
+                totalIssueCount: null, // Will be determined when issues are loaded
+                repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`,
+                priority: 3 // Lower priority for dynamically added repos
+            });
+            
+            // Update dropdown
+            this.populateRepositoryFilter();
+            
+            this.showNotification(`Added repository "${repoName}" with ${openCount} open issues`, 'success');
+            
+        } catch (error) {
+            throw new Error(`Repository ${repoName} not accessible or has no issues`);
+        }
     }
 
     async loadRepositoryIssueCountsForDisplayed() {
@@ -1683,11 +1801,9 @@ class GitHubIssuesManager {
         const reposToLoad = this.repositories.map(repo => repo.name);
         
         if (reposToLoad.length === 0) {
-            console.log('No repositories to load issue counts for');
             return;
         }
         
-        console.log(`Loading issue counts for ${reposToLoad.length} displayed repositories:`, reposToLoad);
         
         const cacheKey = `repo_issue_counts_${reposToLoad.join('_')}`;
         const cacheTimeKey = `repo_issue_counts_${reposToLoad.join('_')}_time`;
@@ -1703,7 +1819,6 @@ class GitHubIssuesManager {
             if (age < fiveMinutes) {
                 this.repositoryIssueCounts = JSON.parse(cachedCounts);
                 this.lastRefreshTime = new Date(parseInt(cacheTime));
-                console.log('Using cached repository issue counts:', this.repositoryIssueCounts);
                 this.updateRepositoryDropdown();
                 this.updateHeaderRefreshDisplay();
                 return;
@@ -1725,7 +1840,6 @@ class GitHubIssuesManager {
                         total: openCount + closedCount
                     };
                     
-                    console.log(`${repoName}: ${openCount} open, ${closedCount} closed`);
                 } catch (error) {
                     console.warn(`Error loading issue counts for ${repoName}:`, error);
                     // Continue with other repositories
@@ -1738,7 +1852,6 @@ class GitHubIssuesManager {
             localStorage.setItem(cacheKey, JSON.stringify(counts));
             localStorage.setItem(cacheTimeKey, Date.now().toString());
 
-            console.log('Finished loading repository issue counts for displayed repos, refresh time:', this.lastRefreshTime);
             this.updateRepositoryDropdown();
             this.updateHeaderRefreshDisplay();
         } catch (error) {
@@ -1761,7 +1874,6 @@ class GitHubIssuesManager {
             if (age < fiveMinutes) {
                 this.repositoryIssueCounts = JSON.parse(cachedCounts);
                 this.lastRefreshTime = new Date(parseInt(cacheTime));
-                console.log('Using cached repository issue counts, refresh time:', this.lastRefreshTime);
                 this.updateRepositoryDropdown();
                 this.updateHeaderRefreshDisplay(); // Ensure display is updated
                 return;
@@ -1770,7 +1882,6 @@ class GitHubIssuesManager {
 
         // Load fresh issue counts
         try {
-            console.log('Loading issue counts for all repositories...');
             const counts = {};
             
             for (const repo of this.repositories) {
@@ -1782,7 +1893,6 @@ class GitHubIssuesManager {
                         closed: closedCount,
                         total: openCount + closedCount
                     };
-                    console.log(`${repo.name}: ${openCount} open, ${closedCount} closed`);
                 } catch (error) {
                     console.error(`Error loading issue count for ${repo.name}:`, error);
                     counts[repo.name] = { open: 0, closed: 0, total: 0 };
@@ -1796,7 +1906,6 @@ class GitHubIssuesManager {
             localStorage.setItem(cacheKey, JSON.stringify(counts));
             localStorage.setItem(cacheTimeKey, Date.now().toString());
 
-            console.log('Finished loading all repository issue counts, refresh time:', this.lastRefreshTime);
             this.updateRepositoryDropdown();
             this.updateHeaderRefreshDisplay(); // Ensure display is updated
         } catch (error) {
@@ -1806,8 +1915,10 @@ class GitHubIssuesManager {
 
     async getRepositoryIssueCount(repoName, state = 'open') {
         try {
-            const url = `${this.baseURL}/repos/${this.owner}/${repoName}/issues?state=${state}&per_page=1`;
-            const response = await fetch(url, {
+            // GitHub's repository API open_issues_count includes both issues AND pull requests
+            // We need to get actual issues only by fetching and filtering
+            const issuesUrl = `${this.baseURL}/repos/${this.owner}/${repoName}/issues?state=${state}&per_page=100`;
+            const response = await fetch(issuesUrl, {
                 headers: {
                     'Accept': 'application/vnd.github.v3+json',
                     ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
@@ -1815,28 +1926,20 @@ class GitHubIssuesManager {
             });
             
             if (response.ok) {
-                // GitHub returns the total count in the Link header
-                const linkHeader = response.headers.get('Link');
-                if (linkHeader) {
-                    const lastPageMatch = linkHeader.match(/&page=(\d+)>; rel="last"/);
-                    if (lastPageMatch) {
-                        return parseInt(lastPageMatch[1]);
-                    }
-                }
-                
-                // Fallback: if no pagination, count the results
                 const issues = await response.json();
-                return issues.length;
+                // Filter out pull requests - GitHub issues API returns both issues and PRs
+                // Pull requests have a 'pull_request' property, actual issues don't
+                const actualIssues = issues.filter(item => !item.pull_request);
+                return actualIssues.length;
             }
             return 0;
         } catch (error) {
-            console.error(`Error getting issue count for ${repoName} (${state}):`, error);
+            console.error(`Error getting issue count for ${repoName}:`, error);
             return 0;
         }
     }
 
     async loadIssuesForAllRepositories() {
-        console.log('Loading issues for all repositories...');
         
         for (const repo of this.repositories) {
             try {
@@ -1848,7 +1951,6 @@ class GitHubIssuesManager {
             }
         }
         
-        console.log('Finished loading issues for all repositories');
     }
 
     async loadIssuesForRepository(repoName, forceRefresh = false) {
@@ -1861,11 +1963,9 @@ class GitHubIssuesManager {
         if (!forceRefresh) {
             const cachedData = this.loadRepositoryFromCache(repoName, this.filters.projectstatus);
             if (cachedData) {
-                console.log(`Using cached data for repository: ${repoName} (projectstatus: ${this.filters.projectstatus})`);
                 
                 // Filter out any invalid issues from cached data
                 const validCachedIssues = cachedData.issues.filter(issue => this.isValidIssue(issue));
-                console.log(`Filtered cached issues: ${validCachedIssues.length} valid out of ${cachedData.issues.length} total`);
                 
                 this.repositoryIssues[repoName] = validCachedIssues;
                 
@@ -1892,6 +1992,11 @@ class GitHubIssuesManager {
                         issue.labels.forEach(label => this.labels.add(label.name));
                     }
                 });
+                
+                // Add cached issues to allIssues if they aren't already there
+                const existingIds = new Set(this.allIssues.map(issue => issue.id));
+                const newCachedIssues = validCachedIssues.filter(issue => !existingIds.has(issue.id));
+                this.allIssues.push(...newCachedIssues);
                 
                 return cachedData.issues;
             }
@@ -1973,15 +2078,34 @@ class GitHubIssuesManager {
                 const displayName = repo?.displayName || repo?.name || repoName;
                 
                 if (repo) {
-                    if (repo.openIssueCount !== null) {
-                        const issueText = `(${repo.openIssueCount})`;
+                    // Try different sources for issue count
+                    let issueCount = null;
+                    
+                    // First try to get from loaded issues
+                    if (this.repositoryIssues[repoName]) {
+                        const openIssues = this.repositoryIssues[repoName].filter(issue => issue.state === 'open');
+                        issueCount = openIssues.length;
+                    }
+                    // Fall back to repository metadata
+                    else if (repo.openIssueCount !== null) {
+                        issueCount = repo.openIssueCount;
+                    }
+                    // Fall back to totalIssueCount for initial load
+                    else if (repo.totalIssueCount !== null) {
+                        issueCount = repo.totalIssueCount;
+                    }
+                    
+                    if (issueCount !== null) {
+                        const issueText = `(${issueCount})`;
                         option.textContent = `${displayName} ${issueText}`;
-                    } else if (repoName === 'projects') {
-                        // Special indicator for projects repo when fetch failed
-                        option.textContent = `${displayName} (?)`;
-                        option.title = 'Issue count unknown - fetch may have failed';
                     } else {
-                        option.textContent = displayName;
+                        // Only show (?) for projects if we really can't determine count
+                        if (repoName === 'projects') {
+                            option.textContent = `${displayName} (?)`;
+                            option.title = 'Issue count unknown - fetch may have failed';
+                        } else {
+                            option.textContent = displayName;
+                        }
                     }
                 } else {
                     option.textContent = displayName;
@@ -2063,7 +2187,6 @@ class GitHubIssuesManager {
         const stateToFetch = this.filters.projectstatus === 'all' ? 'all' : 
                            this.filters.projectstatus === 'closed' ? 'closed' : 'open';
 
-        console.log(`Fetching ${stateToFetch} issues for ${repoName} (filter: ${this.filters.projectstatus})`);
 
         while (hasMore) {
             try {
@@ -2074,19 +2197,11 @@ class GitHubIssuesManager {
                 lastApiResponse = apiResult.metadata;
                 const response = apiResult.data;
                 
-                console.log(`API response for ${repoName} page ${page}:`, {
-                    responseLength: response.length,
-                    stateRequested: stateToFetch,
-                    rateLimitRemaining: lastApiResponse.rateLimitRemaining,
-                    hasToken: !!this.githubToken
-                });
-                
                 if (response.length === 0) {
                     hasMore = false;
                 } else {
                     // Filter out pull requests and invalid issues
                     const actualIssues = response.filter(issue => !issue.pull_request && this.isValidIssue(issue));
-                    console.log(`Found ${actualIssues.length} valid issues (${response.length - actualIssues.length} pull requests/invalid issues filtered out)`);
                     
                     // Enrich each issue with additional data
                     for (const issue of actualIssues) {
@@ -2295,7 +2410,7 @@ class GitHubIssuesManager {
                 .reduce((sum, counts) => sum + (counts.total || 0), 0);
         }
         
-        const allReposText = totalIssues > 0 ? `All Repositories (${totalIssues})` : 'All Repositories';
+        const allReposText = totalIssues > 0 ? `All Loaded Issues (${totalIssues})` : 'All Loaded Issues';
         
         // Start with empty select
         select.innerHTML = '';
@@ -2342,11 +2457,11 @@ class GitHubIssuesManager {
             select.appendChild(separator);
             
             if (this.githubToken) {
-                // Add load primary repos option
+                // Add currently loaded repos indicator
                 const loadPrimaryOption = document.createElement('option');
                 loadPrimaryOption.value = 'load_primary';
                 const primaryCount = this.repositories.length;
-                loadPrimaryOption.textContent = `Load Primary ${primaryCount} Repos (current)`;
+                loadPrimaryOption.textContent = `Currently Loaded: ${primaryCount} Repos`;
                 loadPrimaryOption.disabled = true; // Already loaded
                 loadPrimaryOption.style.color = '#666';
                 select.appendChild(loadPrimaryOption);
@@ -2355,9 +2470,9 @@ class GitHubIssuesManager {
                 const loadAllOption = document.createElement('option');
                 loadAllOption.value = 'load_all';
                 if (this.totalRepositoryCount !== null) {
-                    loadAllOption.textContent = `Load All ${this.totalRepositoryCount} Repos (slower)`;
+                    loadAllOption.textContent = `Load All ${this.totalRepositoryCount} Repos`;
                 } else {
-                    loadAllOption.textContent = 'Load All Repos (slower)';
+                    loadAllOption.textContent = 'Load All Repos';
                 }
                 loadAllOption.style.fontStyle = 'italic';
                 select.appendChild(loadAllOption);
@@ -2413,9 +2528,7 @@ class GitHubIssuesManager {
                 minute: '2-digit', 
                 hour12: true 
             });
-            console.log(`Issue counts last updated: ${timeString}`);
         } else {
-            console.log('Issue counts last updated: Never');
         }
         
         // Keep the header refresh time display hidden
@@ -2428,7 +2541,6 @@ class GitHubIssuesManager {
     startAutoRefreshTimer() {
         // Don't start auto-refresh without a token to conserve rate limits
         if (!this.githubToken) {
-            console.log('Auto-refresh disabled: No GitHub token available');
             return;
         }
         
@@ -2445,7 +2557,6 @@ class GitHubIssuesManager {
                 const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
                 
                 if (age >= fiveMinutes) {
-                    console.log('Auto-refreshing repository issue counts...');
                     await this.loadAllRepositoryIssueCounts();
                 }
             }
@@ -2513,15 +2624,23 @@ class GitHubIssuesManager {
     }
 
     filterAndDisplayIssues() {
-        console.log(`Filtering ${this.allIssues.length} total issues with filters:`, this.filters);
+        
+        let repositoryFilteredOut = 0;
+        let statusFilteredOut = 0;
+        let assigneeFilteredOut = 0;
+        let labelFilteredOut = 0;
+        let searchFilteredOut = 0;
+        
         this.filteredIssues = this.allIssues.filter(issue => {
             // Repository filter
             if (this.filters.repo !== 'all' && issue.repository !== this.filters.repo) {
+                repositoryFilteredOut++;
                 return false;
             }
 
             // Project status filter
             if (this.filters.projectstatus !== 'all' && issue.state !== this.filters.projectstatus) {
+                statusFilteredOut++;
                 return false;
             }
 
@@ -2561,7 +2680,13 @@ class GitHubIssuesManager {
             return true;
         });
 
-        console.log(`After filtering: ${this.filteredIssues.length} issues match the filters`);
+        
+        // Debug output
+        
+        if (this.filteredIssues.length === 0 && this.allIssues.length > 0) {
+            console.warn('⚠️ All issues were filtered out! Check your filter settings.');
+        }
+        
         this.sortIssues();
         this.displayIssues();
     }
@@ -3092,7 +3217,11 @@ class GitHubIssuesManager {
             if (key === 'repo') {
                 // Handle custom repository from URL hash
                 customRepo = value;
-                this.filters[key] = value;
+                // Extract just the repo name for dropdown compatibility
+                // For "modelearth/realitystream" → "realitystream"
+                // For "realitystream" → "realitystream"  
+                const repoName = value.includes('/') ? value.split('/')[1] : value;
+                this.filters[key] = repoName;
             } else if (this.filters.hasOwnProperty(key)) {
                 this.filters[key] = value;
             }
@@ -3100,7 +3229,33 @@ class GitHubIssuesManager {
 
         // If we have a custom repo from the hash, add it to the repository list
         if (customRepo && customRepo !== 'all') {
-            await this.addCustomRepositoryFromHash(customRepo);
+            // Extract just the repo name for consistency
+            const repoName = customRepo.includes('/') ? customRepo.split('/')[1] : customRepo;
+            try {
+                await this.addCustomRepositoryFromHash(repoName);
+            } catch (error) {
+                this.showNotification(`Repository "${repoName}" not found on ModelEarth GitHub. Please check the repository name.`, 'error');
+                // Reset to 'all' filter to show available repositories
+                this.filters.repo = 'all';
+                this.updateFilterUI();
+                return;
+            }
+            
+            // Load issues for the selected repository if not already cached
+            if (!this.repositoryIssues[this.filters.repo]) {
+                try {
+                    await this.loadIssuesForRepository(this.filters.repo);
+                    this.updateRepositoryDropdownCounts();
+                } catch (error) {
+                    this.showNotification(`Repository "${this.filters.repo}" not found on ModelEarth GitHub. Please check the repository name.`, 'error');
+                    // Reset to 'all' filter to show available repositories
+                    this.filters.repo = 'all';
+                    return;
+                }
+            }
+            
+            // Filter and display issues for the selected repository
+            this.filterAndDisplayIssues();
         }
 
         this.updateFilterUI();
@@ -3113,7 +3268,6 @@ class GitHubIssuesManager {
             return; // Already exists
         }
 
-        console.log(`Adding custom repository from URL hash: ${repoName}`);
 
         // If repo doesn't contain a slash, assume it's in the modelearth account
         const fullRepoPath = repoName.includes('/') ? repoName : `${this.owner}/${repoName}`;
@@ -3135,7 +3289,6 @@ class GitHubIssuesManager {
                     repository_url: repoInfo.html_url
                 });
                 
-                console.log(`Successfully added custom repository: ${repo}`);
                 
                 // Update the dropdown to include the new repository
                 this.populateRepositoryFilter();
@@ -3152,27 +3305,16 @@ class GitHubIssuesManager {
                     repository_url: `https://github.com/${fullRepoPath}`
                 });
                 
-                console.log(`Added custom repository placeholder: ${repo} (no token - limited info)`);
                 
                 // Update the dropdown
                 this.populateRepositoryFilter();
             }
             
         } catch (error) {
-            console.warn(`Failed to add custom repository ${fullRepoPath}:`, error);
             
-            // Add as placeholder anyway so the user can see it in the dropdown
-            this.repositories.push({
-                name: repo,
-                displayName: repo,
-                description: `Repository: ${fullRepoPath} (info unavailable)`,
-                defaultBranch: 'main',
-                openIssueCount: null,
-                totalIssueCount: null,
-                repository_url: `https://github.com/${fullRepoPath}`
-            });
-            
-            this.populateRepositoryFilter();
+            // Don't add non-existent repositories to avoid confusion
+            // The error will be handled in the calling function
+            throw new Error(`Repository "${fullRepoPath}" not found on GitHub`);
         }
     }
 
@@ -3256,7 +3398,6 @@ class GitHubIssuesManager {
         if (this.cacheConfig.autoRefresh && this.githubToken) {
             this.setupCacheExpirationTimer(this.cacheConfig.duration * 60 * 1000);
         } else if (!this.githubToken) {
-            console.log('Cache auto-refresh disabled: No GitHub token available');
         }
         
         // Update cache status display
@@ -3515,7 +3656,6 @@ class GitHubIssuesManager {
             const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
             const cacheAge = Date.now() - data.timestamp;
             if (cacheAge > maxAge) {
-                console.log(`Cache expired (${Math.round(cacheAge / 60000)} minutes old, max age: ${this.cacheConfig.duration} minutes)`);
                 return null;
             }
 
@@ -3527,10 +3667,8 @@ class GitHubIssuesManager {
             if (this.cacheConfig.autoRefresh && this.githubToken) {
                 this.setupCacheExpirationTimer(maxAge - cacheAge);
             } else if (!this.githubToken) {
-                console.log('Cache auto-refresh disabled: No GitHub token available');
-            }
+                }
 
-            console.log(`Loaded from cache (${Math.round(cacheAge / 60000)} minutes old)`);
             return data;
         } catch (error) {
             console.warn('Failed to load from cache:', error);
@@ -3551,13 +3689,11 @@ class GitHubIssuesManager {
             const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
             const cacheAge = Date.now() - data.timestamp;
             if (cacheAge > maxAge) {
-                console.log(`Repository cache expired for ${repoName} (${Math.round(cacheAge / 60000)} minutes old, max age: ${this.cacheConfig.duration} minutes)`);
                 // Remove expired cache
                 localStorage.removeItem(cacheKey);
                 return null;
             }
             
-            console.log(`Loaded repository ${repoName} from cache (${Math.round(cacheAge / 60000)} minutes old)`);
             return data;
         } catch (error) {
             console.warn(`Failed to load repository ${repoName} from cache:`, error);
@@ -3641,7 +3777,6 @@ class GitHubIssuesManager {
             // Clear cache for specific repository
             const cacheKey = `github_repo_${repoName}_cache`;
             localStorage.removeItem(cacheKey);
-            console.log(`Cleared cache for repository: ${repoName}`);
         } else {
             // Clear all repository caches
             const keys = Object.keys(localStorage);
@@ -3650,7 +3785,6 @@ class GitHubIssuesManager {
                     localStorage.removeItem(key);
                 }
             });
-            console.log('Cleared all repository caches');
         }
     }
 
