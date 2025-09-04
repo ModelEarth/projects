@@ -379,17 +379,17 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    color: #ffd700 !important;
+    color: white !important;
     font-weight: 600;
     text-decoration: none !important;
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    background: rgba(255, 215, 0, 0.1);
+    background: #1e3a8a;
     transition: var(--transition);
 }
 
 .token-link:hover {
-    background: rgba(255, 215, 0, 0.2);
+    background: #1e40af;
     transform: translateY(-1px);
 }
 

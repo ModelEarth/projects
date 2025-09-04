@@ -19,21 +19,22 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 4. NullSchool Maps + NISAR satellite data to visualize earth surface movements
 -->
 
+<a href="https://github.com/modelearth/projects/issues/" style="float:right" target="_blank">Projects List on Github</a>
 # Active Projects
 
 ### Webroot for Claude Code CLI
 
-[Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
-[CodeChat](../codechat/) - RAG training documentation, after overview of webroot submodule repos
+[Webroot setup](https://model.earth/webroot/) - Simple "pull" and "push" commands to send PRs from your work.  
+[CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules.
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
 
 ### New IO Data Pipeline
 
-[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Report](../profile/footprint/sample.html)
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Footprint Report](../profile/footprint/sample.html) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
-
+[US State Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
 ### PartnerTools for Teams
 
@@ -80,9 +81,9 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-TO DO: [Moving Javascript Timelines from Google Data Commons API]() <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+TO DO: [Moving Javascript Timelines from Google Data Commons API](https://model.earth/data-commons/docs/data/) <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
-We're pulling images and video via [our FeedPlayer](../feed) which can be pointed at a Github repo or any API.
+We're pulling images and video via [our FeedPlayer](../feed) which can be updated to point at any Github repo or API.
 
 <!--
 **More Data Commons Visualization Projects**
@@ -189,7 +190,7 @@ NEW: Update javascript report to use json generated from our Exiobase in CoLabs.
 
 TO DO:  Find and embed/fork existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
 
-IN PROGRESS: [Chord Chart json object](https://model.earth/useeio.js/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
+IN PROGRESS: [Chord Chart json object](https://model.earth/trade/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
 
 TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
 
@@ -203,9 +204,9 @@ For our [International Trade Flow](/profile/trade/) we can integrate our [Exioba
 
 #### US EPA State Impacts
 
-TO DO: Pull into SQL DuckDB
+TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Gary
 
-[Javascript updates for US EPA impact reports](/useeio.js/footprint/) - Lakshit, Abhishek N, Hitesh R
+[Javascript updates for US EPA impact reports](/trade/footprint/) - Lakshit, Abhishek N, Hitesh R
 [React Team - Mosaic column checkboxes](/io/charts)  - Pallavi 
 [React Team - Commodity Totals](/localsite/info/data/totals/) in [Jobs Reports](/localsite/info/#indicators=JOBS)
 [Impact Label Pipeline](/apps/impact) - Starting point for duplicating US EPA RStudio in python
