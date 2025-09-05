@@ -40,7 +40,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
-[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure Your Local Server](../team/admin/server/)
+[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure your Server](../team/admin/server/)
 
 ### RealityStream updates in progress
 
@@ -164,7 +164,7 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 -->
 
 
-- [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha
+- [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha, Savar (Tree Canopy Decline)
 - [Process Industry NAICS by Zip Code](/community-zipcodes/mail) - DONE Yunbo
 - [Open Data Panels - YAML Display](/profile) - Microsoft Plug and Play - TO DO
 - [State Regions using Sets of Counties](/community-data/us/edd/) - Dinesh

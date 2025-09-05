@@ -2382,9 +2382,15 @@ body.widget-fullscreen-active {
 }
 
 .issues-list.row-view .issue-meta,
-.issues-list.row-view .issue-footer {
+
+.issues-list.row-view .issue-body-preview {
     display: none;
 }
+
+.issues-list.list-view .issue-body-preview {
+    display: none;
+}
+
 
 /* Card View */
 .issues-list.card-view {
@@ -2956,3 +2962,9 @@ body.widget-fullscreen-active {
         scroll-behavior: auto !important;
     }
 }
+/* Show the modal when JS adds the .show class */
+.modal-overlay.show {
+  display: flex;
+}
+
+
