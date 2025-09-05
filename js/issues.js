@@ -1,3 +1,11 @@
+/**
+ * GitHub Issues Manager
+ * Advanced issue tracking and management for ModelEarth repositories
+ * 
+ * Note: Uses 'modelearth' (lowercase) as GitHub user account to avoid 
+ * organization OAuth requirements that would cause 401 authentication errors.
+ */
+
 class GitHubIssuesManager {
     constructor(containerId = 'issuesWidget', options = {}) {
         this.containerId = containerId;
