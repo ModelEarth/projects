@@ -2769,7 +2769,8 @@ class GitHubIssuesManager {
 
         const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
             issue.assignees.map(assignee => `
-                <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar" title="${assignee.login}">
+                <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar" title="${assignee.login}"> 
+                 <span >${assignee.login.split('-')[0].toLowerCase()}</span>
             `).join('') : '';
 
         const labelsHtml = issue.labels && issue.labels.length > 0 ? 
@@ -2885,10 +2886,10 @@ class GitHubIssuesManager {
                 <div class="issue-footer">
                     <div class="issue-author">
                         <img src="${issue.user.avatar_url}" alt="${issue.user.login}" class="author-avatar">
-                        <span>by ${issue.user.login}</span>
+                        <span>by ${issue.user.login}</span>          
                     </div>
                     
-                    ${assigneesHtml ? `<div class="issue-assignees">${assigneesHtml}</div>` : ''}
+                    ${assigneesHtml ? `<div class="issue-assignees"> <span> Assigned To : </span> ${assigneesHtml}</div>` : ''}
                     
                     <div class="issue-actions">
                         <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
@@ -2937,7 +2938,7 @@ class GitHubIssuesManager {
             issue.assignees.map(assignee => `
                 <div class="assignee-detail">
                     <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar">
-                    <span>${assignee.login}</span>
+                    <span >${assignee.login.split('-')[0].toLowerCase()}</span>
                 </div>
             `).join('') : '<span class="text-muted">No assignees</span>';
 
