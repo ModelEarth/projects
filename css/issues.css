@@ -1786,10 +1786,10 @@ body.widget-fullscreen-active {
 
 .assignee-avatar {
     width: 28px;
-    height: 28px;
+    height: 23px;
     border-radius: 50%;
     border: 2px solid white;
-    margin-left: -8px;
+   
 }
 
 .assignee-avatar:first-child {
