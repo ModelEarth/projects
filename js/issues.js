@@ -518,6 +518,10 @@ class GitHubIssuesManager {
         // Create the widget structure first
         this.createWidgetStructure();
         
+        // Ensure initial responsive state is correct
+        this.updateAssigneeButton();
+        this.updateToggleButtonDisplay();
+        
         this.setupEventListeners();
         this.setupMenuClickHandler(); // Add menu click handler
         this.loadFromHash();
@@ -551,6 +555,44 @@ class GitHubIssuesManager {
         if (this.githubToken) {
             this.startAutoRefreshTimer();
         } else {
+        }
+        
+        // Add resize observer to handle responsive label changes
+        this.setupResizeObserver();
+    }
+
+    setupResizeObserver() {
+        // Create a resize observer to watch the filter container width
+        if (typeof ResizeObserver !== 'undefined') {
+            const observer = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    // Update assignee button when container width changes
+                    this.updateAssigneeButton();
+                    this.updateToggleButtonDisplay();
+                }
+            });
+            
+            // Start observing the filters container
+            const container = document.querySelector('.filters-always-visible');
+            if (container) {
+                observer.observe(container);
+            }
+        } else {
+            // Fallback for browsers without ResizeObserver support
+            window.addEventListener('resize', () => {
+                this.updateAssigneeButton();
+                this.updateToggleButtonDisplay();
+            });
+        }
+    }
+
+    updateToggleButtonDisplay() {
+        const container = document.querySelector('.filters-always-visible');
+        const toggleBtn = document.getElementById('toggleFiltersBtn');
+        
+        if (container && toggleBtn) {
+            const isNarrow = container.offsetWidth < 600;
+            toggleBtn.classList.toggle('narrow-container', isNarrow);
         }
     }
 
@@ -2766,7 +2808,7 @@ class GitHubIssuesManager {
         const stateIcon = issue.state === 'open' ? 
             '<i class="fas fa-exclamation-circle issue-open"></i>' : 
             '<i class="fas fa-check-circle issue-closed"></i>';
-
+            
         const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
             issue.assignees.map(assignee => `
                 <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar" title="${assignee.login}"> 
@@ -2782,17 +2824,20 @@ class GitHubIssuesManager {
 
         // Short view content (title + body preview)
         if (currentView === 'short') {
+            // Process body: limit to 180 chars and remove line returns
+            const processedBody = issue.body ? 
+                issue.body.replace(/\r?\n/g, ' ').substring(0, 180) + (issue.body.length > 180 ? '...' : '') : '';
+            
             issueDiv.innerHTML = `
                 <div class="issue-header">
-                    <div class="issue-title-row">
-                        ${stateIcon}
-                        <div class="issue-number">#${issue.number}</div>
-                        <h3 class="issue-title">
-                            <a href="${issue.html_url}" target="_blank">${this.escapeHtml(issue.title)}</a>
-                        </h3>
+                    <!-- Repo name and issue number line -->
+                    <div class="issue-repo-line">
+                        <a href="${issue.html_url}" target="_blank" class="repo-issue-link" title="Open in GitHub">
+                            ${issue.repository.charAt(0).toUpperCase() + issue.repository.slice(1)} #${issue.number}
+                        </a>
                         
                         <!-- Issue Actions Menu -->
-                        <div class="issue-actions-menu">
+                        <div class="issue-actions-menu shifted-menu">
                             <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
@@ -2809,12 +2854,26 @@ class GitHubIssuesManager {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Title -->
+                    <h3 class="issue-title short-title" onclick="issuesManager.expandIssueDetails('${issue.id}', this)" style="cursor: pointer;" title="Click to expand details">
+                        ${this.escapeHtml(issue.title)}
+                    </h3>
                 </div>
-                ${issue.body ? `
-                    <div class="issue-description">
-                        ${this.formatMarkdown(issue.body.substring(0, 150))}${issue.body.length > 150 ? '...' : ''}
+                ${processedBody ? `
+                    <div class="issue-description short-description">
+                        ${this.escapeHtml(processedBody)}
                     </div>
                 ` : ''}
+                
+                <!-- Hidden full details -->
+                <div class="issue-full-details" id="fullDetails-${issue.id}" style="display: none;">
+                    ${issue.body ? `
+                        <div class="issue-description-full">
+                            ${this.formatMarkdown(issue.body)}
+                        </div>
+                    ` : ''}
+                </div>
             `;
             return issueDiv;
         }
@@ -3357,8 +3416,14 @@ class GitHubIssuesManager {
         } else if (this.filters.assignee !== 'all') {
             displayText = this.filters.assignee;
         }
+        
+        // Check if container is narrow
+        const container = button.closest('.filters-always-visible');
+        const isNarrow = container && container.offsetWidth < 600;
+        const labelText = isNarrow ? '' : 'Assigned to: ';
+        
         button.innerHTML = `
-            <i class="fas fa-user"></i> Assigned to: ${displayText}
+            <i class="fas fa-user"></i> ${labelText}${displayText}
             <i class="fas fa-chevron-down"></i>
         `;
     }
@@ -3557,6 +3622,39 @@ class GitHubIssuesManager {
             }
         } finally {
             this.showIssueLoading(issueId, false);
+        }
+    }
+
+    getRelativeGithubIconPath() {
+        // Determine the relative path to localsite based on current page location
+        const currentPath = window.location.pathname;
+        const pathDepth = currentPath.split('/').filter(segment => segment !== '').length;
+        
+        // Calculate relative path climbing up from current location
+        let relativePath = '';
+        if (pathDepth > 1) {
+            relativePath = '../'.repeat(pathDepth - 1);
+        }
+        
+        return relativePath + 'localsite/img/icon/github/github.png';
+    }
+
+    expandIssueDetails(issueId, titleElement) {
+        const issueItem = titleElement.closest('.issue-item');
+        const fullDetailsDiv = issueItem.querySelector('.issue-full-details');
+        const shortDescription = issueItem.querySelector('.short-description');
+        const shortTitle = issueItem.querySelector('.short-title');
+        
+        if (fullDetailsDiv.style.display === 'none') {
+            // Show full details
+            fullDetailsDiv.style.display = 'block';
+            if (shortDescription) shortDescription.style.display = 'none';
+            shortTitle.title = 'Click to collapse';
+        } else {
+            // Hide full details
+            fullDetailsDiv.style.display = 'none';
+            if (shortDescription) shortDescription.style.display = 'block';
+            shortTitle.title = 'Click to expand details';
         }
     }
 

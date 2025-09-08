@@ -332,7 +332,7 @@
 
 /* Authentication Section */
 .auth-section {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     position: relative;
     z-index: 1;
 }
@@ -441,7 +441,7 @@
 
 .instructions-content ol {
     margin: 1rem 0;
-    padding-left: 1.5rem;
+    padding-left: 1rem;
     line-height: 1.6;
 }
 
@@ -484,7 +484,7 @@
 .rate-limit-warning {
     background: linear-gradient(135deg, #ffc107, #ff9800);
     color: #212529;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1rem;
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
@@ -525,7 +525,7 @@
 .rate-limit-info-display {
     background: linear-gradient(135deg, #17a2b8, #007bff);
     color: white;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1rem;
     border-radius: var(--border-radius);
     display: flex;
     align-items: center;
@@ -725,8 +725,8 @@
     background: white;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
     box-shadow: var(--box-shadow);
     position: relative;
     container-type: inline-size;
@@ -1294,7 +1294,7 @@
     background: white;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -1320,7 +1320,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1rem;
     color: white;
 }
 
@@ -1537,6 +1537,30 @@
     border-color: var(--primary-color);
 }
 
+/* Responsive toggle text - hide on narrow containers */
+@media (max-width: 600px) {
+    .toggle-text {
+        display: none;
+    }
+    
+    .toggle-filters-btn {
+        padding: 0.5rem;
+        min-width: 38px;
+        justify-content: center;
+    }
+}
+
+/* JavaScript-based narrow container class for more precise control */
+.toggle-filters-btn.narrow-container .toggle-text {
+    display: none;
+}
+
+.toggle-filters-btn.narrow-container {
+    padding: 0.5rem;
+    min-width: 38px;
+    justify-content: center;
+}
+
 /* Clear filters button - compact style */
 .clear-filters-btn {
     padding: 0.5rem 0.75rem !important;
@@ -1636,7 +1660,7 @@ body.widget-fullscreen-active {
 /* Issue Items */
 .issue-item {
     border-bottom: 1px solid var(--border-color);
-    padding: 1.5rem;
+    padding: 1rem;
     transition: var(--transition);
     position: relative;
     container-type: inline-size;
@@ -1997,7 +2021,7 @@ body.widget-fullscreen-active {
 
 /* Pagination */
 .pagination-container {
-    padding: 1.5rem;
+    padding: 1rem;
     border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -2132,7 +2156,7 @@ body.widget-fullscreen-active {
 
 .no-issues h3 {
     margin: 0 0 1rem 0;
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
 }
 
@@ -2203,7 +2227,7 @@ body.widget-fullscreen-active {
 }
 
 .modal-header {
-    padding: 1.5rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
@@ -2212,7 +2236,7 @@ body.widget-fullscreen-active {
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--dark-color);
 }
@@ -2220,7 +2244,7 @@ body.widget-fullscreen-active {
 .modal-close {
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1rem;
     cursor: pointer;
     color: var(--text-muted);
     padding: 0.5rem;
@@ -2235,7 +2259,7 @@ body.widget-fullscreen-active {
 
 .modal-body {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1rem;
     overflow-y: auto;
 }
 
@@ -2359,32 +2383,92 @@ body.widget-fullscreen-active {
     border-top: 1px solid var(--border-color);
 }
 
-/* Row View */
-.issues-list.row-view .issue-item {
+/* Short View */
+.issues-list.short-view .issue-item {
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
 }
 
-.issues-list.row-view .issue-item:last-child {
+.issues-list.short-view .issue-item:last-child {
     border-bottom: none;
 }
 
-.issues-list.row-view .issue-title {
+.issues-list.short-view .issue-title {
     font-size: 1.1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.1rem; /* Reduced space between title and text */
+    margin-top: 0;
 }
 
-.issues-list.row-view .issue-description {
+.issues-list.short-view .issue-description {
     font-size: 0.9rem;
     line-height: 1.4;
     margin-bottom: 0.5rem;
     color: var(--text-muted);
 }
 
-.issues-list.row-view .issue-meta,
+.issues-list.short-view .issue-meta,
 
-.issues-list.row-view .issue-body-preview {
+.issues-list.short-view .issue-body-preview {
     display: none;
+}
+
+/* Repo name and issue number line */
+.issue-repo-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.repo-issue-link {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.repo-issue-link:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+}
+
+/* Shifted menu for spacing */
+.shifted-menu {
+    margin-right: 10px;
+}
+
+/* Short view specific styling */
+.issues-list.short-view .short-title {
+    cursor: pointer;
+    transition: color 0.2s ease;
+    margin-bottom: 0.1rem;
+}
+
+.issues-list.short-view .short-title:hover {
+    color: var(--accent-blue);
+}
+
+/* Full details styling when expanded */
+.issue-full-details {
+    margin-top: 0.1rem; /* Same small spacing as before full text */
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.issue-description-full {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+}
+
+/* Short description styling */
+.short-description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    margin-top: 0.1rem; /* Reduced space between title and text */
 }
 
 .issues-list.list-view .issue-body-preview {
@@ -2396,8 +2480,8 @@ body.widget-fullscreen-active {
 .issues-list.card-view {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 1.5rem;
-    padding: 1.5rem;
+    gap: 1rem;
+    padding: 1rem;
 }
 
 .card-view .issue-item {
@@ -2420,7 +2504,7 @@ body.widget-fullscreen-active {
 
 /* Wide card view - show all details like list view */
 .issues-list.card-view .issue-item {
-    padding: 1.5rem;
+    padding: 1rem;
 }
 
 .issues-list.card-view .issue-meta,
@@ -2787,7 +2871,7 @@ body.widget-fullscreen-active {
 /* Responsive Design */
 @media (max-width: 768px) {
     .issues-header {
-        padding: 1.5rem;
+        padding: 1rem;
     }
     
     .issues-header h1 {
