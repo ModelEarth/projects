@@ -59,7 +59,7 @@ class GitHubIssuesManager {
         };
         
         // UI state
-        this.currentView = 'list'; // Default view
+        this.currentView = 'short'; // Default view
         this.isFullscreen = false;
         this.currentRefreshIssueId = null;
         
@@ -375,11 +375,11 @@ class GitHubIssuesManager {
                 <div class="issues-header-bar">
                     <div class="view-controls">
                         <div class="view-toggle">
-                            <button id="listView" class="view-btn active" title="List View">
-                                <i class="fas fa-list"></i>
-                            </button>
-                            <button id="rowView" class="view-btn" title="Row View">
+                            <button id="shortView" class="view-btn active" title="Short View">
                                 <i class="fas fa-align-justify"></i>
+                            </button>
+                            <button id="listView" class="view-btn" title="List View">
+                                <i class="fas fa-list"></i>
                             </button>
                             <button id="cardView" class="view-btn" title="Card View">
                                 <i class="fas fa-th-large"></i>
@@ -1265,8 +1265,8 @@ class GitHubIssuesManager {
         });
 
         // View controls
+        document.getElementById('shortView').addEventListener('click', () => this.setView('short'));
         document.getElementById('listView').addEventListener('click', () => this.setView('list'));
-        document.getElementById('rowView').addEventListener('click', () => this.setView('row'));
         document.getElementById('cardView').addEventListener('click', () => this.setView('card'));
 
         // Filters expand/collapse - commented out (now using header search button instead)
@@ -2780,8 +2780,8 @@ class GitHubIssuesManager {
                 </span>
             `).join('') : '';
 
-        // Row view content (title + body preview)
-        if (currentView === 'row') {
+        // Short view content (title + body preview)
+        if (currentView === 'short') {
             issueDiv.innerHTML = `
                 <div class="issue-header">
                     <div class="issue-title-row">
@@ -3411,7 +3411,7 @@ class GitHubIssuesManager {
     
     loadViewPreference() {
         const savedView = localStorage.getItem('github_issues_view');
-        if (savedView && (savedView === 'list' || savedView === 'card')) {
+        if (savedView && (savedView === 'short' || savedView === 'list' || savedView === 'card')) {
             this.currentView = savedView;
             this.setView(savedView, false); // Don't save when loading
         }
