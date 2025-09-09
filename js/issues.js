@@ -313,7 +313,7 @@ class GitHubIssuesManager {
                         </div>
                     </div>
                     
-                    <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters">
+                    <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters" onclick="this.onclick=null; alert('Container width: ' + this.closest('.filters-always-visible').offsetWidth + 'px');">
                         <i class="fas fa-filter toggle-icon" style="display: none;"></i>
                         <span class="toggle-text">More Filters</span>
                     </button>

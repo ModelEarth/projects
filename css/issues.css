@@ -1400,6 +1400,7 @@
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     background: var(--light-color);
+    container-type: inline-size;
 }
 
 /* Filter row styling */
@@ -1430,15 +1431,36 @@
 }
 
 /* Second row: 4 items */
-.filter-row-2 .filter-group,
-.filter-row-2 .toggle-filters-btn,
-.filter-row-2 .clear-filters-btn {
+.filter-row-2 .filter-group {
     flex: 1;
     min-width: 0;
     height: 100%;
     display: flex;
     align-items: stretch;
     box-sizing: border-box;
+}
+
+.filter-row-2 .toggle-filters-btn,
+.filter-row-2 .clear-filters-btn {
+    flex: 0 1 auto;
+    width: auto;
+    max-width: 20%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    box-sizing: border-box;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Narrow container adjustments for filters */
+@container (max-width: 500px) {
+    .filter-row-2 .toggle-filters-btn,
+    .filter-row-2 .clear-filters-btn {
+        max-width: 18%;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.25rem;
+    }
 }
 
 /* Ensure all filter elements have consistent height and alignment */
@@ -1479,9 +1501,6 @@
     /* FORCE exact half-width behavior */
     .filters-always-visible .filter-group:first-child,
     .filters-always-visible .filter-group:nth-child(2) {
-        flex: 0 0 calc(50% - 0.5rem) !important;
-        min-width: calc(50% - 0.5rem) !important;
-        max-width: calc(50% - 0.5rem) !important;
         width: calc(50% - 0.5rem) !important;
         box-sizing: border-box !important;
     }
@@ -1833,6 +1852,7 @@ body.widget-fullscreen-active {
 
 .issues-list {
     min-height: 400px;
+    container-type: inline-size;
 }
 
 /* Issue Items */
@@ -2654,19 +2674,70 @@ body.widget-fullscreen-active {
 }
 
 
-/* Card View */
+/* Card View - Force 2 columns always */
 .issues-list.card-view {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem !important;
 }
 
+/* Override any existing card item styles */
 .card-view .issue-item {
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    transition: var(--transition);
+    aspect-ratio: 1 / 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 1rem !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--box-shadow) !important;
+}
+
+/* Force hide everything except title */
+.card-view .issue-meta,
+.card-view .issue-body,
+.card-view .issue-footer,
+.card-view .issue-author,
+.card-view .issue-assignees,
+.card-view .issue-repo-name,
+.card-view .issue-body-preview,
+.card-view .issue-actions,
+.card-view .issue-description,
+.card-view .short-description,
+.card-view .issue-full-details {
+    display: none !important;
+}
+
+/* Hide the issue header parts except title */
+.card-view .issue-header .issue-repo-line,
+.card-view .issue-header .issue-actions-menu {
+    display: none !important;
+}
+
+/* Only show the title in card view */
+.card-view .issue-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.card-view .issue-title {
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 4 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    width: 100% !important;
 }
 
 .card-view .issue-item:hover {
@@ -2696,87 +2767,7 @@ body.widget-fullscreen-active {
     display: none !important;
 }
 
-/* Narrow card view - two columns with compact squares showing only titles */
-@container (max-width: 800px) {
-    .issues-list.card-view {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-    
-    .card-view .issue-item {
-        padding: 0.75rem;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .card-view .issue-title {
-        font-size: 0.9rem;
-        line-height: 1.2;
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    /* Hide everything except title in narrow card view */
-    .card-view .issue-meta,
-    .card-view .issue-body,
-    .card-view .issue-footer,
-    .card-view .issue-author,
-    .card-view .issue-assignees,
-    .card-view .issue-repo-name,
-    .card-view .issue-body-preview,
-    .card-view .issue-actions {
-        display: none !important;
-    }
-}
 
-/* Fallback for media queries - narrow card view */
-@media (max-width: 800px) {
-    .issues-list.card-view {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.75rem;
-        padding: 1rem;
-    }
-    
-    .card-view .issue-item {
-        padding: 0.75rem;
-        min-height: 120px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .card-view .issue-title {
-        font-size: 0.9rem;
-        line-height: 1.2;
-        margin: 0;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    /* Hide everything except title in narrow card view */
-    .card-view .issue-meta,
-    .card-view .issue-body,
-    .card-view .issue-footer,
-    .card-view .issue-author,
-    .card-view .issue-assignees,
-    .card-view .issue-repo-name,
-    .card-view .issue-body-preview,
-    .card-view .issue-actions {
-        display: none !important;
-    }
-}
 
 /* Notifications */
 .notification {
