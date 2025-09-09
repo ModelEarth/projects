@@ -255,67 +255,35 @@ class GitHubIssuesManager {
         return `
             <!-- Always visible filters row -->
             <div class="filters-always-visible">
-                <div class="filter-group">
-                    <select id="repoFilter" class="filter-select">
-                        <option value="all">All Repositories</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <button id="assigneeButton" class="filter-button">
-                        <i class="fas fa-user"></i> Assigned to: All
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="dropdown-menu" id="assigneeDropdown">
-                        <div class="dropdown-item" data-assignee="all">
-                            <i class="fas fa-users"></i> All Users
-                        </div>
-                        <div class="dropdown-item" data-assignee="unassigned">
-                            <i class="fas fa-user-slash"></i> Unassigned
+                <!-- First row: View controls and repo filter -->
+                <div class="filter-row-1">
+                    <!-- View Controls (moved from issues container) -->
+                    <div class="view-controls">
+                        <div class="view-toggle">
+                            <button id="shortView" class="view-btn active" title="Short View">
+                                <i class="fas fa-align-justify"></i>
+                            </button>
+                            <button id="listView" class="view-btn" title="List View">
+                                <i class="fas fa-list"></i>
+                            </button>
+                            <button id="cardView" class="view-btn" title="Card View">
+                                <i class="fas fa-th-large"></i>
+                            </button>
                         </div>
                     </div>
-                </div>
-                
-                <div class="filter-group">
-                    <button id="sortButton" class="filter-button">
-                        <i class="fas fa-sort"></i> Sort by: Updated
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="dropdown-menu" id="sortDropdown">
-                        <div class="dropdown-item" data-sort="updated">
-                            <i class="fas fa-calendar-alt"></i> Updated Date
-                        </div>
-                        <div class="dropdown-item" data-sort="created">
-                            <i class="fas fa-plus"></i> Created Date
-                        </div>
-                        <div class="dropdown-item" data-sort="comments">
-                            <i class="fas fa-comments"></i> Comment Count
-                        </div>
-                        <div class="dropdown-item" data-sort="title">
-                            <i class="fas fa-sort-alpha-down"></i> Title (A-Z)
-                        </div>
-                        <div class="dropdown-item" data-sort="number">
-                            <i class="fas fa-hashtag"></i> Issue Number
-                        </div>
-                    </div>
-                </div>
-                
-                <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters">
-                    <i class="fas fa-search"></i>
-                    <span class="toggle-text">More Filters</span>
-                </button>
-                
-                <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
-                    Clear
-                </button>
-            </div>
-
-            <!-- Collapsible additional filters section -->
-            <div class="filters-section" id="filtersSection" style="display: none;">
-                <!-- Additional filter buttons -->
-                <div class="filters-row filters-secondary-row additional-filters">
+                    
                     <div class="filter-group">
-                        <button id="stateButton" class="filter-button">
+                        <select id="repoFilter" class="filter-select">
+                            <option value="all">All Repositories</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Second row: Remaining 4 elements -->
+                <div class="filter-row-2">
+                    <!-- State Filter (moved from secondary row) -->
+                    <div class="filter-group">
+                        <button id="stateButton" class="filter-button compact-filter">
                             <i class="fas fa-exclamation-circle"></i> Active
                             <i class="fas fa-chevron-down"></i>
                         </button>
@@ -331,15 +299,73 @@ class GitHubIssuesManager {
                             </div>
                         </div>
                     </div>
-
+                    
+                    <!-- Labels Filter (moved from secondary row) -->
                     <div class="filter-group">
-                        <button id="labelButton" class="filter-button">
+                        <button id="labelButton" class="filter-button compact-filter">
                             <i class="fas fa-tags"></i> Labels: All
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <div class="dropdown-menu" id="labelDropdown">
                             <div class="dropdown-item" data-label="all">
                                 <i class="fas fa-tags"></i> All Labels
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters">
+                        <i class="fas fa-filter toggle-icon" style="display: none;"></i>
+                        <span class="toggle-text">More Filters</span>
+                    </button>
+                    
+                    <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
+                        <i class="fas fa-times clear-icon" style="display: none;"></i>
+                        <span class="clear-text">Clear</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Collapsible additional filters section -->
+            <div class="filters-section" id="filtersSection" style="display: none;">
+                <!-- Additional filter buttons -->
+                <div class="filters-row filters-secondary-row additional-filters">
+                    <!-- Assigned to filter (moved from main row) -->
+                    <div class="filter-group">
+                        <button id="assigneeButton" class="filter-button">
+                            <i class="fas fa-user"></i> Assigned to: All
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="assigneeDropdown">
+                            <div class="dropdown-item" data-assignee="all">
+                                <i class="fas fa-users"></i> All Users
+                            </div>
+                            <div class="dropdown-item" data-assignee="unassigned">
+                                <i class="fas fa-user-slash"></i> Unassigned
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort filter (moved from main row) -->
+                    <div class="filter-group">
+                        <button id="sortButton" class="filter-button">
+                            <i class="fas fa-sort"></i> Sort by: Updated
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu" id="sortDropdown">
+                            <div class="dropdown-item" data-sort="updated">
+                                <i class="fas fa-calendar-alt"></i> Updated Date
+                            </div>
+                            <div class="dropdown-item" data-sort="created">
+                                <i class="fas fa-plus"></i> Created Date
+                            </div>
+                            <div class="dropdown-item" data-sort="comments">
+                                <i class="fas fa-comments"></i> Comment Count
+                            </div>
+                            <div class="dropdown-item" data-sort="title">
+                                <i class="fas fa-sort-alpha-down"></i> Title (A-Z)
+                            </div>
+                            <div class="dropdown-item" data-sort="number">
+                                <i class="fas fa-hashtag"></i> Issue Number
                             </div>
                         </div>
                     </div>
@@ -372,21 +398,6 @@ class GitHubIssuesManager {
     createIssuesContainerHTML() {
         return `
             <div class="issues-container" id="issuesContainer" style="display: none;">
-                <div class="issues-header-bar">
-                    <div class="view-controls">
-                        <div class="view-toggle">
-                            <button id="shortView" class="view-btn active" title="Short View">
-                                <i class="fas fa-align-justify"></i>
-                            </button>
-                            <button id="listView" class="view-btn" title="List View">
-                                <i class="fas fa-list"></i>
-                            </button>
-                            <button id="cardView" class="view-btn" title="Card View">
-                                <i class="fas fa-th-large"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
                 
                 <div class="issues-list" id="issuesList">
                     <!-- Issues will be dynamically loaded here -->
@@ -589,10 +600,36 @@ class GitHubIssuesManager {
     updateToggleButtonDisplay() {
         const container = document.querySelector('.filters-always-visible');
         const toggleBtn = document.getElementById('toggleFiltersBtn');
+        const clearBtn = document.getElementById('clearAllFiltersBtn');
         
         if (container && toggleBtn) {
             const isNarrow = container.offsetWidth < 600;
+            
+            // Toggle classes for narrow container
             toggleBtn.classList.toggle('narrow-container', isNarrow);
+            if (clearBtn) {
+                clearBtn.classList.toggle('narrow-container', isNarrow);
+            }
+            
+            // Show/hide icons and text based on container width
+            const toggleIcon = toggleBtn.querySelector('.toggle-icon');
+            const toggleText = toggleBtn.querySelector('.toggle-text');
+            const clearIcon = clearBtn?.querySelector('.clear-icon');
+            const clearText = clearBtn?.querySelector('.clear-text');
+            
+            if (isNarrow) {
+                // Show icons, hide text
+                if (toggleIcon) toggleIcon.style.display = 'inline';
+                if (toggleText) toggleText.style.display = 'none';
+                if (clearIcon) clearIcon.style.display = 'inline';
+                if (clearText) clearText.style.display = 'none';
+            } else {
+                // Show text, hide icons
+                if (toggleIcon) toggleIcon.style.display = 'none';
+                if (toggleText) toggleText.style.display = 'inline';
+                if (clearIcon) clearIcon.style.display = 'none';
+                if (clearText) clearText.style.display = 'inline';
+            }
         }
     }
 
@@ -2805,9 +2842,7 @@ class GitHubIssuesManager {
         // Get current view type
         const currentView = this.currentView;
         
-        const stateIcon = issue.state === 'open' ? 
-            '<i class="fas fa-exclamation-circle issue-open"></i>' : 
-            '<i class="fas fa-check-circle issue-closed"></i>';
+        const stateIcon = ''; // Remove state icons
             
         const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
             issue.assignees.map(assignee => `
@@ -2856,9 +2891,9 @@ class GitHubIssuesManager {
                     </div>
                     
                     <!-- Title -->
-                    <h3 class="issue-title short-title" onclick="issuesManager.expandIssueDetails('${issue.id}', this)" style="cursor: pointer;" title="Click to expand details">
-                        ${this.escapeHtml(issue.title)}
-                    </h3>
+                    <h4 class="issue-title short-title" onclick="issuesManager.expandIssueDetails('${issue.id}', this)" style="cursor: pointer;" title="Click to expand details">
+                        #${issue.number} ${this.escapeHtml(issue.title)}
+                    </h4>
                 </div>
                 ${processedBody ? `
                     <div class="issue-description short-description">
@@ -2878,6 +2913,7 @@ class GitHubIssuesManager {
             return issueDiv;
         }
 
+        // List view and other views
         const repoInfo = this.repositories.find(r => r.name === issue.repository) || {};
         const repoImages = repoInfo.images && repoInfo.images.length > 0 ? `
             <div class="repo-images">
@@ -2890,11 +2926,9 @@ class GitHubIssuesManager {
         issueDiv.innerHTML = `
             <div class="issue-header">
                 <div class="issue-title-row">
-                    ${stateIcon}
-                    <div class="issue-number">#${issue.number}</div>
-                    <h3 class="issue-title">
-                        <a href="${issue.html_url}" target="_blank">${this.escapeHtml(issue.title)}</a>
-                    </h3>
+                    <h4 class="issue-title">
+                        <a href="${issue.html_url}" target="_blank">#${issue.number} ${this.escapeHtml(issue.title)}</a>
+                    </h4>
                     
                     <!-- Issue Actions Menu -->
                     <div class="issue-actions-menu">
@@ -2989,9 +3023,7 @@ class GitHubIssuesManager {
         modalTitle.textContent = `${issue.title} #${issue.number}`;
 
         // Create detailed view
-        const stateIcon = issue.state === 'open' ? 
-            '<i class="fas fa-exclamation-circle issue-open"></i>' : 
-            '<i class="fas fa-check-circle issue-closed"></i>';
+        const stateIcon = ''; // Remove state icons
 
         const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
             issue.assignees.map(assignee => `
@@ -4028,6 +4060,9 @@ class GitHubIssuesManager {
         
         const issuesList = document.getElementById('issuesList');
         issuesList.className = `issues-list ${viewType}-view`;
+        
+        // Re-render issues with the new view
+        this.displayIssues();
         
         // Save view preference to localStorage (unless loading from saved preference)
         if (savePreference) {
