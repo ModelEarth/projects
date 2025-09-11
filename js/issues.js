@@ -181,6 +181,9 @@ class GitHubIssuesManager {
                     <p class="subtitle" style="margin-top: 5px;">
                         <input type="text" id="gitIssuesAccount" class="textInput" style="width:150px; font-size: 14px; display: none;" placeholder="GitHub Account" onfocus="this.select()" oninput="updateGitIssuesAccount()">
                     </p>
+                     <span>
+       <a class="token-toggle-link" style="font-size:0.9rem;" href="/team/projects/#list=modelteam">Team Members</a>
+         </span>
                 </div>
                 
                 <!-- GitHub Authentication -->
@@ -289,13 +292,13 @@ class GitHubIssuesManager {
                         </button>
                         <div class="dropdown-menu" id="stateDropdown">
                             <div class="dropdown-item" data-projectstatus="open">
-                                <i class="fas fa-exclamation-circle"></i> Active Issues
+                                <i class="fas fa-exclamation-circle"></i> Active
                             </div>
                             <div class="dropdown-item" data-projectstatus="closed">
-                                <i class="fas fa-check-circle"></i> Closed Issues
+                                <i class="fas fa-check-circle"></i> Closed
                             </div>
                             <div class="dropdown-item" data-projectstatus="all">
-                                <i class="fas fa-list"></i> All Issues
+                                <i class="fas fa-list"></i> All
                             </div>
                         </div>
                     </div>
@@ -313,7 +316,7 @@ class GitHubIssuesManager {
                         </div>
                     </div>
                     
-                    <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters" onclick="this.onclick=null; alert('Container width: ' + this.closest('.filters-always-visible').offsetWidth + 'px');">
+          <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters" onclick="console.log('Container width:', this.closest('.filters-always-visible')?.offsetWidth + 'px');">
                         <i class="fas fa-filter toggle-icon" style="display: none;"></i>
                         <span class="toggle-text">More Filters</span>
                     </button>
@@ -1400,6 +1403,7 @@ class GitHubIssuesManager {
                 const value = e.target.getAttribute('data-sort') || 
                             e.target.getAttribute('data-assignee') || 
                             e.target.getAttribute('data-state') ||
+                             e.target.getAttribute('data-projectstatus') || 
                             e.target.getAttribute('data-label');
                 callback(value);
                 dropdown.classList.remove('show');
@@ -2661,7 +2665,7 @@ class GitHubIssuesManager {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             item.setAttribute('data-assignee', assignee);
-            item.innerHTML = `<i class="fas fa-user"></i> ${assignee}`;
+            item.innerHTML = `<i class="fas fa-user"></i> ${assignee.split('-')[0]}`;
             dropdown.appendChild(item);
         });
         
@@ -2900,6 +2904,11 @@ class GitHubIssuesManager {
                         ${this.escapeHtml(processedBody)}
                     </div>
                 ` : ''}
+                <div class="issue-actions">
+                        <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
+                            <i class="fas fa-eye"></i><span> Details</span>
+                        </button>
+                    </div>
                 
                 <!-- Hidden full details -->
                 <div class="issue-full-details" id="fullDetails-${issue.id}" style="display: none;">
@@ -3446,7 +3455,7 @@ class GitHubIssuesManager {
         if (this.filters.assignee === 'unassigned') {
             displayText = 'Unassigned';
         } else if (this.filters.assignee !== 'all') {
-            displayText = this.filters.assignee;
+            displayText = this.filters.assignee.split('-')[0];
         }
         
         // Check if container is narrow
