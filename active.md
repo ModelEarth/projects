@@ -219,7 +219,7 @@ TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Ga
 
 **BuildingTransparency and Open Footprint labels**
 
-Bhavna, Yash, Apurva, Vennela
+Bhavna, Yash, Apurva, Vennela, Himamshu
 
 - [Use our state map filter](#geoview=country) with colors for [new USEEIO reporting maps](https://figshare.com/collections/USEEIO_State_Models_v1_0_-_Supporting_Figures/7041473)
 - [BuildingTransparency - Product Impact Profiles by State and Zip](/io/template/feed/) - TO DO <!--Ronan--> - Vennela
