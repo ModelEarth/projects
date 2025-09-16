@@ -3026,7 +3026,7 @@ class GitHubIssuesManager {
                 <div class="issue-footer">
                     <div class="issue-author">
                         <img src="${issue.user.avatar_url}" alt="${issue.user.login}" class="author-avatar">
-                        <span>by ${issue.user.login}</span>          
+                        <span>by ${issue.user.login.split("-")[0]}</span>          
                     </div>
                     
                     ${assigneesHtml ? `<div class="issue-assignees"> <span> Assigned To : </span> ${assigneesHtml}</div>` : ''}
@@ -3045,9 +3045,7 @@ class GitHubIssuesManager {
                 ${repoImages}
                 
                 <!-- Content for narrow card view (handled by CSS) -->
-                <div class="issue-repo-name" style="display: ${showingMultipleRepos ? 'block' : 'none'};">
-                    ${issue.repository}
-                </div>
+                
                 ${!showingMultipleRepos && issue.body ? `
                     <div class="issue-body-preview">
                         ${this.formatMarkdown(issue.body.substring(0, 100))}${issue.body.length > 100 ? '...' : ''}
