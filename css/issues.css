@@ -2675,11 +2675,12 @@ body.widget-fullscreen-active {
 
 
 /* Card View - Force 2 columns always */
-.issues-list.card-view {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem !important;
+.issues-list.card-view {  
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* avoids right overlap */
+  gap: 0.75rem !important;
+  padding: 0.75rem !important;
+  box-sizing: border-box;
 }
 
 /* Override any existing card item styles */
@@ -3103,4 +3104,31 @@ body.widget-fullscreen-active {
   display: flex;
 }
 
+/* 3-wide when fullscreen */
+.widget-fullscreen-active .issues-list.card-view {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+/* When the containing div is >= 800px, show the short description */
+@container (min-width: 800px) {
+  .card-view .short-description { 
+    display: block !important; 
+  }
+  /* Let cards be natural height when showing text */
+  .card-view .issue-item { 
+    aspect-ratio: auto !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+}
 
+/* Optional: allow earlier (>=500px) if you want it to show sooner */
+@container (min-width: 500px) and (max-width: 799px) {
+  .card-view .short-description { 
+    display: block !important; 
+  }
+}
+.search-stats {
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}

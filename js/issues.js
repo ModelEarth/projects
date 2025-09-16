@@ -9,11 +9,11 @@
 class GitHubIssuesManager {
     constructor(containerId = 'issuesWidget', options = {}) {
         this.containerId = containerId;
-        
+
         // Read configuration from data attributes or options
         const container = document.getElementById(containerId);
         const config = this.parseConfiguration(container, options);
-        
+
         this.githubToken = localStorage.getItem('github_token') || '';
         this.baseURL = 'https://api.github.com';
         this.owner = config.githubOwner;
@@ -21,7 +21,7 @@ class GitHubIssuesManager {
         this.multiRepoRoots = config.multiRepoRoots;
         this.currentFolder = this.getCurrentFolder();
         this.defaultRepo = this.determineDefaultRepo();
-        
+
         this.perPage = 10;
         this.currentPage = 1;
         this.allIssues = [];
@@ -35,7 +35,7 @@ class GitHubIssuesManager {
         this.autoRefreshInterval = null;
         this.assignees = new Set();
         this.labels = new Set();
-        
+
         // Cache configuration (in minutes)
         this.cacheConfig = {
             duration: parseInt(localStorage.getItem('github_cache_duration')) || 10, // Default 10 minutes
@@ -47,7 +47,7 @@ class GitHubIssuesManager {
             resetTime: null,
             startTime: null
         };
-        
+
         // State management
         this.filters = {
             repo: this.defaultRepo,
@@ -57,16 +57,16 @@ class GitHubIssuesManager {
             label: 'all',
             search: ''
         };
-        
+
         // UI state
         this.currentView = 'short'; // Default view
         this.isFullscreen = false;
         this.currentRefreshIssueId = null;
-        
+
         // Search debouncing
         this.searchDebounceTimer = null;
         this.searchDebounceDelay = 300; // 300ms delay
-        
+
         this.init();
     }
 
@@ -98,7 +98,7 @@ class GitHubIssuesManager {
         // Get current folder from URL path
         const path = window.location.pathname;
         const pathParts = path.split('/').filter(part => part.length > 0);
-        
+
         // Return the first non-empty path segment (top-level folder)
         return pathParts.length > 0 ? pathParts[0] : '';
     }
@@ -120,7 +120,7 @@ class GitHubIssuesManager {
                 break;
             }
         }
-        
+
         // Fallback: climb out of js folder and into hub folder
         return '../hub/repos.csv';
     }
@@ -381,19 +381,25 @@ class GitHubIssuesManager {
                 </div>
 
                 <!-- Search row -->
-                <div class="filters-row filters-tertiary-row">
-                    <div class="search-container">
-                        <div class="search-group">
-                            <input type="text" id="searchInput" placeholder="Search issues by title, body, or number...">
-                            <button id="searchButton" class="btn btn-primary">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button id="clearSearch" class="btn btn-clear-search" style="display: none;">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                
+                <!-- Third row: Search -->
+<div class="filter-row-3">
+  <div class="search-container">
+    <div class="search-group">
+      <input id="searchInput" type="text" placeholder="Enter Search " />
+      <button id="searchButton" class="btn btn-primary">
+        <i class="fas fa-search"></i>
+      </button>
+      <button id="clearSearch" class="btn btn-clear-search" title="Clear" style="display:none">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- NEW: live counts -->
+  <div class="search-stats" id="searchStats" aria-live="polite"></div>
+</div>
+
             </div>
         `;
     }
@@ -531,26 +537,26 @@ class GitHubIssuesManager {
     async init() {
         // Create the widget structure first
         this.createWidgetStructure();
-        
+
         // Ensure initial responsive state is correct
         this.updateAssigneeButton();
         this.updateToggleButtonDisplay();
-        
+
         this.setupEventListeners();
         this.setupMenuClickHandler(); // Add menu click handler
         this.loadFromHash();
         this.loadFromCache();
         this.updateTokenUI();
-        
+
         // Load saved view preference
         this.loadViewPreference();
-        
+
         // Auto-detect owner from current URL or default to ModelEarth
         this.detectOwner();
-        
+
         // Load rate limit info from cache
         this.loadRateLimitFromCache();
-        
+
         // If we have a token but no recent rate limit info, clear it to get fresh data
         if (this.githubToken && this.rateLimitInfo.remaining !== null) {
             const now = Date.now();
@@ -560,20 +566,50 @@ class GitHubIssuesManager {
                 this.clearRateLimit();
             }
         }
-        
+
         this.startRateLimitTimer();
-        
+
         await this.loadData();
-        
+
         // Start auto-refresh timer only if we have a token
         if (this.githubToken) {
             this.startAutoRefreshTimer();
         } else {
         }
-        
+
         // Add resize observer to handle responsive label changes
         this.setupResizeObserver();
     }
+
+    updateSearchStatus() {
+        const el = document.getElementById('searchStats');
+        if (!el) return;
+
+        // filters considered "active" when anything differs from defaults OR a search term exists
+        const defaults = { sort: 'updated', assignee: 'all', projectstatus: 'open', label: 'all' };
+        const anyNonDefault = Object.keys(defaults).some(k => this.filters[k] !== defaults[k]);
+        const active = anyNonDefault || (this.filters.search && this.filters.search.trim().length > 0);
+
+        if (!active) {
+            el.textContent = '';
+            el.style.display = 'none';
+            return;
+        }
+
+        const count = this.filteredIssues?.length ?? 0;
+        const project = this.allIssues?.length ?? 0;
+
+        // repos shown → if 'all', count unique repos in CURRENT filtered set; else it's 1
+        let repo = 1;
+        if (this.filters.repo === 'all') {
+            const s = new Set((this.filteredIssues || []).map(i => i.repository));
+            repo = s.size || (this.repositoryIssueCounts ? Object.keys(this.repositoryIssueCounts).length : 1);
+        }
+
+        el.textContent = `${count} matches out of ${project} projects in ${repo} repos`;
+        el.style.display = 'block';
+    }
+
 
     setupResizeObserver() {
         // Create a resize observer to watch the filter container width
@@ -585,7 +621,7 @@ class GitHubIssuesManager {
                     this.updateToggleButtonDisplay();
                 }
             });
-            
+
             // Start observing the filters container
             const container = document.querySelector('.filters-always-visible');
             if (container) {
@@ -604,22 +640,22 @@ class GitHubIssuesManager {
         const container = document.querySelector('.filters-always-visible');
         const toggleBtn = document.getElementById('toggleFiltersBtn');
         const clearBtn = document.getElementById('clearAllFiltersBtn');
-        
+
         if (container && toggleBtn) {
             const isNarrow = container.offsetWidth < 600;
-            
+
             // Toggle classes for narrow container
             toggleBtn.classList.toggle('narrow-container', isNarrow);
             if (clearBtn) {
                 clearBtn.classList.toggle('narrow-container', isNarrow);
             }
-            
+
             // Show/hide icons and text based on container width
             const toggleIcon = toggleBtn.querySelector('.toggle-icon');
             const toggleText = toggleBtn.querySelector('.toggle-text');
             const clearIcon = clearBtn?.querySelector('.clear-icon');
             const clearText = clearBtn?.querySelector('.clear-text');
-            
+
             if (isNarrow) {
                 // Show icons, hide text
                 if (toggleIcon) toggleIcon.style.display = 'inline';
@@ -646,11 +682,11 @@ class GitHubIssuesManager {
     }
 
     async loadRepositoriesWithIssues() {
-        
+
         // Start with projects repo as default and highest priority
         const repositoriesWithIssues = [];
         const csvRepos = await this.loadRepositoriesFromCSV();
-        
+
         // Always add projects repo first (default selection)
         const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
         if (projectsRepo) {
@@ -665,15 +701,15 @@ class GitHubIssuesManager {
                 priority: 1 // Highest priority for lazy loading
             });
         }
-        
+
         // Check other repos for issues (excluding projects since we already added it)
         const otherRepos = csvRepos.filter(repo => repo.repo_name !== 'projects');
-        
+
         for (const repo of otherRepos) {
             try {
                 // Quick check if repo has any open issues (most important for active repos)
                 const openCount = await this.getRepositoryIssueCount(repo.repo_name, 'open');
-                
+
                 // For filtering purposes, we only need to know if there are any issues
                 // Open issues are sufficient to determine if repo should be included
                 if (openCount > 0) {
@@ -691,7 +727,7 @@ class GitHubIssuesManager {
             } catch (error) {
             }
         }
-        
+
         return repositoriesWithIssues;
     }
 
@@ -708,39 +744,39 @@ class GitHubIssuesManager {
             console.error('Error loading repositories from CSV:', error);
             // Fallback to hardcoded list (updated with additional repositories)
             return [
-                {repo_name: 'modelearth', display_name: 'ModelEarth', description: 'Main ModelEarth repository', default_branch: 'master'},
-                {repo_name: 'localsite', display_name: 'LocalSite', description: 'Core CSS/JS utilities', default_branch: 'main'},
-                {repo_name: 'realitystream', display_name: 'RealityStream', description: 'ML Models and Visualization', default_branch: 'main'},
-                {repo_name: 'feed', display_name: 'Feed', description: 'FeedPlayer video/gallery', default_branch: 'main'},
-                {repo_name: 'swiper', display_name: 'Swiper', description: 'UI swiper components', default_branch: 'main'},
-                {repo_name: 'comparison', display_name: 'Comparison', description: 'Trade Flow tools', default_branch: 'main'},
-                {repo_name: 'codechat', display_name: 'CodeChat', description: 'Code chat interface', default_branch: 'main'},
-                {repo_name: 'home', display_name: 'Home', description: 'Home page content', default_branch: 'main'},
-                {repo_name: 'cloud', display_name: 'Cloud', description: 'Cloud platform tools', default_branch: 'main'},
-                {repo_name: 'projects', display_name: 'Projects', description: 'Project showcases', default_branch: 'main'},
-                {repo_name: 'team', display_name: 'Team', description: 'Rust REST API for Azure', default_branch: 'main'},
-                {repo_name: 'products', display_name: 'Products', description: 'Products frontend and python', default_branch: 'main'},
-                {repo_name: 'products-data', display_name: 'Products Data', description: 'Products data output', default_branch: 'main'},
-                {repo_name: 'profile', display_name: 'Profile', description: 'Profile frontend analysis', default_branch: 'main'},
-                {repo_name: 'exiobase', display_name: 'Exiobase', description: 'Trade flow output to .csv and SQL', default_branch: 'main'},
-                {repo_name: 'io', display_name: 'IO', description: 'Input-output analysis', default_branch: 'main'},
-                {repo_name: 'useeio.js', display_name: 'USEEIO.JS', description: 'JavaScript footprint tools', default_branch: 'dev'},
-                {repo_name: 'useeio-widgets', display_name: 'USEEIO Widgets', description: 'USEEIO React widgets', default_branch: 'master'},
-                {repo_name: 'useeio-widgets-without-react', display_name: 'USEEIO Widgets Without React', description: 'USEEIO widgets without React', default_branch: 'master'},
-                {repo_name: 'useeiopy', display_name: 'USEEIO Python', description: 'Python USEEIO library', default_branch: 'master'},
-                {repo_name: 'useeio_api', display_name: 'USEEIO API', description: 'USEEIO REST API', default_branch: 'master'},
-                {repo_name: 'useeio', display_name: 'USEEIO Core', description: 'Core USEEIO model', default_branch: 'master'},
-                {repo_name: 'useeior', display_name: 'USEEIO R', description: 'R package for USEEIO', default_branch: 'master'},
-                {repo_name: 'useeio-state', display_name: 'USEEIO State', description: 'State-level USEEIO data', default_branch: 'main'},
-                {repo_name: 'useeio-json', display_name: 'USEEIO JSON', description: 'USEEIO JSON data', default_branch: 'main'},
-                {repo_name: 'mario', display_name: 'Mario', description: 'Multi-regional input-output', default_branch: 'main'},
-                {repo_name: 'webroot', display_name: 'Webroot', description: 'PartnerTools webroot', default_branch: 'main'},
-                {repo_name: 'data-pipeline', display_name: 'Data Pipeline', description: 'Python data processing pipeline', default_branch: 'main'},
-                {repo_name: 'community-data', display_name: 'Community data', description: 'Community-level data outputs', default_branch: 'master'},
-                {repo_name: 'community-timelines', display_name: 'Community Timeline', description: 'Timeline data for communities', default_branch: 'main'},
-                {repo_name: 'community-zipcodes', display_name: 'Community Zipcodes', description: 'ZIP code level community data', default_branch: 'main'},
-                {repo_name: 'community-forecasting', display_name: 'Community Forecasting', description: 'Forecasting frontend', default_branch: 'main'},
-                {repo_name: 'dataflow', display_name: 'Data flow', description: 'Data flow NextJS UX', default_branch: 'main'},
+                { repo_name: 'modelearth', display_name: 'ModelEarth', description: 'Main ModelEarth repository', default_branch: 'master' },
+                { repo_name: 'localsite', display_name: 'LocalSite', description: 'Core CSS/JS utilities', default_branch: 'main' },
+                { repo_name: 'realitystream', display_name: 'RealityStream', description: 'ML Models and Visualization', default_branch: 'main' },
+                { repo_name: 'feed', display_name: 'Feed', description: 'FeedPlayer video/gallery', default_branch: 'main' },
+                { repo_name: 'swiper', display_name: 'Swiper', description: 'UI swiper components', default_branch: 'main' },
+                { repo_name: 'comparison', display_name: 'Comparison', description: 'Trade Flow tools', default_branch: 'main' },
+                { repo_name: 'codechat', display_name: 'CodeChat', description: 'Code chat interface', default_branch: 'main' },
+                { repo_name: 'home', display_name: 'Home', description: 'Home page content', default_branch: 'main' },
+                { repo_name: 'cloud', display_name: 'Cloud', description: 'Cloud platform tools', default_branch: 'main' },
+                { repo_name: 'projects', display_name: 'Projects', description: 'Project showcases', default_branch: 'main' },
+                { repo_name: 'team', display_name: 'Team', description: 'Rust REST API for Azure', default_branch: 'main' },
+                { repo_name: 'products', display_name: 'Products', description: 'Products frontend and python', default_branch: 'main' },
+                { repo_name: 'products-data', display_name: 'Products Data', description: 'Products data output', default_branch: 'main' },
+                { repo_name: 'profile', display_name: 'Profile', description: 'Profile frontend analysis', default_branch: 'main' },
+                { repo_name: 'exiobase', display_name: 'Exiobase', description: 'Trade flow output to .csv and SQL', default_branch: 'main' },
+                { repo_name: 'io', display_name: 'IO', description: 'Input-output analysis', default_branch: 'main' },
+                { repo_name: 'useeio.js', display_name: 'USEEIO.JS', description: 'JavaScript footprint tools', default_branch: 'dev' },
+                { repo_name: 'useeio-widgets', display_name: 'USEEIO Widgets', description: 'USEEIO React widgets', default_branch: 'master' },
+                { repo_name: 'useeio-widgets-without-react', display_name: 'USEEIO Widgets Without React', description: 'USEEIO widgets without React', default_branch: 'master' },
+                { repo_name: 'useeiopy', display_name: 'USEEIO Python', description: 'Python USEEIO library', default_branch: 'master' },
+                { repo_name: 'useeio_api', display_name: 'USEEIO API', description: 'USEEIO REST API', default_branch: 'master' },
+                { repo_name: 'useeio', display_name: 'USEEIO Core', description: 'Core USEEIO model', default_branch: 'master' },
+                { repo_name: 'useeior', display_name: 'USEEIO R', description: 'R package for USEEIO', default_branch: 'master' },
+                { repo_name: 'useeio-state', display_name: 'USEEIO State', description: 'State-level USEEIO data', default_branch: 'main' },
+                { repo_name: 'useeio-json', display_name: 'USEEIO JSON', description: 'USEEIO JSON data', default_branch: 'main' },
+                { repo_name: 'mario', display_name: 'Mario', description: 'Multi-regional input-output', default_branch: 'main' },
+                { repo_name: 'webroot', display_name: 'Webroot', description: 'PartnerTools webroot', default_branch: 'main' },
+                { repo_name: 'data-pipeline', display_name: 'Data Pipeline', description: 'Python data processing pipeline', default_branch: 'main' },
+                { repo_name: 'community-data', display_name: 'Community data', description: 'Community-level data outputs', default_branch: 'master' },
+                { repo_name: 'community-timelines', display_name: 'Community Timeline', description: 'Timeline data for communities', default_branch: 'main' },
+                { repo_name: 'community-zipcodes', display_name: 'Community Zipcodes', description: 'ZIP code level community data', default_branch: 'main' },
+                { repo_name: 'community-forecasting', display_name: 'Community Forecasting', description: 'Forecasting frontend', default_branch: 'main' },
+                { repo_name: 'dataflow', display_name: 'Data flow', description: 'Data flow NextJS UX', default_branch: 'main' },
             ];
         }
     }
@@ -748,20 +784,20 @@ class GitHubIssuesManager {
     async detectEntityType() {
         const cacheKey = `github_entity_type_${this.owner}`;
         const cacheTimeKey = `github_entity_type_time_${this.owner}`;
-        
+
         // Check cache first (valid for 24 hours)
         const cachedType = localStorage.getItem(cacheKey);
         const cacheTime = localStorage.getItem(cacheTimeKey);
-        
+
         if (cachedType && cacheTime) {
             const age = Date.now() - parseInt(cacheTime);
             const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours
-            
+
             if (age < twentyFourHours) {
                 return cachedType;
             }
         }
-        
+
         // Try to detect if it's an organization or user
         try {
             // First try organization endpoint
@@ -794,15 +830,15 @@ class GitHubIssuesManager {
         const isLoadingAll = specificRepos === null;
         const cacheKey = isLoadingAll ? 'github_all_repos' : `github_repos_${specificRepos.join('_')}`;
         const cacheTimeKey = isLoadingAll ? 'github_all_repos_time' : `github_repos_${specificRepos.join('_')}_time`;
-        
+
         // Check if we have cached data that's less than 1 hour old
         const cachedData = localStorage.getItem(cacheKey);
         const cacheTime = localStorage.getItem(cacheTimeKey);
-        
+
         if (cachedData && cacheTime) {
             const age = Date.now() - parseInt(cacheTime);
             const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-            
+
             if (age < oneHour) {
                 return JSON.parse(cachedData);
             }
@@ -816,19 +852,19 @@ class GitHubIssuesManager {
         const repos = [];
 
         if (isLoadingAll) {
-            
+
             // Detect if this is an organization or user account
             const entityType = await this.detectEntityType();
-            const endpoint = entityType === 'org' 
-                ? `/orgs/${this.owner}/repos` 
+            const endpoint = entityType === 'org'
+                ? `/orgs/${this.owner}/repos`
                 : `/users/${this.owner}/repos`;
-            
+
             let page = 1;
             const perPage = 100;
 
             while (true) {
                 const pageRepos = await this.apiRequest(`${endpoint}?per_page=${perPage}&page=${page}&type=all&sort=name`);
-                
+
                 if (pageRepos.length === 0) break;
 
                 // Add repos that have issues
@@ -847,7 +883,7 @@ class GitHubIssuesManager {
             }
 
         } else {
-            
+
             // Fetch specific repositories
             for (const repoName of specificRepos) {
                 try {
@@ -882,10 +918,10 @@ class GitHubIssuesManager {
         }
 
         this.updateLoadingStatus('Loading all repositories...');
-        
+
         try {
             const allRepos = await this.loadRepositoriesFromGitHub(null); // null = load all
-            
+
             if (allRepos && allRepos.length > 0) {
                 this.repositories = allRepos.map(apiRepo => ({
                     name: apiRepo.repo_name,
@@ -896,12 +932,12 @@ class GitHubIssuesManager {
                     totalIssueCount: null,
                     repository_url: apiRepo.html_url || `https://github.com/${this.owner}/${apiRepo.repo_name}`
                 }));
-                
+
                 this.loadedAllRepositories = true;
-                
+
                 // Load issue counts for all repositories when explicitly loading all
                 await this.loadRepositoryIssueCountsForDisplayed();
-                
+
                 // Update UI
                 this.populateRepositoryFilter();
                 this.showNotification(`Loaded ${this.repositories.length} repositories`, 'success');
@@ -916,14 +952,14 @@ class GitHubIssuesManager {
         // Check if we have cached count that's less than 1 hour old
         const cacheKey = 'github_repo_count';
         const cacheTimeKey = 'github_repo_count_time';
-        
+
         const cachedCount = localStorage.getItem(cacheKey);
         const cacheTime = localStorage.getItem(cacheTimeKey);
-        
+
         if (cachedCount && cacheTime) {
             const age = Date.now() - parseInt(cacheTime);
             const oneHour = 60 * 60 * 1000;
-            
+
             if (age < oneHour) {
                 return parseInt(cachedCount);
             }
@@ -936,23 +972,23 @@ class GitHubIssuesManager {
         try {
             // Detect if this is an organization or user account
             const entityType = await this.detectEntityType();
-            const endpoint = entityType === 'org' 
+            const endpoint = entityType === 'org'
                 ? `/orgs/${this.owner}`
                 : `/users/${this.owner}`;
-            
+
             const entity = await this.apiRequest(endpoint);
             const totalRepos = entity.public_repos || 0;
-            
+
             // For more accurate count, make one API call to get first page and total
-            const reposEndpoint = entityType === 'org' 
+            const reposEndpoint = entityType === 'org'
                 ? `/orgs/${this.owner}/repos`
                 : `/users/${this.owner}/repos`;
-                
+
             const firstPage = await this.apiRequest(`${reposEndpoint}?per_page=1&type=all`);
-            
+
             // Get the actual count from Link header or estimate based on public_repos
             let actualCount = totalRepos;
-            
+
             // Filter for repositories with issues enabled (rough estimate)
             if (firstPage && firstPage.length > 0) {
                 // Make a small sample to estimate percentage with issues
@@ -961,12 +997,12 @@ class GitHubIssuesManager {
                 const percentage = withIssues / sample.length;
                 actualCount = Math.round(totalRepos * percentage);
             }
-            
-            
+
+
             // Cache the result
             localStorage.setItem(cacheKey, actualCount.toString());
             localStorage.setItem(cacheTimeKey, Date.now().toString());
-            
+
             return actualCount;
         } catch (error) {
             console.warn('Failed to get repository count:', error);
@@ -996,7 +1032,7 @@ class GitHubIssuesManager {
             const cached = localStorage.getItem('github_rate_limit_info');
             if (cached) {
                 this.rateLimitInfo = JSON.parse(cached);
-                
+
                 // Check if rate limit period has passed
                 if (this.rateLimitInfo.resetTime && new Date() > new Date(this.rateLimitInfo.resetTime)) {
                     this.clearRateLimit();
@@ -1031,7 +1067,7 @@ class GitHubIssuesManager {
         if (!this.githubToken) {
             return;
         }
-        
+
         // Clear existing timer
         if (this.cacheExpireTimer) {
             clearTimeout(this.cacheExpireTimer);
@@ -1055,7 +1091,7 @@ class GitHubIssuesManager {
                 const cacheAge = Date.now() - data.timestamp;
                 const cacheAgeMinutes = Math.round(cacheAge / 60000);
                 const remainingMinutes = Math.max(0, this.cacheConfig.duration - cacheAgeMinutes);
-                
+
                 cacheStatusDiv.innerHTML = `
                     <span class="cache-info">
                         Cache: ${cacheAgeMinutes}m old, expires in ${remainingMinutes}m 
@@ -1074,14 +1110,14 @@ class GitHubIssuesManager {
     setCacheDuration(minutes) {
         this.cacheConfig.duration = Math.max(1, Math.min(60, minutes)); // Limit between 1-60 minutes
         localStorage.setItem('github_cache_duration', this.cacheConfig.duration.toString());
-        
+
         // Clear existing cache to apply new duration
         localStorage.removeItem('github_issues_cache');
         this.clearRepositoryCache(); // Clear all repository-specific caches
-        
+
         this.showNotification(`Cache duration set to ${this.cacheConfig.duration} minutes`, 'info');
         this.updateCacheStatusDisplay();
-        
+
         // Reload data with new cache settings
         this.loadData(true);
     }
@@ -1089,12 +1125,12 @@ class GitHubIssuesManager {
     toggleAutoRefresh() {
         this.cacheConfig.autoRefresh = !this.cacheConfig.autoRefresh;
         localStorage.setItem('github_cache_auto_refresh', this.cacheConfig.autoRefresh.toString());
-        
+
         if (!this.cacheConfig.autoRefresh && this.cacheExpireTimer) {
             clearTimeout(this.cacheExpireTimer);
             this.cacheExpireTimer = null;
         }
-        
+
         this.showNotification(`Auto-refresh ${this.cacheConfig.autoRefresh ? 'enabled' : 'disabled'}`, 'info');
         this.updateCacheStatusDisplay();
     }
@@ -1129,7 +1165,7 @@ class GitHubIssuesManager {
             const isLowOnRequests = remaining < 100;
             const isRateLimited = remaining === 0 && timeLeft > 0;
             const isWithoutToken = !this.githubToken && remaining <= 60; // Anonymous limit is 60
-            
+
             const shouldShowWarning = isLowOnRequests || isRateLimited;
             const shouldShowInfo = isWithoutToken && !isRateLimited;
 
@@ -1160,7 +1196,7 @@ class GitHubIssuesManager {
         } else {
             rateLimitDiv.style.display = 'none';
         }
-        
+
         // Update the header text with current rate limit info
         this.updateTokenSectionUI();
     }
@@ -1189,7 +1225,7 @@ class GitHubIssuesManager {
         if (this.rateLimitTimer) {
             clearInterval(this.rateLimitTimer);
         }
-        
+
         this.rateLimitTimer = setInterval(() => {
             this.updateRateLimitDisplay();
         }, 60000); // Update every minute
@@ -1207,7 +1243,7 @@ class GitHubIssuesManager {
         // Filters
         document.getElementById('repoFilter').addEventListener('change', async (e) => {
             const selectedValue = e.target.value;
-            
+
             // Handle special load_all option
             if (selectedValue === 'load_all') {
                 await this.loadAllRepositories();
@@ -1215,13 +1251,13 @@ class GitHubIssuesManager {
                 e.target.value = this.filters.repo;
                 return;
             }
-            
-            
+
+
             // Warn user about rate limits when selecting "All Loaded Issues" without token
             if (selectedValue === 'all' && !this.githubToken) {
                 const remaining = this.rateLimitInfo.remaining || 60; // Default rate limit without token
                 const warning = `⚠️ Warning: Loading all repositories without a GitHub token may exhaust your remaining ${remaining} API requests.\n\nEnter your GitHub Token above for more robust requests (5,000/hour vs 60/hour).\n\nProceed anyway?`;
-                
+
                 if (!confirm(warning)) {
                     // Reset to projects if user cancels
                     e.target.value = 'projects';
@@ -1229,11 +1265,11 @@ class GitHubIssuesManager {
                     return;
                 }
             }
-            
+
             this.filters.repo = selectedValue;
             this.updateHash();
             this.saveToCache();
-            
+
             // Load issues for the selected repository if not already loaded
             if (this.filters.repo !== 'all' && !this.repositoryIssues[this.filters.repo]) {
                 // Check if repository exists in our list, if not try to add it dynamically
@@ -1250,7 +1286,7 @@ class GitHubIssuesManager {
                         return;
                     }
                 }
-                
+
                 await this.loadIssuesForRepository(this.filters.repo);
                 this.updateRepositoryDropdownCounts();
             } else if (this.filters.repo === 'all') {
@@ -1261,7 +1297,7 @@ class GitHubIssuesManager {
                 }
                 this.updateRepositoryDropdownCounts();
             }
-            
+
             this.filterAndDisplayIssues();
         });
 
@@ -1288,11 +1324,11 @@ class GitHubIssuesManager {
             this.updateStateButton();
             this.updateHash();
             this.saveToCache();
-            
+
             // If state changed, clear memory cache and reload issues with new state
             if (previousState !== value) {
                 this.repositoryIssues = {}; // Clear all cached issues
-                
+
                 // Reload issues for current repository with new state
                 if (this.filters.repo !== 'all') {
                     await this.loadIssuesForRepository(this.filters.repo);
@@ -1300,7 +1336,7 @@ class GitHubIssuesManager {
                     await this.loadIssuesForAllRepositories();
                 }
             }
-            
+
             this.filterAndDisplayIssues();
         });
 
@@ -1325,17 +1361,17 @@ class GitHubIssuesManager {
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.performSearch();
         });
-        
+
         // Add debounced search on input
         searchInput.addEventListener('input', (e) => {
             this.debouncedSearch(e.target.value);
         });
-        
+
         // Clear all filters button
         document.getElementById('clearAllFiltersBtn').addEventListener('click', () => {
             this.clearAllFilters();
         });
-        
+
         // Clear cache button
         document.getElementById('clearCacheButton').addEventListener('click', () => {
             this.clearAllCache();
@@ -1360,7 +1396,7 @@ class GitHubIssuesManager {
         document.getElementById('issueModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('issueModal')) this.closeModal();
         });
-        
+
         // Refresh Dialog
         document.getElementById('refreshDialogClose').addEventListener('click', () => this.closeRefreshDialog());
         document.getElementById('refreshDialogCancel').addEventListener('click', () => this.closeRefreshDialog());
@@ -1382,7 +1418,7 @@ class GitHubIssuesManager {
 
         // Hash change listener
         window.addEventListener('hashchange', () => this.loadFromHash());
-        
+
         // Resize listener to update width display
         window.addEventListener('resize', () => this.updatePagination());
     }
@@ -1400,11 +1436,11 @@ class GitHubIssuesManager {
         dropdown.addEventListener('click', (e) => {
             e.stopPropagation();
             if (e.target.classList.contains('dropdown-item')) {
-                const value = e.target.getAttribute('data-sort') || 
-                            e.target.getAttribute('data-assignee') || 
-                            e.target.getAttribute('data-state') ||
-                             e.target.getAttribute('data-projectstatus') || 
-                            e.target.getAttribute('data-label');
+                const value = e.target.getAttribute('data-sort') ||
+                    e.target.getAttribute('data-assignee') ||
+                    e.target.getAttribute('data-state') ||
+                    e.target.getAttribute('data-projectstatus') ||
+                    e.target.getAttribute('data-label');
                 callback(value);
                 dropdown.classList.remove('show');
             }
@@ -1425,7 +1461,7 @@ class GitHubIssuesManager {
     updateTokenUI() {
         const tokenInput = document.getElementById('githubToken');
         const clearButton = document.getElementById('clearToken');
-        
+
         if (this.githubToken) {
             tokenInput.value = '••••••••••••••••';
             clearButton.style.display = 'inline-block';
@@ -1438,7 +1474,7 @@ class GitHubIssuesManager {
     toggleTokenSection() {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
-        
+
         if (authSection.style.display === 'none') {
             // Show the token section
             authSection.style.display = 'block';
@@ -1454,7 +1490,7 @@ class GitHubIssuesManager {
         // First scroll to top and reveal auth section
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
-        
+
         // Show the token section
         if (authSection) {
             authSection.style.display = 'block';
@@ -1462,13 +1498,13 @@ class GitHubIssuesManager {
         if (subtitleDescription) {
             subtitleDescription.style.display = 'block';
         }
-        
+
         // Scroll to top smoothly to show the auth section
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
-        
+
         // Open the token URL in new tab immediately
         window.open('https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org', '_blank');
     }
@@ -1477,11 +1513,11 @@ class GitHubIssuesManager {
         const toggleLink = document.getElementById('toggleTokenSection');
         const benefitText = document.getElementById('tokenBenefitText');
         const headerRefreshSpan = document.getElementById('headerLastRefreshTime');
-        
+
         if (this.githubToken) {
             toggleLink.textContent = 'Change or Remove your Github Token';
             let text = ' The token has increased your API rate limits from 60 to 5,000 requests per hour';
-            
+
             // Add current request count and reset time if available
             if (this.rateLimitInfo.remaining !== null && this.rateLimitInfo.resetTime) {
                 const resetTime = new Date(this.rateLimitInfo.resetTime);
@@ -1490,18 +1526,18 @@ class GitHubIssuesManager {
             } else if (this.rateLimitInfo.remaining !== null) {
                 text += `. ${this.rateLimitInfo.remaining} requests remaining`;
             }
-            
+
             benefitText.textContent = text;
         } else {
             toggleLink.textContent = 'Add Your GitHub Token';
             benefitText.textContent = ' to increase API rate limits from 60 to 5,000 requests per hour';
         }
-        
+
         // Always keep refresh time info hidden (now sent to console)
         if (headerRefreshSpan) {
             headerRefreshSpan.style.display = 'none';
         }
-        
+
         // Update the refresh time display
         this.updateHeaderRefreshDisplay();
     }
@@ -1509,7 +1545,7 @@ class GitHubIssuesManager {
     async saveToken() {
         const tokenInput = document.getElementById('githubToken');
         const token = tokenInput.value.trim();
-        
+
         if (token && token !== '••••••••••••••••') {
             this.githubToken = token;
             localStorage.setItem('github_token', token);
@@ -1517,18 +1553,18 @@ class GitHubIssuesManager {
             localStorage.removeItem('github_all_repos'); // Clear repo cache to fetch fresh data
             localStorage.removeItem('github_all_repos_time');
             this.clearRepositoryCache(); // Clear all repository-specific caches
-            
+
             // Clear rate limit info since new token likely has better limits
             this.clearRateLimit();
-            
+
             // Clear any invalid token message
             this.invalidTokenMessage = null;
-            
+
             this.showNotification('Token saved successfully', 'success');
-            
+
             // Check if issues previously failed due to rate limiting and refresh them
             await this.refreshIssuesAfterTokenSave();
-            
+
             // Reload repositories with new token to populate all available repos
             try {
                 await this.loadRepositoriesFromCSVToUI();
@@ -1537,10 +1573,10 @@ class GitHubIssuesManager {
                 console.error('Error refreshing repositories after token save:', error);
             }
         }
-        
+
         this.updateTokenUI();
         this.updateTokenSectionUI();
-        
+
         // Hide the token section after saving
         document.getElementById('authSection').style.display = 'none';
         document.getElementById('subtitleDescription').style.display = 'none';
@@ -1553,29 +1589,29 @@ class GitHubIssuesManager {
             const errorMessage = document.getElementById('errorMessage');
             const currentErrorMessage = issuesList ? issuesList.innerHTML : '';
             const hasErrorDisplay = errorMessage && errorMessage.style.display !== 'none';
-            
-            const hasRateLimitError = currentErrorMessage.includes('API Rate Limit Exceeded') || 
-                                    currentErrorMessage.includes('rate limit') ||
-                                    currentErrorMessage.includes('no-issues') ||
-                                    hasErrorDisplay ||
-                                    this.allIssues.length === 0;
-            
+
+            const hasRateLimitError = currentErrorMessage.includes('API Rate Limit Exceeded') ||
+                currentErrorMessage.includes('rate limit') ||
+                currentErrorMessage.includes('no-issues') ||
+                hasErrorDisplay ||
+                this.allIssues.length === 0;
+
             // Check if rate limit was previously exceeded (stored in rateLimitInfo)
-            const wasRateLimited = this.rateLimitInfo.remaining === 0 || 
-                                 localStorage.getItem('github_rate_limit_exceeded') === 'true';
-            
+            const wasRateLimited = this.rateLimitInfo.remaining === 0 ||
+                localStorage.getItem('github_rate_limit_exceeded') === 'true';
+
             // Check if we have no repository data loaded due to rate limiting
             const hasNoRepoData = this.repositories.length === 0;
-            
+
             if (hasRateLimitError || wasRateLimited || hasNoRepoData) {
                 this.showNotification('Refreshing issues with new token...', 'info');
-                
+
                 // Clear any rate limit flags
                 localStorage.removeItem('github_rate_limit_exceeded');
-                
+
                 // Force refresh the data now that we have a token
                 await this.loadData(true);
-                
+
                 this.showNotification('Issues refreshed successfully!', 'success');
             } else {
             }
@@ -1595,7 +1631,7 @@ class GitHubIssuesManager {
             '• Reduce API rate limit from 5,000 to 60 requests per hour\n\n' +
             'You can always add your token back later.'
         );
-        
+
         if (confirmed) {
             this.githubToken = '';
             localStorage.removeItem('github_token');
@@ -1604,7 +1640,7 @@ class GitHubIssuesManager {
             this.updateTokenUI();
             this.updateTokenSectionUI();
             this.showNotification('GitHub token cleared successfully', 'info');
-            
+
             // Hide the token section after clearing
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('subtitleDescription').style.display = 'none';
@@ -1621,18 +1657,18 @@ class GitHubIssuesManager {
                 const cached = this.loadFromCache();
                 if (cached && cached.repositories && cached.repositories.length > 0 && cached.issues && cached.issues.length > 0) {
                     this.repositories = cached.repositories;
-                    
+
                     // Filter out any invalid issues from cached data
                     const validCachedIssues = cached.issues.filter(issue => this.isValidIssue(issue));
                     this.allIssues = validCachedIssues;
-                    
+
                     // Set initial last_refreshed timestamp for cached issues that don't have it
                     this.allIssues.forEach(issue => {
                         if (!issue.last_refreshed) {
                             issue.last_refreshed = new Date().toISOString();
                         }
                     });
-                    
+
                     // Rebuild assignees and labels from cached data
                     this.assignees = new Set();
                     this.labels = new Set();
@@ -1644,7 +1680,7 @@ class GitHubIssuesManager {
                             issue.labels.forEach(label => this.labels.add(label.name));
                         }
                     });
-                    
+
                     this.updateUI();
                     this.showLoading(false);
                     return;
@@ -1653,7 +1689,7 @@ class GitHubIssuesManager {
 
             this.updateLoadingStatus('Loading repositories...');
             await this.loadRepositoriesFromCSVToUI();
-            
+
             // Load issues for repositories
             if (this.filters.repo !== 'all') {
                 // Check if the repository exists in our list
@@ -1675,14 +1711,14 @@ class GitHubIssuesManager {
                 this.updateLoadingStatus('Loading issues for all repositories...');
                 await this.loadIssuesForAllRepositories();
             }
-            
+
             this.updateUI();
             this.saveToCache();
             this.showLoading(false);
-            
+
         } catch (error) {
             console.error('Error loading data:', error);
-            
+
             // Always load repositories from CSV even on API error
             try {
                 await this.loadRepositoriesFromCSVToUI();
@@ -1690,7 +1726,7 @@ class GitHubIssuesManager {
             } catch (csvError) {
                 this.showError('Failed to load repository data: ' + csvError.message);
             }
-            
+
             this.showLoading(false);
         }
     }
@@ -1702,7 +1738,7 @@ class GitHubIssuesManager {
             // Load only ModelEarth repositories that have at least one issue
             allRepos = await this.loadRepositoriesWithIssues();
             this.loadedAllRepositories = false;
-            
+
             // Get total repository count for UI display
             try {
                 this.totalRepositoryCount = await this.getRepositoryCount();
@@ -1711,7 +1747,7 @@ class GitHubIssuesManager {
             }
         } else {
             // Without token, only load projects repo from CSV to avoid rate limiting
-            
+
             // Initialize rate limit display for anonymous users (60 requests/hour)
             if (this.rateLimitInfo.remaining === null) {
                 this.rateLimitInfo.remaining = 60; // GitHub's anonymous rate limit
@@ -1726,7 +1762,7 @@ class GitHubIssuesManager {
         } else {
             // Fallback to CSV data - but without token, only show projects repo to conserve rate limits
             const csvRepos = await this.loadRepositoriesFromCSV();
-            
+
             if (!this.githubToken || this.invalidTokenMessage) {
                 // Filter to only show projects repo to avoid exhausting rate limits
                 // This includes both no token and invalid token cases
@@ -1741,7 +1777,7 @@ class GitHubIssuesManager {
                         totalIssueCount: null,
                         repository_url: `https://github.com/${this.owner}/${projectsRepo.repo_name}`
                     }];
-                    
+
                     // Show cache notification on localhost
                     if (window.location.hostname === 'localhost') {
                         this.showNotification('Repository list loaded from browser cache (localhost)', 'info');
@@ -1777,7 +1813,7 @@ class GitHubIssuesManager {
         if (this.githubToken && (this.filters.repo === 'modelearth' || this.filters.repo === 'all')) {
             this.filters.repo = 'projects';
         }
-        
+
         // Start lazy loading: first load projects repo issues, then others in background
         if (this.githubToken) {
             await this.startLazyLoading();
@@ -1789,7 +1825,7 @@ class GitHubIssuesManager {
     }
 
     async startLazyLoading() {
-        
+
         // Step 1: Immediately load and display projects repo issues
         const projectsRepo = this.repositories.find(r => r.name === 'projects');
         if (projectsRepo && this.filters.repo === 'projects') {
@@ -1797,65 +1833,65 @@ class GitHubIssuesManager {
                 await this.loadIssuesForRepository('projects');
                 this.updateRepositoryDropdownCounts();
                 this.filterAndDisplayIssues();
-                
+
                 // Show immediate feedback to user
                 this.showNotification('Projects issues loaded. Loading other repositories in background...', 'info');
             } catch (error) {
                 console.error('Error loading projects repo:', error);
             }
         }
-        
+
         // Step 2: Start background loading of other repositories
         setTimeout(() => this.lazyLoadOtherRepositories(), 100);
     }
-    
+
     async lazyLoadOtherRepositories() {
-        
+
         // Get repositories sorted by priority (projects first, others second)
         const otherRepos = this.repositories
             .filter(r => r.name !== 'projects')
             .sort((a, b) => (a.priority || 2) - (b.priority || 2));
-        
+
         let loadedCount = 1; // projects already loaded
-        
+
         for (const repo of otherRepos) {
             try {
                 // Add small delay between loads to prevent overwhelming the API
                 await new Promise(resolve => setTimeout(resolve, 200));
-                
+
                 await this.loadIssuesForRepository(repo.name);
                 loadedCount++;
-                
+
                 // Update UI progressively
                 this.updateRepositoryDropdownCounts();
-                
+
                 // Update progress in console
-                
+
             } catch (error) {
             }
         }
-        
+
         this.showNotification(`All ${loadedCount} repositories loaded successfully`, 'success');
     }
 
     async addRepositoryDynamically(repoName) {
-        
+
         // First check if it exists in the full CSV list
         const csvRepos = await this.loadRepositoriesFromCSV();
         const csvRepo = csvRepos.find(repo => repo.repo_name === repoName);
-        
+
         if (!csvRepo) {
             throw new Error(`Repository ${repoName} not found in ModelEarth organization`);
         }
-        
+
         // Check if it has any open issues
         try {
             const openCount = await this.getRepositoryIssueCount(repoName, 'open');
-            
+
             if (openCount === 0) {
                 throw new Error(`Repository ${repoName} has no open issues`);
             }
-            
+
             // Add to repositories list
             this.repositories.push({
                 name: csvRepo.repo_name,
@@ -1867,12 +1903,12 @@ class GitHubIssuesManager {
                 repository_url: `https://github.com/${this.owner}/${csvRepo.repo_name}`,
                 priority: 3 // Lower priority for dynamically added repos
             });
-            
+
             // Update dropdown
             this.populateRepositoryFilter();
-            
+
             this.showNotification(`Added repository "${repoName}" with ${openCount} open issues`, 'success');
-            
+
         } catch (error) {
             throw new Error(`Repository ${repoName} not accessible or has no issues`);
         }
@@ -1882,23 +1918,23 @@ class GitHubIssuesManager {
         // Only load issue counts for repositories that are actually in our dropdown
         // This prevents burning through API requests for repositories not shown to users
         const reposToLoad = this.repositories.map(repo => repo.name);
-        
+
         if (reposToLoad.length === 0) {
             return;
         }
-        
-        
+
+
         const cacheKey = `repo_issue_counts_${reposToLoad.join('_')}`;
         const cacheTimeKey = `repo_issue_counts_${reposToLoad.join('_')}_time`;
-        
+
         // Check cache first (valid for 5 minutes)
         const cachedCounts = localStorage.getItem(cacheKey);
         const cacheTime = localStorage.getItem(cacheTimeKey);
-        
+
         if (cachedCounts && cacheTime) {
             const age = Date.now() - parseInt(cacheTime);
             const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-            
+
             if (age < fiveMinutes) {
                 this.repositoryIssueCounts = JSON.parse(cachedCounts);
                 this.lastRefreshTime = new Date(parseInt(cacheTime));
@@ -1911,24 +1947,24 @@ class GitHubIssuesManager {
         try {
             this.lastRefreshTime = new Date();
             const counts = {};
-            
+
             for (const repoName of reposToLoad) {
                 try {
                     const openCount = await this.getRepositoryIssueCount(repoName, 'open');
                     const closedCount = await this.getRepositoryIssueCount(repoName, 'closed');
-                    
+
                     counts[repoName] = {
                         open: openCount,
                         closed: closedCount,
                         total: openCount + closedCount
                     };
-                    
+
                 } catch (error) {
                     console.warn(`Error loading issue counts for ${repoName}:`, error);
                     // Continue with other repositories
                 }
             }
-            
+
             this.repositoryIssueCounts = counts;
 
             // Cache the results with repo-specific key
@@ -1945,15 +1981,15 @@ class GitHubIssuesManager {
     async loadAllRepositoryIssueCounts() {
         const cacheKey = 'repo_issue_counts';
         const cacheTimeKey = 'repo_issue_counts_time';
-        
+
         // Check cache first (valid for 5 minutes)
         const cachedCounts = localStorage.getItem(cacheKey);
         const cacheTime = localStorage.getItem(cacheTimeKey);
-        
+
         if (cachedCounts && cacheTime) {
             const age = Date.now() - parseInt(cacheTime);
             const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-            
+
             if (age < fiveMinutes) {
                 this.repositoryIssueCounts = JSON.parse(cachedCounts);
                 this.lastRefreshTime = new Date(parseInt(cacheTime));
@@ -1966,7 +2002,7 @@ class GitHubIssuesManager {
         // Load fresh issue counts
         try {
             const counts = {};
-            
+
             for (const repo of this.repositories) {
                 try {
                     const openCount = await this.getRepositoryIssueCount(repo.name, 'open');
@@ -2007,7 +2043,7 @@ class GitHubIssuesManager {
                     ...(this.githubToken && { 'Authorization': `token ${this.githubToken}` })
                 }
             });
-            
+
             if (response.ok) {
                 const issues = await response.json();
                 // Filter out pull requests - GitHub issues API returns both issues and PRs
@@ -2023,7 +2059,7 @@ class GitHubIssuesManager {
     }
 
     async loadIssuesForAllRepositories() {
-        
+
         for (const repo of this.repositories) {
             try {
                 this.updateLoadingStatus(`Loading issues for ${repo.name}...`);
@@ -2033,7 +2069,7 @@ class GitHubIssuesManager {
                 // Continue with other repositories
             }
         }
-        
+
     }
 
     async loadIssuesForRepository(repoName, forceRefresh = false) {
@@ -2041,31 +2077,31 @@ class GitHubIssuesManager {
         if (!forceRefresh && this.repositoryIssues[repoName]) {
             return this.repositoryIssues[repoName];
         }
-        
+
         // Check persistent cache for this repository with current state
         if (!forceRefresh) {
             const cachedData = this.loadRepositoryFromCache(repoName, this.filters.projectstatus);
             if (cachedData) {
-                
+
                 // Filter out any invalid issues from cached data
                 const validCachedIssues = cachedData.issues.filter(issue => this.isValidIssue(issue));
-                
+
                 this.repositoryIssues[repoName] = validCachedIssues;
-                
+
                 // Update repository object with cached counts
                 const repo = this.repositories.find(r => r.name === repoName);
                 if (repo && cachedData.metadata) {
                     repo.openIssueCount = cachedData.metadata.openIssueCount;
                     repo.totalIssueCount = cachedData.metadata.totalIssueCount;
                 }
-                
+
                 // Set initial last_refreshed timestamp for cached issues that don't have it
                 cachedData.issues.forEach(issue => {
                     if (!issue.last_refreshed) {
                         issue.last_refreshed = new Date().toISOString();
                     }
                 });
-                
+
                 // Update assignees and labels from cached data
                 cachedData.issues.forEach(issue => {
                     if (issue.assignees && issue.assignees.length > 0) {
@@ -2075,12 +2111,12 @@ class GitHubIssuesManager {
                         issue.labels.forEach(label => this.labels.add(label.name));
                     }
                 });
-                
+
                 // Add cached issues to allIssues if they aren't already there
                 const existingIds = new Set(this.allIssues.map(issue => issue.id));
                 const newCachedIssues = validCachedIssues.filter(issue => !existingIds.has(issue.id));
                 this.allIssues.push(...newCachedIssues);
-                
+
                 return cachedData.issues;
             }
         }
@@ -2090,14 +2126,14 @@ class GitHubIssuesManager {
             const result = await this.fetchRepositoryIssues(repoName);
             const issues = result.issues;
             const apiResponse = result.apiResponse;
-            
+
             this.repositoryIssues[repoName] = issues;
-            
+
             // Update the repository object with issue counts
             const repo = this.repositories.find(r => r.name === repoName);
             if (repo) {
                 const openIssues = issues.filter(issue => issue.state === 'open');
-                
+
                 // Special handling for projects repository: 0 issues likely means fetch failed
                 if (repoName === 'projects' && issues.length === 0) {
                     console.warn(`⚠️ Projects repository returned 0 issues - likely fetch failed (projects should always have issues)`);
@@ -2109,20 +2145,20 @@ class GitHubIssuesManager {
                     repo.totalIssueCount = issues.length;
                 }
             }
-            
+
             // Add to allIssues if not already there
             const existingIssueIds = new Set(this.allIssues.map(issue => issue.id));
             const newIssues = issues.filter(issue => !existingIssueIds.has(issue.id));
-            
+
             // Set initial last_refreshed timestamp for new issues
             newIssues.forEach(issue => {
                 if (!issue.last_refreshed) {
                     issue.last_refreshed = new Date().toISOString();
                 }
             });
-            
+
             this.allIssues.push(...newIssues);
-            
+
             // Collect assignees and labels
             issues.forEach(issue => {
                 if (issue.assignees && issue.assignees.length > 0) {
@@ -2132,16 +2168,16 @@ class GitHubIssuesManager {
                     issue.labels.forEach(label => this.labels.add(label.name));
                 }
             });
-            
+
             this.populateAssigneeFilter();
             this.populateLabelFilter();
-            
+
             // Save repository data to cache with API response metadata
             this.saveRepositoryToCache(repoName, issues, {
                 openIssueCount: repo ? repo.openIssueCount : 0,
                 totalIssueCount: repo ? repo.totalIssueCount : 0
             }, apiResponse, this.filters.projectstatus);
-            
+
             return issues;
         } catch (error) {
             console.error(`Failed to load issues for ${repoName}:`, error);
@@ -2153,17 +2189,17 @@ class GitHubIssuesManager {
     updateRepositoryDropdownCounts() {
         const select = document.getElementById('repoFilter');
         const options = select.querySelectorAll('option');
-        
+
         options.forEach(option => {
             const repoName = option.value;
             if (repoName !== 'all') {
                 const repo = this.repositories.find(r => r.name === repoName);
                 const displayName = repo?.displayName || repo?.name || repoName;
-                
+
                 if (repo) {
                     // Try different sources for issue count
                     let issueCount = null;
-                    
+
                     // First try to get from loaded issues
                     if (this.repositoryIssues[repoName]) {
                         const openIssues = this.repositoryIssues[repoName].filter(issue => issue.state === 'open');
@@ -2177,7 +2213,7 @@ class GitHubIssuesManager {
                     else if (repo.totalIssueCount !== null) {
                         issueCount = repo.totalIssueCount;
                     }
-                    
+
                     if (issueCount !== null) {
                         const issueText = `(${issueCount})`;
                         option.textContent = `${displayName} ${issueText}`;
@@ -2202,18 +2238,18 @@ class GitHubIssuesManager {
             // Get repository contents for file count and images
             const contents = await this.apiRequest(`/repos/${this.owner}/${repo.name}/contents`);
             repo.fileCount = contents.filter(item => item.type === 'file').length;
-            
+
             // Look for images in common directories
             repo.images = [];
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
-            
+
             // Check root directory
-            const rootImages = contents.filter(item => 
-                item.type === 'file' && 
+            const rootImages = contents.filter(item =>
+                item.type === 'file' &&
                 imageExtensions.some(ext => item.name.toLowerCase().endsWith(ext))
             );
             repo.images.push(...rootImages.slice(0, 4));
-            
+
             // Check for common image directories if we need more images
             if (repo.images.length < 4) {
                 const imageDirs = ['images', 'img', 'assets', 'static', 'public'];
@@ -2231,11 +2267,11 @@ class GitHubIssuesManager {
                     }
                 }
             }
-            
+
             // Get repository statistics
             const stats = await this.apiRequest(`/repos/${this.owner}/${repo.name}/stats/contributors`);
             repo.contributorCount = stats ? stats.length : 1;
-            
+
         } catch (error) {
             console.warn(`Failed to enrich data for ${repo.name}:`, error);
             repo.fileCount = 0;
@@ -2248,15 +2284,15 @@ class GitHubIssuesManager {
 
     isValidIssue(issue) {
         // Check if issue has required fields and is not empty/invalid
-        return issue && 
-               typeof issue.id === 'number' && 
-               typeof issue.number === 'number' &&
-               typeof issue.title === 'string' && 
-               issue.title.trim().length > 0 &&
-               typeof issue.state === 'string' &&
-               (issue.state === 'open' || issue.state === 'closed') &&
-               issue.created_at &&
-               issue.html_url;
+        return issue &&
+            typeof issue.id === 'number' &&
+            typeof issue.number === 'number' &&
+            typeof issue.title === 'string' &&
+            issue.title.trim().length > 0 &&
+            typeof issue.state === 'string' &&
+            (issue.state === 'open' || issue.state === 'closed') &&
+            issue.created_at &&
+            issue.html_url;
     }
 
     async fetchRepositoryIssues(repoName) {
@@ -2267,8 +2303,8 @@ class GitHubIssuesManager {
 
         // Determine what state to fetch based on current filter
         // Only fetch 'all' if user specifically wants closed or all issues
-        const stateToFetch = this.filters.projectstatus === 'all' ? 'all' : 
-                           this.filters.projectstatus === 'closed' ? 'closed' : 'open';
+        const stateToFetch = this.filters.projectstatus === 'all' ? 'all' :
+            this.filters.projectstatus === 'closed' ? 'closed' : 'open';
 
 
         while (hasMore) {
@@ -2276,21 +2312,21 @@ class GitHubIssuesManager {
                 const apiResult = await this.apiRequestWithMetadata(
                     `/repos/${this.owner}/${repoName}/issues?state=${stateToFetch}&per_page=100&page=${page}`
                 );
-                
+
                 lastApiResponse = apiResult.metadata;
                 const response = apiResult.data;
-                
+
                 if (response.length === 0) {
                     hasMore = false;
                 } else {
                     // Filter out pull requests and invalid issues
                     const actualIssues = response.filter(issue => !issue.pull_request && this.isValidIssue(issue));
-                    
+
                     // Enrich each issue with additional data
                     for (const issue of actualIssues) {
                         issue.repository = repoName;
                         issue.repository_url = `https://github.com/${this.owner}/${repoName}`;
-                        
+
                         // Fetch comments if any
                         if (issue.comments > 0) {
                             try {
@@ -2304,13 +2340,13 @@ class GitHubIssuesManager {
                             issue.comment_details = [];
                         }
                     }
-                    
+
                     issues.push(...actualIssues);
                     page++;
                 }
             } catch (error) {
                 console.error(`Error fetching issues for ${repoName}, page ${page}:`, error);
-                
+
                 // Capture error information for caching decisions
                 if (error.response) {
                     lastApiResponse = {
@@ -2339,9 +2375,9 @@ class GitHubIssuesManager {
         if (this.githubToken) {
             headers['Authorization'] = `token ${this.githubToken}`;
         }
-        
+
         const response = await fetch(`${this.baseURL}${endpoint}`, { headers });
-        
+
         // Extract rate limit information from headers
         let rateLimitRemaining = null;
         if (response.headers.get('X-RateLimit-Remaining')) {
@@ -2360,7 +2396,7 @@ class GitHubIssuesManager {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            
+
             // Handle invalid token (401 Unauthorized)
             if (response.status === 401) {
                 this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
@@ -2368,7 +2404,7 @@ class GitHubIssuesManager {
                 error.response = metadata;
                 throw error;
             }
-            
+
             // Handle rate limit exceeded
             if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
                 this.rateLimitInfo.startTime = new Date();
@@ -2380,12 +2416,12 @@ class GitHubIssuesManager {
                 this.updateRateLimitDisplay();
                 localStorage.setItem('github_rate_limit_exceeded', 'true');
             }
-            
+
             const error = new Error(`GitHub API Error: ${response.status} - ${errorData.message || response.statusText}`);
             error.response = metadata;
             throw error;
         }
-        
+
         const data = await response.json();
         return { data, metadata };
     }
@@ -2416,16 +2452,16 @@ class GitHubIssuesManager {
                 this.updateRateLimitDisplay();
             }
         }
-        
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            
+
             // Handle invalid token (401 Unauthorized)
             if (response.status === 401) {
                 this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
                 throw new Error(`GitHub API Error: ${response.status} - Invalid token`);
             }
-            
+
             // Handle rate limit exceeded
             if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
                 this.rateLimitInfo.startTime = new Date();
@@ -2435,11 +2471,11 @@ class GitHubIssuesManager {
                 }
                 this.saveRateLimitToCache();
                 this.updateRateLimitDisplay();
-                
+
                 // Flag that rate limit was exceeded for later token refresh detection
                 localStorage.setItem('github_rate_limit_exceeded', 'true');
             }
-            
+
             throw new Error(`GitHub API Error: ${response.status} - ${errorData.message || response.statusText}`);
         }
 
@@ -2450,11 +2486,11 @@ class GitHubIssuesManager {
         const percentage = Math.round((current / total) * 100);
         const progressBar = document.getElementById('progressBar');
         const loadingStatus = document.getElementById('loadingStatus');
-        
+
         if (progressBar) {
             progressBar.style.width = `${percentage}%`;
         }
-        
+
         if (loadingStatus) {
             loadingStatus.textContent = `Processing ${current}/${total} ${type}...`;
         }
@@ -2468,15 +2504,15 @@ class GitHubIssuesManager {
         this.updateRateLimitDisplay();
         this.updateCacheStatusDisplay();
         this.filterAndDisplayIssues();
-        
+
         // Update filter UI after repositories are loaded to ensure dropdown selections work
         this.updateFilterUI();
-        
+
         // Clear rate limit exceeded flag if we successfully loaded data
         if (this.allIssues.length > 0 || this.repositories.length > 0) {
             localStorage.removeItem('github_rate_limit_exceeded');
         }
-        
+
         // Keep filters hidden by default - user can toggle with search button
         // document.getElementById('filtersSection').style.display = 'block';
         document.getElementById('statsSection').style.display = 'flex';
@@ -2485,19 +2521,19 @@ class GitHubIssuesManager {
 
     populateRepositoryFilter() {
         const select = document.getElementById('repoFilter');
-        
+
         // Calculate total for "All Repositories"
         let totalIssues = 0;
         if (this.repositoryIssueCounts) {
             totalIssues = Object.values(this.repositoryIssueCounts)
                 .reduce((sum, counts) => sum + (counts.total || 0), 0);
         }
-        
+
         const allReposText = totalIssues > 0 ? `All Loaded Issues (${totalIssues})` : 'All Loaded Issues';
-        
+
         // Start with empty select
         select.innerHTML = '';
-        
+
         // Sort repositories to put Projects first, then others, then All Repositories at the end
         const sortedRepos = [...this.repositories].sort((a, b) => {
             if (a.name === 'projects') return -1;
@@ -2506,16 +2542,16 @@ class GitHubIssuesManager {
             const bName = (b.displayName || b.name || '').toString();
             return aName.localeCompare(bName);
         });
-        
+
         // Add individual repositories first (Projects will be at the top)
         sortedRepos.forEach(repo => {
             const option = document.createElement('option');
             option.value = repo.name;
-            
+
             // Use cached issue counts if available
             const counts = this.repositoryIssueCounts[repo.name];
             let issueText = '';
-            
+
             if (counts && counts.total > 0) {
                 issueText = ` (${counts.total})`;
             } else if (repo.openIssueCount !== null) {
@@ -2525,12 +2561,12 @@ class GitHubIssuesManager {
                 issueText = ' (?)';
                 option.title = 'Issue count unknown - fetch may have failed';
             }
-            
+
             const repoName = repo.displayName || repo.name || 'Unknown';
             option.textContent = `${repoName}${issueText}`;
             select.appendChild(option);
         });
-        
+
         // Add loading options based on repository and token status
         if (!this.loadedAllRepositories) {
             // Add separator
@@ -2538,7 +2574,7 @@ class GitHubIssuesManager {
             separator.disabled = true;
             separator.textContent = '─────────────────';
             select.appendChild(separator);
-            
+
             if (this.githubToken) {
                 // Add currently loaded repos indicator
                 const loadPrimaryOption = document.createElement('option');
@@ -2548,7 +2584,7 @@ class GitHubIssuesManager {
                 loadPrimaryOption.disabled = true; // Already loaded
                 loadPrimaryOption.style.color = '#666';
                 select.appendChild(loadPrimaryOption);
-                
+
                 // Add load all repos option
                 const loadAllOption = document.createElement('option');
                 loadAllOption.value = 'load_all';
@@ -2569,15 +2605,15 @@ class GitHubIssuesManager {
                 select.appendChild(tokenHint);
             }
         }
-        
+
         // Add "All Repositories" option at the end
         const allOption = document.createElement('option');
         allOption.value = 'all';
         allOption.textContent = allReposText;
         select.appendChild(allOption);
-        
+
         select.value = this.filters.repo;
-        
+
         // If projects repo exists in the list, make sure it's selected when appropriate
         const projectsOption = Array.from(select.options).find(option => option.value === 'projects');
         if (projectsOption && this.filters.repo === 'projects') {
@@ -2588,7 +2624,7 @@ class GitHubIssuesManager {
     updateRepositoryDropdown() {
         // Update the dropdown with current issue counts
         this.populateRepositoryFilter();
-        
+
         // Update the last refresh time display
         this.updateLastRefreshDisplay();
     }
@@ -2606,14 +2642,14 @@ class GitHubIssuesManager {
     updateHeaderRefreshDisplay() {
         // Send refresh time to console instead of displaying on page
         if (this.lastRefreshTime) {
-            const timeString = this.lastRefreshTime.toLocaleTimeString([], { 
-                hour: 'numeric', 
-                minute: '2-digit', 
-                hour12: true 
+            const timeString = this.lastRefreshTime.toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             });
         } else {
         }
-        
+
         // Keep the header refresh time display hidden
         const headerLastRefreshTime = document.getElementById('headerLastRefreshTime');
         if (headerLastRefreshTime) {
@@ -2626,7 +2662,7 @@ class GitHubIssuesManager {
         if (!this.githubToken) {
             return;
         }
-        
+
         // Clear existing timer
         if (this.autoRefreshInterval) {
             clearInterval(this.autoRefreshInterval);
@@ -2638,7 +2674,7 @@ class GitHubIssuesManager {
             if (cacheTime) {
                 const age = Date.now() - parseInt(cacheTime);
                 const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
-                
+
                 if (age >= fiveMinutes) {
                     await this.loadAllRepositoryIssueCounts();
                 }
@@ -2655,11 +2691,11 @@ class GitHubIssuesManager {
 
     populateAssigneeFilter() {
         const dropdown = document.getElementById('assigneeDropdown');
-        
+
         // Keep existing default options
         const defaultOptions = dropdown.innerHTML;
         dropdown.innerHTML = defaultOptions;
-        
+
         // Add assignees
         Array.from(this.assignees).sort().forEach(assignee => {
             const item = document.createElement('div');
@@ -2668,7 +2704,7 @@ class GitHubIssuesManager {
             item.innerHTML = `<i class="fas fa-user"></i> ${assignee.split('-')[0]}`;
             dropdown.appendChild(item);
         });
-        
+
         // Set default assignee based on gitAccount if available
         setTimeout(() => {
             if (typeof updateAssigneeButtonDefault === 'function') {
@@ -2679,11 +2715,11 @@ class GitHubIssuesManager {
 
     populateLabelFilter() {
         const dropdown = document.getElementById('labelDropdown');
-        
+
         // Keep existing default options
         const defaultOptions = dropdown.innerHTML;
         dropdown.innerHTML = defaultOptions;
-        
+
         // Add labels
         Array.from(this.labels).sort().forEach(label => {
             const item = document.createElement('div');
@@ -2707,13 +2743,13 @@ class GitHubIssuesManager {
     }
 
     filterAndDisplayIssues() {
-        
+
         let repositoryFilteredOut = 0;
         let statusFilteredOut = 0;
         let assigneeFilteredOut = 0;
         let labelFilteredOut = 0;
         let searchFilteredOut = 0;
-        
+
         this.filteredIssues = this.allIssues.filter(issue => {
             // Repository filter
             if (this.filters.repo !== 'all' && issue.repository !== this.filters.repo) {
@@ -2754,7 +2790,7 @@ class GitHubIssuesManager {
                     issue.number.toString(),
                     ...(issue.labels || []).map(l => l.name)
                 ].join(' ').toLowerCase();
-                
+
                 if (!searchableText.includes(searchTerm)) {
                     return false;
                 }
@@ -2763,15 +2799,17 @@ class GitHubIssuesManager {
             return true;
         });
 
-        
+
         // Debug output
-        
+
         if (this.filteredIssues.length === 0 && this.allIssues.length > 0) {
             console.warn('⚠️ All issues were filtered out! Check your filter settings.');
         }
-        
+
         this.sortIssues();
         this.displayIssues();
+        this.updateSearchStatus();
+
     }
 
     sortIssues() {
@@ -2830,7 +2868,7 @@ class GitHubIssuesManager {
         }
 
         this.updatePagination();
-        
+
         // Update Clear All Filters button visibility whenever filters are applied
         this.updateClearAllFiltersVisibility();
     }
@@ -2842,19 +2880,19 @@ class GitHubIssuesManager {
 
         // Determine if we're showing multiple repositories
         const showingMultipleRepos = this.filters.repo === 'all' || this.repositoryIssueCounts && Object.keys(this.repositoryIssueCounts).length > 1;
-        
+
         // Get current view type
         const currentView = this.currentView;
-        
+
         const stateIcon = ''; // Remove state icons
-            
-        const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
+
+        const assigneesHtml = issue.assignees && issue.assignees.length > 0 ?
             issue.assignees.map(assignee => `
                 <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar" title="${assignee.login}"> 
                  <span >${assignee.login.split('-')[0].toLowerCase()}</span>
             `).join('') : '';
 
-        const labelsHtml = issue.labels && issue.labels.length > 0 ? 
+        const labelsHtml = issue.labels && issue.labels.length > 0 ?
             issue.labels.map(label => `
                 <span class="issue-label" style="background-color: #${label.color}; color: ${this.getContrastColor(label.color)}">
                     ${label.name}
@@ -2864,9 +2902,9 @@ class GitHubIssuesManager {
         // Short view content (title + body preview)
         if (currentView === 'short') {
             // Process body: limit to 180 chars and remove line returns
-            const processedBody = issue.body ? 
+            const processedBody = issue.body ?
                 issue.body.replace(/\r?\n/g, ' ').substring(0, 180) + (issue.body.length > 180 ? '...' : '') : '';
-            
+
             issueDiv.innerHTML = `
                 <div class="issue-header">
                     <!-- Repo name and issue number line -->
@@ -2988,7 +3026,7 @@ class GitHubIssuesManager {
                 <div class="issue-footer">
                     <div class="issue-author">
                         <img src="${issue.user.avatar_url}" alt="${issue.user.login}" class="author-avatar">
-                        <span>by ${issue.user.login}</span>          
+                        <span>by ${issue.user.login.split("-")[0]}</span>          
                     </div>
                     
                     ${assigneesHtml ? `<div class="issue-assignees"> <span> Assigned To : </span> ${assigneesHtml}</div>` : ''}
@@ -3007,9 +3045,7 @@ class GitHubIssuesManager {
                 ${repoImages}
                 
                 <!-- Content for narrow card view (handled by CSS) -->
-                <div class="issue-repo-name" style="display: ${showingMultipleRepos ? 'block' : 'none'};">
-                    ${issue.repository}
-                </div>
+                
                 ${!showingMultipleRepos && issue.body ? `
                     <div class="issue-body-preview">
                         ${this.formatMarkdown(issue.body.substring(0, 100))}${issue.body.length > 100 ? '...' : ''}
@@ -3034,7 +3070,7 @@ class GitHubIssuesManager {
         // Create detailed view
         const stateIcon = ''; // Remove state icons
 
-        const assigneesHtml = issue.assignees && issue.assignees.length > 0 ? 
+        const assigneesHtml = issue.assignees && issue.assignees.length > 0 ?
             issue.assignees.map(assignee => `
                 <div class="assignee-detail">
                     <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar">
@@ -3042,14 +3078,14 @@ class GitHubIssuesManager {
                 </div>
             `).join('') : '<span class="text-muted">No assignees</span>';
 
-        const labelsHtml = issue.labels && issue.labels.length > 0 ? 
+        const labelsHtml = issue.labels && issue.labels.length > 0 ?
             issue.labels.map(label => `
                 <span class="issue-label" style="background-color: #${label.color}; color: ${this.getContrastColor(label.color)}">
                     ${label.name}
                 </span>
             `).join('') : '<span class="text-muted">No labels</span>';
 
-        const commentsHtml = issue.comment_details && issue.comment_details.length > 0 ? 
+        const commentsHtml = issue.comment_details && issue.comment_details.length > 0 ?
             issue.comment_details.map(comment => `
                 <div class="comment-item">
                     <div class="comment-header">
@@ -3129,32 +3165,32 @@ class GitHubIssuesManager {
     closeModal() {
         document.getElementById('issueModal').style.display = 'none';
     }
-    
+
     showRefreshDialog(issueId) {
         this.currentRefreshIssueId = issueId;
         const issue = this.allIssues.find(i => i.id == issueId);
         if (!issue) return;
-        
+
         document.getElementById('refreshDialogTitle').textContent = `Refresh Issue #${issue.number}`;
         document.getElementById('refreshDialog').style.display = 'flex';
     }
-    
+
     closeRefreshDialog() {
         document.getElementById('refreshDialog').style.display = 'none';
         this.currentRefreshIssueId = null;
     }
-    
+
     async confirmRefreshDialog() {
         if (this.currentRefreshIssueId) {
             // Store the ID before closing dialog (which sets it to null)
             const issueIdToRefresh = this.currentRefreshIssueId;
-            
+
             // Close the refresh dialog
             this.closeRefreshDialog();
-            
+
             // Refresh the issue
             await this.refreshSingleIssue(issueIdToRefresh);
-            
+
             // Update the modal if it's still open
             const modal = document.getElementById('issueModal');
             if (modal.style.display !== 'none') {
@@ -3175,20 +3211,20 @@ class GitHubIssuesManager {
         // Get container width for display
         const container = document.getElementById(this.containerId);
         const containerWidth = container ? container.offsetWidth : 0;
-        
+
         // Update pagination info with width and fullscreen controls
         const paginationInfo = document.getElementById('paginationInfo');
         const fullscreenIcon = this.isFullscreen ? 'fa-compress' : 'fa-expand';
         const fullscreenTitle = this.isFullscreen ? 'Exit Fullscreen' : 'Toggle Fullscreen';
-        
-        const leftText = this.filteredIssues.length === 0 ? 
-            'No issues found' : 
+
+        const leftText = this.filteredIssues.length === 0 ?
+            'No issues found' :
             `Showing ${startIndex + 1}-${endIndex} of ${this.filteredIssues.length} issues (${this.perPage} per page)`;
-            
+
         const rightText = `Widget width ${containerWidth}px <i class="fas ${fullscreenIcon} fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="${fullscreenTitle}" style="margin-left: 0.5rem; cursor: pointer; color: var(--primary-color);"></i>`;
-        
+
         paginationInfo.innerHTML = `<span class="pagination-left">${leftText}</span><span class="pagination-right" style="color: var(--text-muted); font-size: 0.85em;">${rightText}</span>`;
-        
+
         // Update header fullscreen icon
         const headerIcon = document.querySelector('.header-fullscreen-btn');
         if (headerIcon) {
@@ -3237,10 +3273,10 @@ class GitHubIssuesManager {
     goToPage(page) {
         const totalPages = Math.ceil(this.filteredIssues.length / this.perPage);
         if (page < 1 || page > totalPages) return;
-        
+
         this.currentPage = page;
         this.displayIssues();
-        
+
         // Scroll to top of issues
         document.getElementById('issuesContainer').scrollIntoView({ behavior: 'smooth' });
     }
@@ -3257,7 +3293,7 @@ class GitHubIssuesManager {
         if (diffDays < 7) return `${diffDays} days ago`;
         if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
         if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-        
+
         return date.toLocaleDateString();
     }
 
@@ -3287,10 +3323,10 @@ class GitHubIssuesManager {
         const r = parseInt(hexColor.substr(0, 2), 16);
         const g = parseInt(hexColor.substr(2, 2), 16);
         const b = parseInt(hexColor.substr(4, 2), 16);
-        
+
         // Calculate luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        
+
         return luminance > 0.5 ? '#000000' : '#ffffff';
     }
 
@@ -3302,7 +3338,7 @@ class GitHubIssuesManager {
                 params.set(key, value);
             }
         });
-        
+
         const hash = params.toString() ? `#${params.toString()}` : '';
         window.history.replaceState(null, null, window.location.pathname + hash);
     }
@@ -3313,7 +3349,7 @@ class GitHubIssuesManager {
 
         const params = new URLSearchParams(hash);
         let customRepo = null;
-        
+
         params.forEach((value, key) => {
             if (key === 'repo') {
                 // Handle custom repository from URL hash
@@ -3341,7 +3377,7 @@ class GitHubIssuesManager {
                 this.updateFilterUI();
                 return;
             }
-            
+
             // Load issues for the selected repository if not already cached
             if (!this.repositoryIssues[this.filters.repo]) {
                 try {
@@ -3354,7 +3390,7 @@ class GitHubIssuesManager {
                     return;
                 }
             }
-            
+
             // Filter and display issues for the selected repository
             this.filterAndDisplayIssues();
         }
@@ -3378,7 +3414,7 @@ class GitHubIssuesManager {
             // Try to fetch repository info from GitHub API
             if (this.githubToken) {
                 const repoInfo = await this.apiRequest(`/repos/${owner}/${repo}`);
-                
+
                 // Add to repositories list
                 this.repositories.push({
                     name: repo,
@@ -3389,11 +3425,11 @@ class GitHubIssuesManager {
                     totalIssueCount: null,
                     repository_url: repoInfo.html_url
                 });
-                
-                
+
+
                 // Update the dropdown to include the new repository
                 this.populateRepositoryFilter();
-                
+
             } else {
                 // No token - add repository as placeholder
                 this.repositories.push({
@@ -3405,14 +3441,14 @@ class GitHubIssuesManager {
                     totalIssueCount: null,
                     repository_url: `https://github.com/${fullRepoPath}`
                 });
-                
-                
+
+
                 // Update the dropdown
                 this.populateRepositoryFilter();
             }
-            
+
         } catch (error) {
-            
+
             // Don't add non-existent repositories to avoid confusion
             // The error will be handled in the calling function
             throw new Error(`Repository "${fullRepoPath}" not found on GitHub`);
@@ -3423,12 +3459,12 @@ class GitHubIssuesManager {
         // Update filter dropdowns and inputs
         document.getElementById('repoFilter').value = this.filters.repo;
         document.getElementById('searchInput').value = this.filters.search;
-        
+
         this.updateSortButton();
         this.updateAssigneeButton();
         this.updateStateButton();
         this.updateLabelButton();
-        
+
         if (this.filters.search) {
             document.getElementById('clearSearch').style.display = 'inline-block';
         }
@@ -3457,12 +3493,12 @@ class GitHubIssuesManager {
         } else if (this.filters.assignee !== 'all') {
             displayText = this.filters.assignee.split('-')[0];
         }
-        
+
         // Check if container is narrow
         const container = button.closest('.filters-always-visible');
         const isNarrow = container && container.offsetWidth < 600;
         const labelText = isNarrow ? '' : 'Assigned to: ';
-        
+
         button.innerHTML = `
             <i class="fas fa-user"></i> ${labelText}${displayText}
             <i class="fas fa-chevron-down"></i>
@@ -3500,21 +3536,21 @@ class GitHubIssuesManager {
             timestamp: Date.now()
         };
         localStorage.setItem('github_issues_cache', JSON.stringify(cacheData));
-        
+
         // Set up cache expiration timer for auto-refresh (only with token)
         if (this.cacheConfig.autoRefresh && this.githubToken) {
             this.setupCacheExpirationTimer(this.cacheConfig.duration * 60 * 1000);
         } else if (!this.githubToken) {
         }
-        
+
         // Update cache status display
         this.updateCacheStatusDisplay();
     }
-    
+
     saveViewPreference() {
         localStorage.setItem('github_issues_view', this.currentView);
     }
-    
+
     loadViewPreference() {
         const savedView = localStorage.getItem('github_issues_view');
         if (savedView && (savedView === 'short' || savedView === 'list' || savedView === 'card')) {
@@ -3522,18 +3558,18 @@ class GitHubIssuesManager {
             this.setView(savedView, false); // Don't save when loading
         }
     }
-    
+
     toggleFullscreen() {
         const container = document.getElementById(this.containerId);
         if (!container) return;
-        
+
         this.isFullscreen = !this.isFullscreen;
-        
+
         if (this.isFullscreen) {
             // Enter fullscreen
             container.classList.add('widget-fullscreen');
             document.body.classList.add('widget-fullscreen-active');
-            
+
             // Add minimize button to main header next to search icon
             const mainHeader = document.querySelector('.issues-header');
             if (mainHeader && !mainHeader.querySelector('.minimize-btn')) {
@@ -3544,20 +3580,20 @@ class GitHubIssuesManager {
                 minimizeBtn.onclick = () => this.toggleFullscreen();
                 mainHeader.appendChild(minimizeBtn);
             }
-            
+
         } else {
             // Exit fullscreen
             container.classList.remove('widget-fullscreen');
             document.body.classList.remove('widget-fullscreen-active');
-            
+
             // Remove minimize button
             const minimizeBtn = document.querySelector('.minimize-btn');
             if (minimizeBtn) {
                 minimizeBtn.remove();
             }
-            
+
         }
-        
+
         // Update icon in pagination
         this.updatePagination();
     }
@@ -3566,12 +3602,12 @@ class GitHubIssuesManager {
         const filtersSection = document.getElementById('filtersSection');
         const toggleBtn = document.querySelector('.toggle-filters-btn');
         const toggleText = document.querySelector('.toggle-text');
-        
+
         if (!filtersSection) return;
-        
+
         // Use the show-filters class instead of style.display to override !important CSS
         const isHidden = !filtersSection.classList.contains('show-filters');
-        
+
         if (isHidden) {
             filtersSection.classList.add('show-filters');
             if (toggleBtn) toggleBtn.classList.add('active');
@@ -3587,7 +3623,7 @@ class GitHubIssuesManager {
         const filtersSection = document.getElementById('filtersSection');
         const toggleBtn = document.querySelector('.toggle-filters-btn');
         const toggleText = document.querySelector('.toggle-text');
-        
+
         if (filtersSection) filtersSection.classList.remove('show-filters');
         if (toggleBtn) toggleBtn.classList.remove('active');
         if (toggleText) toggleText.textContent = 'More Filters';
@@ -3599,14 +3635,14 @@ class GitHubIssuesManager {
             event.stopPropagation();
             event.preventDefault();
         }
-        
+
         // Close all other open menus
         document.querySelectorAll('.issue-menu-dropdown').forEach(menu => {
             if (menu.id !== `issueMenu-${issueId}`) {
                 menu.classList.remove('show');
             }
         });
-        
+
         // Toggle current menu
         const menu = document.getElementById(`issueMenu-${issueId}`);
         if (menu) {
@@ -3619,37 +3655,37 @@ class GitHubIssuesManager {
             // Close menu
             const menu = document.getElementById(`issueMenu-${issueId}`);
             if (menu) menu.classList.remove('show');
-            
+
             // Find the issue in our current data
             const existingIssue = this.allIssues.find(issue => issue.id == issueId);
             if (!existingIssue) {
                 this.showNotification('Issue not found', 'error');
                 return;
             }
-            
+
             // Show loading indicator on specific issue
             this.showIssueLoading(issueId, true);
-            
+
             // Fetch fresh issue data from GitHub API
             const updatedIssue = await this.apiRequest(
                 `/repos/${this.owner}/${existingIssue.repository}/issues/${existingIssue.number}`
             );
-            
+
             // Preserve repository information
             updatedIssue.repository = existingIssue.repository;
             updatedIssue.repository_url = existingIssue.repository_url;
-            
+
             // Update the issue in our data arrays
             this.updateIssueInCollections(updatedIssue);
-            
+
             // Re-render only this specific issue
             this.rerenderSingleIssue(issueId, updatedIssue);
-            
+
             // Update cache with new data
             this.saveToCache();
-            
+
             this.showNotification(`Issue #${updatedIssue.number} refreshed`, 'success');
-            
+
         } catch (error) {
             console.error('Error refreshing single issue:', error);
             if (error.name === 'AbortError') {
@@ -3670,13 +3706,13 @@ class GitHubIssuesManager {
         // Determine the relative path to localsite based on current page location
         const currentPath = window.location.pathname;
         const pathDepth = currentPath.split('/').filter(segment => segment !== '').length;
-        
+
         // Calculate relative path climbing up from current location
         let relativePath = '';
         if (pathDepth > 1) {
             relativePath = '../'.repeat(pathDepth - 1);
         }
-        
+
         return relativePath + 'localsite/img/icon/github/github.png';
     }
 
@@ -3685,7 +3721,7 @@ class GitHubIssuesManager {
         const fullDetailsDiv = issueItem.querySelector('.issue-full-details');
         const shortDescription = issueItem.querySelector('.short-description');
         const shortTitle = issueItem.querySelector('.short-title');
-        
+
         if (fullDetailsDiv.style.display === 'none') {
             // Show full details
             fullDetailsDiv.style.display = 'block';
@@ -3702,19 +3738,19 @@ class GitHubIssuesManager {
     updateIssueInCollections(updatedIssue) {
         // Add last refreshed timestamp
         updatedIssue.last_refreshed = new Date().toISOString();
-        
+
         // Update in main issues array
         const mainIndex = this.allIssues.findIndex(issue => issue.id == updatedIssue.id);
         if (mainIndex !== -1) {
             this.allIssues[mainIndex] = updatedIssue;
         }
-        
+
         // Update in filtered array if present
         const filteredIndex = this.filteredIssues.findIndex(issue => issue.id == updatedIssue.id);
         if (filteredIndex !== -1) {
             this.filteredIssues[filteredIndex] = updatedIssue;
         }
-        
+
         // Update repository-specific cache if exists
         if (this.repositoryIssues[updatedIssue.repository]) {
             const repoIndex = this.repositoryIssues[updatedIssue.repository].findIndex(
@@ -3731,10 +3767,10 @@ class GitHubIssuesManager {
         if (existingElement) {
             // Create new element with updated data
             const newElement = this.createIssueElement(updatedIssue);
-            
+
             // Replace existing element with smooth transition
             existingElement.style.opacity = '0.5';
-            
+
             setTimeout(() => {
                 existingElement.replaceWith(newElement);
                 newElement.style.opacity = '0';
@@ -3791,7 +3827,7 @@ class GitHubIssuesManager {
             if (!cached) return null;
 
             const data = JSON.parse(cached);
-            
+
             // Check if cache is less than configured duration old
             const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
             const cacheAge = Date.now() - data.timestamp;
@@ -3807,7 +3843,7 @@ class GitHubIssuesManager {
             if (this.cacheConfig.autoRefresh && this.githubToken) {
                 this.setupCacheExpirationTimer(maxAge - cacheAge);
             } else if (!this.githubToken) {
-                }
+            }
 
             return data;
         } catch (error) {
@@ -3822,9 +3858,9 @@ class GitHubIssuesManager {
             const cacheKey = `github_repo_${repoName}_${projectstatus}_cache`;
             const cached = localStorage.getItem(cacheKey);
             if (!cached) return null;
-            
+
             const data = JSON.parse(cached);
-            
+
             // Check if cache is less than configured duration old
             const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
             const cacheAge = Date.now() - data.timestamp;
@@ -3833,7 +3869,7 @@ class GitHubIssuesManager {
                 localStorage.removeItem(cacheKey);
                 return null;
             }
-            
+
             return data;
         } catch (error) {
             console.warn(`Failed to load repository ${repoName} from cache:`, error);
@@ -3865,7 +3901,7 @@ class GitHubIssuesManager {
         try {
             // Defensive caching: Only cache when we're confident the data is legitimate
             const shouldCache = this.shouldCacheEmptyResult(issues, apiResponse);
-            
+
             if (!shouldCache) {
                 return;
             }
@@ -3936,21 +3972,32 @@ class GitHubIssuesManager {
         this.updateHash();
         this.saveToCache();
         this.filterAndDisplayIssues();
-        
+
         if (this.filters.search) {
             document.getElementById('clearSearch').style.display = 'inline-block';
         }
+        this.updateSearchStatus();
+
     }
 
+
+
     clearSearch() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('clearSearch').style.display = 'none';
+        // clear the input + hide its X
+        const input = document.getElementById('searchInput');
+        const xBtn = document.getElementById('clearSearch');
+        if (input) input.value = '';
+        if (xBtn) xBtn.style.display = 'none';
+
+        // wipe search & clear all filter buttons in one go
         this.filters.search = '';
-        this.currentPage = 1;
-        this.updateHash();
-        this.saveToCache();
-        this.filterAndDisplayIssues();
+        this.clearAllFilters();            // reuse existing logic
+
+        // also hide the legacy "Clear All Filters" button permanently
+        const oldClear = document.getElementById('clearAllFiltersBtn');
+        if (oldClear) oldClear.style.display = 'none';
     }
+
 
     debouncedSearch(searchTerm) {
         // Clear previous timer
@@ -3965,7 +4012,7 @@ class GitHubIssuesManager {
             this.updateHash();
             this.saveToCache();
             this.filterAndDisplayIssues();
-            
+
             // Show/hide clear button
             const clearBtn = document.getElementById('clearSearch');
             if (this.filters.search) {
@@ -3974,6 +4021,8 @@ class GitHubIssuesManager {
                 clearBtn.style.display = 'none';
             }
         }, this.searchDebounceDelay);
+        this.updateSearchStatus();
+
     }
 
     clearAllFilters() {
@@ -4006,26 +4055,28 @@ class GitHubIssuesManager {
 
         // Show notification
         this.showNotification('Filter buttons cleared', 'info');
-        
+
         // Update Clear All Filters button visibility
         this.updateClearAllFiltersVisibility();
+        this.updateSearchStatus();
+
     }
 
     clearAllCache() {
         // Clear all cached repository issues
         this.repositoryIssues = {};
         this.repositoryIssueCounts = {};
-        
+
         // Clear localStorage cache
         Object.keys(localStorage).forEach(key => {
             if (key.startsWith('github_issues_') || key.startsWith('github_issue_counts_')) {
                 localStorage.removeItem(key);
             }
         });
-        
+
         // Show notification
         this.showNotification('Cache cleared successfully', 'success');
-        
+
         // Reload current repository data
         if (this.filters.repo && this.filters.repo !== 'all') {
             this.loadIssuesForRepository(this.filters.repo);
@@ -4038,7 +4089,7 @@ class GitHubIssuesManager {
     updateClearAllFiltersVisibility() {
         const clearAllBtn = document.getElementById('clearAllFiltersBtn');
         if (!clearAllBtn) return;
-        
+
         // Define default values for filter buttons only (excluding repo and search)
         const defaults = {
             sort: 'updated',
@@ -4046,12 +4097,12 @@ class GitHubIssuesManager {
             projectstatus: 'open',
             label: 'all'
         };
-        
+
         // Check if any filter button differs from default
         const hasNonDefaultFilters = Object.keys(defaults).some(key => {
             return this.filters[key] !== defaults[key];
         });
-        
+
         // Show/hide the Clear All Filters button
         if (hasNonDefaultFilters) {
             clearAllBtn.style.display = 'inline-block';
@@ -4063,16 +4114,16 @@ class GitHubIssuesManager {
     // View management
     setView(viewType, savePreference = true) {
         this.currentView = viewType;
-        
+
         document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
         document.getElementById(viewType + 'View').classList.add('active');
-        
+
         const issuesList = document.getElementById('issuesList');
         issuesList.className = `issues-list ${viewType}-view`;
-        
+
         // Re-render issues with the new view
         this.displayIssues();
-        
+
         // Save view preference to localStorage (unless loading from saved preference)
         if (savePreference) {
             this.saveViewPreference();
@@ -4097,7 +4148,7 @@ class GitHubIssuesManager {
         const issuesContainer = document.getElementById('issuesContainer');
         const issuesList = document.getElementById('issuesList');
         const loadingOverlay = document.getElementById('loadingOverlay');
-        
+
         if (show) {
             // Show issues container and display loading inside it
             issuesContainer.style.display = 'block';
@@ -4139,7 +4190,7 @@ class GitHubIssuesManager {
     showNotification(message, type = 'info') {
         // Check if this is a loading message that should be shown in issues container
         const isLoadingMessage = message.toLowerCase().includes('loading');
-        
+
         if (isLoadingMessage) {
             // Show loading messages inside the issues container
             this.showInlineNotification(message, type);
@@ -4152,20 +4203,20 @@ class GitHubIssuesManager {
     showInlineNotification(message, type = 'info') {
         const issuesContainer = document.getElementById('issuesContainer');
         const issuesList = document.getElementById('issuesList');
-        
+
         if (!issuesContainer || !issuesList) return;
-        
+
         // Make sure issues container is visible
         issuesContainer.style.display = 'block';
-        
+
         // Create notification element with subtle styling
         const notification = document.createElement('div');
         notification.className = `inline-notification ${type}`;
-        
+
         // Use spinner for loading messages, other icons for other types
         const isLoadingMessage = message.toLowerCase().includes('loading');
         let iconHtml;
-        
+
         if (isLoadingMessage) {
             iconHtml = '<i class="fas fa-spinner fa-spin inline-spinner"></i>';
         } else {
@@ -4177,21 +4228,21 @@ class GitHubIssuesManager {
             const icon = iconMap[type] || 'info';
             iconHtml = `<i class="fas fa-${icon}-circle"></i>`;
         }
-        
+
         notification.innerHTML = `
             ${iconHtml}
             ${message}
         `;
-        
+
         // Clear any existing inline notifications
         const existingNotification = issuesList.querySelector('.inline-notification');
         if (existingNotification) {
             existingNotification.remove();
         }
-        
+
         // Add to top of issues list
         issuesList.insertBefore(notification, issuesList.firstChild);
-        
+
         // Auto-hide after 3 seconds
         setTimeout(() => {
             if (notification.parentNode) {
@@ -4210,15 +4261,15 @@ class GitHubIssuesManager {
             'info': 'info'
         };
         const icon = iconMap[type] || 'info';
-        
+
         notification.innerHTML = `
             <i class="fas fa-${icon}-circle"></i>
             ${message}
         `;
-        
+
         // Add to page
         document.body.appendChild(notification);
-        
+
         // Show and auto-hide
         setTimeout(() => notification.classList.add('show'), 10);
         setTimeout(() => {
@@ -4231,22 +4282,22 @@ class GitHubIssuesManager {
         // Show basic UI elements even when API fails
         // Keep filters hidden by default - user can toggle with search button
         // document.getElementById('filtersSection').style.display = 'block';
-        
+
         // Populate repository filter from loaded repositories
         this.populateRepositoryFilter();
-        
+
         // Update rate limit display
         this.updateRateLimitDisplay();
-        
+
         // Set basic stats
         document.getElementById('repoCount').textContent = '1';
         document.getElementById('openIssueCount').textContent = '?';
         document.getElementById('closedIssueCount').textContent = '?';
         document.getElementById('totalComments').textContent = '?';
-        
+
         // Show stats section
         document.getElementById('statsSection').style.display = 'flex';
-        
+
         // Show issues container with message
         document.getElementById('issuesContainer').style.display = 'block';
         document.getElementById('issuesList').innerHTML = `
@@ -4257,7 +4308,7 @@ class GitHubIssuesManager {
                 <p>You can still use the filters - they will work once the API is accessible again.</p>
             </div>
         `;
-        
+
         // Hide pagination
         document.getElementById('paginationContainer').innerHTML = '';
     }
@@ -4266,13 +4317,13 @@ class GitHubIssuesManager {
 // Git Issues Account Management Functions
 function updateGitIssuesAccount() {
     const gitIssuesAccount = document.getElementById("gitIssuesAccount").value;
-    
+
     // Store in localStorage using same cache as other git fields - store even if empty to clear cache
     localStorage.gitAccount = gitIssuesAccount;
-    
+
     // Update the display
     updateGitAccountDisplay();
-    
+
     // Update assignee button default if needed
     updateAssigneeButtonDefault();
 }
@@ -4281,7 +4332,7 @@ function updateGitAccountDisplay() {
     const gitAccount = localStorage.gitAccount || document.getElementById("gitIssuesAccount").value;
     const gitAccountDisplay = document.getElementById("gitAccountDisplay");
     const gitAccountLink = document.getElementById("gitAccountLink");
-    
+
     if (gitAccount && gitAccount.trim() !== '' && gitAccountDisplay && gitAccountLink) {
         // Show GitHub account when available
         gitAccountLink.textContent = gitAccount;
@@ -4310,7 +4361,7 @@ function toggleGitIssuesAccount() {
 function updateAssigneeButtonDefault() {
     const gitAccount = localStorage.gitAccount;
     if (!gitAccount || !issuesManager) return;
-    
+
     // Check if gitAccount exists in the assignees list
     if (issuesManager.assignees && issuesManager.assignees.has(gitAccount)) {
         // Only set as default if no other assignee value is cached
@@ -4331,16 +4382,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (localStorage.gitAccount) {
                 gitIssuesAccountField.value = localStorage.gitAccount;
             }
-            
+
             // Add keypress event listener for clearing cache on Enter when field is empty
-            gitIssuesAccountField.addEventListener('keypress', function(e) {
+            gitIssuesAccountField.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter' && this.value.trim() === '') {
                     localStorage.removeItem('gitAccount');
                     updateGitIssuesAccount();
                 }
             });
         }
-        
+
         // Update the display initially
         updateGitAccountDisplay();
     }, 100);
