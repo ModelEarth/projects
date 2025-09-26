@@ -261,6 +261,11 @@ class GitHubIssuesManager {
                 <!-- First row: View controls and repo filter -->
                 <div class="filter-row-1">
                     <!-- View Controls (moved from issues container) -->
+                    <div class="filter-group">
+                        <select id="repoFilter" class="filter-select">
+                            <option value="all">All Repositories</option>
+                        </select>
+                    </div>
                     <div class="view-controls">
                         <div class="view-toggle">
                             <button id="shortView" class="view-btn active" title="Short View">
@@ -273,12 +278,6 @@ class GitHubIssuesManager {
                                 <i class="fas fa-th-large"></i>
                             </button>
                         </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <select id="repoFilter" class="filter-select">
-                            <option value="all">All Repositories</option>
-                        </select>
                     </div>
                 </div>
                 

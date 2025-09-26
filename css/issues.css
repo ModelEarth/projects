@@ -1270,7 +1270,6 @@
     display: flex;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    min-width: 120px;
     overflow: hidden;
 }
 
@@ -1415,8 +1414,6 @@
 
 /* First row: 2 items */
 .filter-row-1 .view-controls {
-    flex: 1;
-    min-width: 120px;
     height: 100%;
     display: flex;
     align-items: stretch;
