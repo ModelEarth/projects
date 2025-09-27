@@ -1037,7 +1037,6 @@
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-    margin-right: 0.7rem;
 }
 
 .filters-row:last-child {
@@ -1069,7 +1068,19 @@
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-    margin-right: 0.7rem;
+}
+
+/* Make first two filter groups (assignee and sort) evenly spread */
+.filters-secondary-row .filter-group:nth-child(1),
+.filters-secondary-row .filter-group:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Keep the third filter group (clear cache) right-aligned */
+.filters-secondary-row .filter-group:nth-child(3) {
+    margin-left: auto;
+    flex: 0 0 auto;
 }
 
 /* Tertiary row (Row 3): Search */
@@ -1270,7 +1281,6 @@
     display: flex;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    min-width: 120px;
     overflow: hidden;
 }
 
@@ -1415,8 +1425,6 @@
 
 /* First row: 2 items */
 .filter-row-1 .view-controls {
-    flex: 1;
-    min-width: 120px;
     height: 100%;
     display: flex;
     align-items: stretch;
@@ -1546,24 +1554,18 @@
 }
 
 /* Additional responsive behavior for three-element layout */
-@media (max-width: 900px) {
+@media (max-width: 600px) {
     .filters-always-visible {
         flex-wrap: wrap;
     }
-    
+
     /* Override the base min-widths to allow proper half-width behavior */
-    .filters-always-visible .filter-group:first-child {
-        flex: 1 1 calc(50% - 0.5rem);
-        min-width: calc(50% - 0.5rem);
-        max-width: calc(50% - 0.5rem);
-    }
-    
     .filters-always-visible .filter-group:nth-child(2) {
         flex: 1 1 calc(50% - 0.5rem);
         min-width: calc(50% - 0.5rem);
         max-width: calc(50% - 0.5rem);
     }
-    
+
     /* Sort button wraps to next line and takes full width */
     .filters-always-visible .filter-group:nth-child(3) {
         flex: 1 1 100%;
@@ -1613,6 +1615,7 @@
 .filter-row-2 .clear-filters-btn {
     display: flex;
     box-sizing: border-box;
+    align-items: center;
 }
 
 /* Compact filters for second row */
@@ -2064,6 +2067,7 @@ body.widget-fullscreen-active {
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     font-size: 0.9rem;
     font-weight: 500;
