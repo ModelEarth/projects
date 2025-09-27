@@ -1554,24 +1554,18 @@
 }
 
 /* Additional responsive behavior for three-element layout */
-@media (max-width: 900px) {
+@media (max-width: 600px) {
     .filters-always-visible {
         flex-wrap: wrap;
     }
-    
+
     /* Override the base min-widths to allow proper half-width behavior */
-    .filters-always-visible .filter-group:first-child {
-        flex: 1 1 calc(50% - 0.5rem);
-        min-width: calc(50% - 0.5rem);
-        max-width: calc(50% - 0.5rem);
-    }
-    
     .filters-always-visible .filter-group:nth-child(2) {
         flex: 1 1 calc(50% - 0.5rem);
         min-width: calc(50% - 0.5rem);
         max-width: calc(50% - 0.5rem);
     }
-    
+
     /* Sort button wraps to next line and takes full width */
     .filters-always-visible .filter-group:nth-child(3) {
         flex: 1 1 100%;
@@ -1621,6 +1615,7 @@
 .filter-row-2 .clear-filters-btn {
     display: flex;
     box-sizing: border-box;
+    align-items: center;
 }
 
 /* Compact filters for second row */
