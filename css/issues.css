@@ -1037,7 +1037,6 @@
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-    margin-right: 0.7rem;
 }
 
 .filters-row:last-child {
@@ -1069,7 +1068,19 @@
     align-items: center;
     flex-wrap: wrap;
     margin-bottom: 1rem;
-    margin-right: 0.7rem;
+}
+
+/* Make first two filter groups (assignee and sort) evenly spread */
+.filters-secondary-row .filter-group:nth-child(1),
+.filters-secondary-row .filter-group:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Keep the third filter group (clear cache) right-aligned */
+.filters-secondary-row .filter-group:nth-child(3) {
+    margin-left: auto;
+    flex: 0 0 auto;
 }
 
 /* Tertiary row (Row 3): Search */
@@ -2061,6 +2072,7 @@ body.widget-fullscreen-active {
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     font-size: 0.9rem;
     font-weight: 500;
