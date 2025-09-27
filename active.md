@@ -81,7 +81,7 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-TO DO: [Moving Javascript Timelines from Google Data Commons API](https://model.earth/data-commons/docs/data/) <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+TO DO: [Moving Javascript Timelines from Google Data Commons API](https://model.earth/localsite/timeline/) <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
 We're pulling images and video via [our FeedPlayer](../feed) which can be updated to point at any Github repo or API.
 
