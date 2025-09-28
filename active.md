@@ -32,7 +32,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 ### New IO Data Pipeline
 
-[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Footprint Report](../profile/footprint/sample.html) and [Comparison Experiments](../comparison/)
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Summary Report](../profile/footprint/) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
 [US State Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
