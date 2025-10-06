@@ -2821,7 +2821,7 @@ class GitHubIssuesManager {
                 case 'title':
                     return (a.title || '').localeCompare(b.title || '');
                 case 'number':
-                    return b.number - a.number;
+                    return a.number - b.number;
                 case 'updated':
                 default:
                     return new Date(b.updated_at) - new Date(a.updated_at);
