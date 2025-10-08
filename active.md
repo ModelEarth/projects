@@ -24,7 +24,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 ### Webroot for Claude Code CLI
 
-[Webroot setup](https://model.earth/webroot/) - Simple "pull" and "push" commands to send PRs from your work.  
+[Webroot setup](https://model.earth/webroot/) - Simple commands to send PRs from your work.  
 [CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules.
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
@@ -48,7 +48,7 @@ JAM Stack with Rust API and Azure PostgreSQL and Google Sheets
 RealityStream industry titles in importance report <!-- Abivish -->
 Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
-### Resources
+### Possible Resources
 
 [Full-Stack Cloudflare SaaS kit](https://github.com/Dhravya/cloudflare-saas-stack) - and SuperMemoryAI
 <!--Coming soon: Flow Diagrams using [n8n automation](https://n8n.io/) and NextJS-->
@@ -81,9 +81,11 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-TO DO: [Moving Javascript Timelines from Google Data Commons API](https://model.earth/localsite/timeline/) <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+IN PROGRESS: [Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API - Sugandha is adding a new vertical LOCATIONS colored legend.<!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
 
-We're pulling images and video via [our FeedPlayer](../feed) which can be updated to point at any Github repo or API.
+TO DO: Help us continue to refine the [3 trade charts](../profile/trade/) (links on lower right: Trade Flow Map, Chord, and Sankey) we're developing to provide an interactive [Exiobase](https://exiobase.eu) front-end.
+
+We're pulling images and video via [our React FeedPlayer](../feed) which can be updated to point at any Github repo or API.
 
 <!--
 **More Data Commons Visualization Projects**
