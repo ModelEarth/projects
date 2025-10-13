@@ -2648,9 +2648,25 @@ body.widget-fullscreen-active {
 
 /* Full details styling when expanded */
 .issue-full-details {
-    margin-top: 0.1rem; /* Same small spacing as before full text */
-    padding-top: 0.25rem;
-    border-top: 1px solid var(--border-light);
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dark .issue-full-details {
+    border-top-color: #30363d;
 }
 
 .issue-description-full {
@@ -2666,6 +2682,127 @@ body.widget-fullscreen-active {
     color: var(--text-muted);
     margin-bottom: 0.5rem;
     margin-top: 0.1rem; /* Reduced space between title and text */
+}
+
+/* More/Less link styling */
+.more-link,
+.less-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-left: 0.25rem;
+}
+
+.more-link:hover,
+.less-link:hover {
+    text-decoration: underline;
+    color: #0256cc;
+}
+
+.dark .more-link,
+.dark .less-link {
+    color: var(--primary-color);
+}
+
+.dark .more-link:hover,
+.dark .less-link:hover {
+    color: #58a6ff;
+}
+
+/* Inline details container */
+.issue-detail-inline {
+    padding: 0.75rem 0;
+}
+
+/* Inline metadata */
+.issue-meta-inline {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.issue-meta-inline i {
+    width: 14px;
+    text-align: center;
+}
+
+.dark .issue-meta-inline {
+    border-bottom-color: #30363d;
+}
+
+/* Inline sections */
+.issue-section-inline {
+    margin-bottom: 1.25rem;
+}
+
+.issue-section-inline h5.section-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dark .issue-section-inline h5.section-title {
+    border-bottom-color: #30363d;
+}
+
+/* Comments section inline */
+.comments-section-inline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.comments-section-inline .comment-item {
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+}
+
+.comments-section-inline .comment-header {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.comments-section-inline .comment-body {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Action buttons inline */
+.issue-actions-inline {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.75rem;
+}
+
+.dark .issue-actions-inline {
+    border-top-color: #30363d;
+    border-bottom-color: #30363d;
+}
+
+/* Collapse link container */
+.collapse-link-container {
+    text-align: center;
+    padding-top: 0.5rem;
+}
+
+.collapse-link-container .less-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.9rem;
 }
 
 .issues-list.list-view .issue-body-preview {
@@ -2711,9 +2848,22 @@ body.widget-fullscreen-active {
 }
 
 /* Hide the issue header parts except title */
-.card-view .issue-header .issue-repo-line,
-.card-view .issue-header .issue-actions-menu {
+.card-view .issue-header .issue-repo-line {
     display: none !important;
+}
+
+/* Show 3-dot menu in card view and position at top right */
+.card-view .issue-header .issue-actions-menu {
+    position: absolute !important;
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    margin-left: 0 !important;
+    display: inline-block !important;
+}
+
+/* Increase z-index for dropdown in card view to ensure it appears above other cards */
+.card-view .issue-actions-menu .issue-menu-dropdown {
+    z-index: 1001 !important;
 }
 
 /* Only show the title in card view */
@@ -2739,6 +2889,11 @@ body.widget-fullscreen-active {
 .card-view .issue-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(27, 31, 35, 0.15);
+}
+
+/* Disable card hover transform when dropdown menu is open to prevent flickering */
+.card-view .issue-item:has(.issue-menu-dropdown.show):hover {
+    transform: none;
 }
 
 /* Show and style detail button in card view */

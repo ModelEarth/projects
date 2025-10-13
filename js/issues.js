@@ -2332,8 +2332,12 @@ class GitHubIssuesManager {
                                 issue.comment_details = await this.apiRequest(
                                     `/repos/${this.owner}/${repoName}/issues/${issue.number}/comments`
                                 );
+                                console.log(`✅ Loaded ${issue.comment_details.length} comments for issue #${issue.number}`);
                             } catch (e) {
+                                console.error(`❌ Failed to load comments for issue #${issue.number} (${issue.title}):`, e.message);
+                                // Store error information for debugging
                                 issue.comment_details = [];
+                                issue.comment_load_error = e.message;
                             }
                         } else {
                             issue.comment_details = [];
@@ -2902,7 +2906,41 @@ class GitHubIssuesManager {
         if (currentView === 'short') {
             // Process body: limit to 180 chars and remove line returns
             const processedBody = issue.body ?
-                issue.body.replace(/\r?\n/g, ' ').substring(0, 180) + (issue.body.length > 180 ? '...' : '') : '';
+                issue.body.replace(/\r?\n/g, ' ').substring(0, 180) : '';
+            const hasMore = issue.body && issue.body.length > 180;
+
+            // Prepare detailed content for expansion
+            const assigneesDetailHtml = issue.assignees && issue.assignees.length > 0 ?
+                issue.assignees.map(assignee => `
+                    <div class="assignee-detail">
+                        <img src="${assignee.avatar_url}" alt="${assignee.login}" class="assignee-avatar">
+                        <span>${assignee.login.split('-')[0].toLowerCase()}</span>
+                    </div>
+                `).join('') : '<span class="text-muted">No assignees</span>';
+
+            const labelsDetailHtml = issue.labels && issue.labels.length > 0 ?
+                issue.labels.map(label => `
+                    <span class="issue-label" style="background-color: #${label.color}; color: ${this.getContrastColor(label.color)}">
+                        ${label.name}
+                    </span>
+                `).join('') : '<span class="text-muted">No labels</span>';
+
+            const commentsHtml = issue.comment_details && issue.comment_details.length > 0 ?
+                issue.comment_details.map(comment => `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <img src="${comment.user.avatar_url}" alt="${comment.user.login}" class="comment-avatar">
+                            <strong>${comment.user.login}</strong>
+                            <span class="comment-date">${this.formatDate(comment.created_at)}</span>
+                        </div>
+                        <div class="comment-body">
+                            ${this.formatMarkdown(comment.body)}
+                        </div>
+                    </div>
+                `).join('') :
+                issue.comment_load_error ?
+                    `<p class="text-muted"><i class="fas fa-exclamation-triangle"></i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
+                    '<p class="text-muted">No comments</p>';
 
             issueDiv.innerHTML = `
                 <div class="issue-header">
@@ -2911,7 +2949,7 @@ class GitHubIssuesManager {
                         <a href="${issue.html_url}" target="_blank" class="repo-issue-link" title="Open in GitHub">
                             ${issue.repository.charAt(0).toUpperCase() + issue.repository.slice(1)} #${issue.number}
                         </a>
-                        
+
                         <!-- Issue Actions Menu -->
                         <div class="issue-actions-menu shifted-menu">
                             <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
@@ -2930,30 +2968,97 @@ class GitHubIssuesManager {
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Title -->
-                    <h4 class="issue-title short-title" onclick="issuesManager.expandIssueDetails('${issue.id}', this)" style="cursor: pointer;" title="Click to expand details">
+                    <h4 class="issue-title short-title">
                         #${issue.number} ${this.escapeHtml(issue.title)}
                     </h4>
                 </div>
                 ${processedBody ? `
-                    <div class="issue-description short-description">
-                        ${this.escapeHtml(processedBody)}
+                    <div class="issue-description short-description" onclick="issuesManager.expandIssueDetails('${issue.id}', event)" style="cursor: pointer;" title="Click to expand details">
+                        ${this.escapeHtml(processedBody)}${hasMore ? '... ' : ''}${hasMore ? `<a href="#" class="more-link" onclick="issuesManager.expandIssueDetails('${issue.id}', event); return false;" title="Show full description">more</a>` : ''}
                     </div>
                 ` : ''}
-                <div class="issue-actions">
-                        <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
-                            <i class="fas fa-eye"></i><span> Details</span>
-                        </button>
-                    </div>
-                
+
                 <!-- Hidden full details -->
                 <div class="issue-full-details" id="fullDetails-${issue.id}" style="display: none;">
-                    ${issue.body ? `
-                        <div class="issue-description-full">
-                            ${this.formatMarkdown(issue.body)}
+                    <div class="issue-detail-inline">
+                        <!-- Metadata Section -->
+                        <div class="issue-meta-inline">
+                            <span class="issue-date">
+                                <i class="fas fa-plus"></i> Created: ${this.formatDate(issue.created_at)}
+                            </span>
+                            <span class="issue-date">
+                                <i class="fas fa-clock"></i> Updated: ${this.formatDate(issue.updated_at)}
+                            </span>
+                            <span class="issue-date">
+                                <i class="fas fa-sync-alt"></i> Last Refreshed:
+                                <a href="#" onclick="issuesManager.showRefreshDialog('${issue.id}'); return false;" class="refresh-link" title="Click to refresh this issue">
+                                    ${issue.last_refreshed ? this.formatFullDateTime(issue.last_refreshed) : this.formatFullDateTime(issue.created_at)}
+                                </a>
+                            </span>
+                            ${issue.comments > 0 ? `
+                                <span class="comment-count">
+                                    <i class="fas fa-comments"></i> ${issue.comments} comment${issue.comments > 1 ? 's' : ''}
+                                </span>
+                            ` : ''}
                         </div>
-                    ` : ''}
+
+                        <!-- Description Section -->
+                        ${issue.body ? `
+                            <div class="issue-section-inline">
+                                <h5 class="section-title">Description</h5>
+                                <div class="issue-description-full">
+                                    ${this.formatMarkdown(issue.body)}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Labels Section -->
+                        ${labelsDetailHtml ? `
+                            <div class="issue-section-inline">
+                                <h5 class="section-title">Labels</h5>
+                                <div class="issue-labels-detail">
+                                    ${labelsDetailHtml}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Assignees Section -->
+                        <div class="issue-section-inline">
+                            <h5 class="section-title">Assignees</h5>
+                            <div class="assignees-detail">
+                                ${assigneesDetailHtml}
+                            </div>
+                        </div>
+
+                        <!-- Comments Section -->
+                        ${issue.comments > 0 ? `
+                            <div class="issue-section-inline">
+                                <h5 class="section-title">Comments (${issue.comments})</h5>
+                                <div class="comments-section-inline">
+                                    ${commentsHtml}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Action Buttons -->
+                        <div class="issue-actions-inline">
+                            <a href="${issue.html_url}" target="_blank" class="btn btn-primary btn-sm">
+                                <i class="fab fa-github"></i> View on GitHub
+                            </a>
+                            <a href="${issue.html_url}/edit" target="_blank" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-edit"></i> Edit Issue
+                            </a>
+                        </div>
+
+                        <!-- Collapse Link -->
+                        <div class="collapse-link-container">
+                            <a href="#" class="less-link" onclick="issuesManager.collapseIssueDetails('${issue.id}', event); return false;" title="Show less">
+                                <i class="fas fa-chevron-up"></i> less
+                            </a>
+                        </div>
+                    </div>
                 </div>
             `;
             return issueDiv;
@@ -3096,7 +3201,10 @@ class GitHubIssuesManager {
                         ${this.formatMarkdown(comment.body)}
                     </div>
                 </div>
-            `).join('') : '<p class="text-muted">No comments</p>';
+            `).join('') :
+            issue.comment_load_error ?
+                `<p class="text-muted"><i class="fas fa-exclamation-triangle"></i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
+                '<p class="text-muted">No comments</p>';
 
         modalBody.innerHTML = `
             <div class="issue-detail">
@@ -3715,22 +3823,43 @@ class GitHubIssuesManager {
         return relativePath + 'localsite/img/icon/github/github.png';
     }
 
-    expandIssueDetails(issueId, titleElement) {
-        const issueItem = titleElement.closest('.issue-item');
+    expandIssueDetails(issueId, event) {
+        // Prevent default link behavior
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+
+        // Find the issue item by data attribute
+        const issueItem = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (!issueItem) return;
+
         const fullDetailsDiv = issueItem.querySelector('.issue-full-details');
         const shortDescription = issueItem.querySelector('.short-description');
-        const shortTitle = issueItem.querySelector('.short-title');
 
-        if (fullDetailsDiv.style.display === 'none') {
-            // Show full details
+        if (fullDetailsDiv && shortDescription) {
+            // Show full details inline
             fullDetailsDiv.style.display = 'block';
-            if (shortDescription) shortDescription.style.display = 'none';
-            shortTitle.title = 'Click to collapse';
-        } else {
-            // Hide full details
+            shortDescription.style.display = 'none';
+        }
+    }
+
+    collapseIssueDetails(issueId, event) {
+        // Prevent default link behavior
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+
+        // Find the issue item by data attribute
+        const issueItem = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (!issueItem) return;
+
+        const fullDetailsDiv = issueItem.querySelector('.issue-full-details');
+        const shortDescription = issueItem.querySelector('.short-description');
+
+        if (fullDetailsDiv && shortDescription) {
+            // Hide full details and show short description
             fullDetailsDiv.style.display = 'none';
-            if (shortDescription) shortDescription.style.display = 'block';
-            shortTitle.title = 'Click to expand details';
+            shortDescription.style.display = 'block';
         }
     }
 
