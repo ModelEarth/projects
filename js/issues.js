@@ -47,6 +47,8 @@ class GitHubIssuesManager {
             resetTime: null,
             startTime: null
         };
+        this.invalidTokenWarningShown = false; // Track if invalid token warning has been shown
+        this.rateLimitWarningShown = false; // Track if rate limit warning has been shown
 
         // State management
         this.filters = {
@@ -1546,6 +1548,14 @@ class GitHubIssuesManager {
         const token = tokenInput.value.trim();
 
         if (token && token !== '••••••••••••••••') {
+            // Validate token contains only ASCII characters (ISO-8859-1)
+            // GitHub tokens should only contain alphanumeric characters and underscores
+            if (!/^[\x00-\xFF]*$/.test(token)) {
+                this.showNotification('Invalid token: Token contains non-ASCII characters. GitHub tokens should only contain letters, numbers, and basic symbols.', 'error');
+                console.error('❌ Token validation failed: Contains non-ASCII characters');
+                return;
+            }
+
             this.githubToken = token;
             localStorage.setItem('github_token', token);
             localStorage.removeItem('github_issues_cache'); // Clear cache when token changes
@@ -1556,8 +1566,10 @@ class GitHubIssuesManager {
             // Clear rate limit info since new token likely has better limits
             this.clearRateLimit();
 
-            // Clear any invalid token message
+            // Clear any invalid token message and reset warning flags
             this.invalidTokenMessage = null;
+            this.invalidTokenWarningShown = false;
+            this.rateLimitWarningShown = false; // Reset rate limit warning when new token is added
 
             this.showNotification('Token saved successfully', 'success');
 
@@ -1576,9 +1588,11 @@ class GitHubIssuesManager {
         this.updateTokenUI();
         this.updateTokenSectionUI();
 
-        // Hide the token section after saving
-        document.getElementById('authSection').style.display = 'none';
-        document.getElementById('subtitleDescription').style.display = 'none';
+        // Hide the token section after saving (with null checks)
+        const authSection = document.getElementById('authSection');
+        const subtitleDescription = document.getElementById('subtitleDescription');
+        if (authSection) authSection.style.display = 'none';
+        if (subtitleDescription) subtitleDescription.style.display = 'none';
     }
 
     async refreshIssuesAfterTokenSave() {
@@ -2043,6 +2057,70 @@ class GitHubIssuesManager {
                 }
             });
 
+            // Handle 401 Unauthorized - invalid token
+            if (response.status === 401 && this.githubToken) {
+                console.warn(`⚠️ Invalid token detected for ${repoName}. Retrying without authentication...`);
+
+                // Show warning message once (not for every repo)
+                if (!this.invalidTokenWarningShown) {
+                    this.showInvalidTokenMessage('Invalid or expired GitHub token. Switching to unauthenticated access (60 requests/hour).');
+                    this.invalidTokenWarningShown = true;
+                }
+
+                // Clear the invalid token
+                this.githubToken = null;
+                localStorage.removeItem('github_token');
+                this.clearRateLimit();
+                this.updateTokenUI(); // Update UI to reflect cleared token
+
+                // Retry without authentication
+                const retryResponse = await fetch(issuesUrl, {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                // Update rate limit info from retry response
+                if (retryResponse.headers.get('X-RateLimit-Remaining')) {
+                    this.rateLimitInfo.remaining = parseInt(retryResponse.headers.get('X-RateLimit-Remaining'));
+                    this.rateLimitInfo.resetTime = new Date(parseInt(retryResponse.headers.get('X-RateLimit-Reset')) * 1000);
+                    this.saveRateLimitToCache();
+                    this.updateRateLimitDisplay();
+                }
+
+                if (retryResponse.ok) {
+                    const issues = await retryResponse.json();
+                    const actualIssues = issues.filter(item => !item.pull_request);
+                    return actualIssues.length;
+                }
+                return 0;
+            }
+
+            // Handle 403 Forbidden - rate limit exceeded
+            if (response.status === 403) {
+                const errorData = await response.json().catch(() => ({}));
+
+                // Update rate limit info from response headers
+                if (response.headers.get('X-RateLimit-Remaining')) {
+                    this.rateLimitInfo.remaining = parseInt(response.headers.get('X-RateLimit-Remaining'));
+                    this.rateLimitInfo.resetTime = new Date(parseInt(response.headers.get('X-RateLimit-Reset')) * 1000);
+                    this.saveRateLimitToCache();
+                    this.updateRateLimitDisplay();
+                }
+
+                // Show rate limit warning once (not for every repo)
+                if (!this.rateLimitWarningShown) {
+                    const resetTime = this.rateLimitInfo.resetTime ?
+                        new Date(this.rateLimitInfo.resetTime).toLocaleTimeString() : 'soon';
+
+                    this.showError(`Rate limit exceeded. ${errorData.message || 'Please wait until ' + resetTime + ' or add a GitHub token for higher limits.'}`);
+                    console.error(`❌ Rate limit exceeded for ${repoName}. Reset time: ${resetTime}`);
+                    this.rateLimitWarningShown = true;
+                }
+
+                return 0;
+            }
+
             if (response.ok) {
                 const issues = await response.json();
                 // Filter out pull requests - GitHub issues API returns both issues and PRs
@@ -2403,6 +2481,53 @@ class GitHubIssuesManager {
             // Handle invalid token (401 Unauthorized)
             if (response.status === 401) {
                 this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
+
+                // Automatically retry without token if we have an invalid token
+                if (this.githubToken) {
+                    console.warn('⚠️ Invalid token detected. Retrying without authentication...');
+                    const tempToken = this.githubToken;
+                    this.githubToken = null; // Temporarily clear token for retry
+                    localStorage.removeItem('github_token');
+                    this.clearRateLimit();
+                    this.updateTokenUI(); // Update UI to reflect cleared token
+
+                    try {
+                        // Retry the same request without authentication
+                        const retryHeaders = {
+                            'Accept': 'application/vnd.github.v3+json',
+                        };
+                        const retryResponse = await fetch(`${this.baseURL}${endpoint}`, { headers: retryHeaders });
+
+                        // Update rate limit info from retry response
+                        if (retryResponse.headers.get('X-RateLimit-Remaining')) {
+                            this.rateLimitInfo.remaining = parseInt(retryResponse.headers.get('X-RateLimit-Remaining'));
+                            this.rateLimitInfo.resetTime = new Date(parseInt(retryResponse.headers.get('X-RateLimit-Reset')) * 1000);
+                            this.saveRateLimitToCache();
+                            this.updateRateLimitDisplay();
+                        }
+
+                        if (retryResponse.ok) {
+                            console.log('✅ Successfully loaded data without authentication');
+                            this.showNotification('Loaded data without authentication (60 requests/hour limit)', 'info');
+                            const retryData = await retryResponse.json();
+                            const retryMetadata = {
+                                status: retryResponse.status,
+                                rateLimitRemaining: this.rateLimitInfo.remaining,
+                                isError: false
+                            };
+                            return { data: retryData, metadata: retryMetadata };
+                        } else {
+                            this.githubToken = tempToken;
+                            const error = new Error(`GitHub API Error: ${retryResponse.status} - ${retryResponse.statusText}`);
+                            error.response = metadata;
+                            throw error;
+                        }
+                    } catch (retryError) {
+                        this.githubToken = tempToken;
+                        throw retryError;
+                    }
+                }
+
                 const error = new Error(`GitHub API Error: ${response.status} - Invalid token`);
                 error.response = metadata;
                 throw error;
@@ -2462,6 +2587,45 @@ class GitHubIssuesManager {
             // Handle invalid token (401 Unauthorized)
             if (response.status === 401) {
                 this.showInvalidTokenMessage(errorData.message || 'Invalid or expired GitHub token');
+
+                // Automatically retry without token if we have an invalid token
+                if (this.githubToken) {
+                    console.warn('⚠️ Invalid token detected. Retrying without authentication (60 requests/hour limit)...');
+                    const tempToken = this.githubToken;
+                    this.githubToken = null; // Temporarily clear token for retry
+
+                    try {
+                        // Retry the same request without authentication
+                        const retryHeaders = {
+                            'Accept': 'application/vnd.github.v3+json',
+                        };
+                        const retryResponse = await fetch(`${this.baseURL}${endpoint}`, { headers: retryHeaders });
+
+                        // Update rate limit info from retry response
+                        if (retryResponse.headers.get('X-RateLimit-Remaining')) {
+                            this.rateLimitInfo.remaining = parseInt(retryResponse.headers.get('X-RateLimit-Remaining'));
+                            this.rateLimitInfo.resetTime = new Date(parseInt(retryResponse.headers.get('X-RateLimit-Reset')) * 1000);
+                            this.saveRateLimitToCache();
+                            this.updateRateLimitDisplay();
+                        }
+
+                        if (retryResponse.ok) {
+                            console.log('✅ Successfully loaded data without authentication');
+                            // Keep token cleared since it's invalid
+                            this.showNotification('Loaded data without authentication (60 requests/hour limit)', 'info');
+                            return await retryResponse.json();
+                        } else {
+                            // Restore token for user to fix
+                            this.githubToken = tempToken;
+                            throw new Error(`GitHub API Error: ${retryResponse.status} - ${retryResponse.statusText}`);
+                        }
+                    } catch (retryError) {
+                        // Restore token for user to fix
+                        this.githubToken = tempToken;
+                        throw retryError;
+                    }
+                }
+
                 throw new Error(`GitHub API Error: ${response.status} - Invalid token`);
             }
 
@@ -4201,6 +4365,10 @@ class GitHubIssuesManager {
                 localStorage.removeItem(key);
             }
         });
+
+        // Reset warning flags to allow fresh error messages
+        this.rateLimitWarningShown = false;
+        this.invalidTokenWarningShown = false;
 
         // Show notification
         this.showNotification('Cache cleared successfully', 'success');
