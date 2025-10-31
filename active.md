@@ -44,7 +44,7 @@ JAM Stack with Rust API and Azure PostgreSQL and Google Sheets
 
 ### RealityStream updates in progress
 
-[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
+[Pull features and targets into our Run Models colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
 RealityStream industry titles in importance report <!-- Abivish -->
 Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
