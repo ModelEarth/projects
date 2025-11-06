@@ -6,6 +6,39 @@
  * organization OAuth requirements that would cause 401 authentication errors.
  */
 
+/*
+// This was in team rather than team/projects.
+// Let's place this here instead and use minimal parameter to invoke from projects, projects/hub and team/projects
+
+    // Initialize Projects Hub widget in minimal auth-only mode
+    let githubAuthWidget;
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGitHubAuth);
+    } else {
+        initGitHubAuth();
+    }
+
+    function initGitHubAuth() {
+        try {
+            // Create minimal widget for auth only
+            githubAuthWidget = new GitHubIssuesManager('github-auth-minimal', {
+                githubToken: localStorage.getItem('github_token') || '',
+                owner: 'modelearth',
+                defaultRepo: 'team'
+            });
+
+            // Make it globally accessible
+            window.issuesManager = githubAuthWidget;
+
+            console.log('✅ GitHub Auth widget initialized (minimal mode)');
+        } catch (error) {
+            console.error('❌ Failed to initialize GitHub Auth widget:', error);
+        }
+    }
+*/
+
 class GitHubIssuesManager {
     constructor(containerId = 'issuesWidget', options = {}) {
         this.containerId = containerId;
