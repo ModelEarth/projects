@@ -102,23 +102,27 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 ## 2. CodeChat - RAG Interface for LLMs
 
-Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
+Our [codechat](https://model.earth/codechat) uses a NextJS frontend and [pinecone Vectors](../codechat-vectors/) for our RAG from repos.
 
+Our [Dataset AI Insights](https://model.earth/team/projects/) use Gemini and Claude to investigate CSV, JSON and API feeds
+
+<!--
 Our work within Planet Langchain is being replaced with the [Team Projects Page](https://model.earth/team/projects) which allows any data feed to be sent to our AI Insights process using Claude and Gemini.
-
-When you're ready to jump in, start with the setup steps in [modelearth webroot](https://model.earth/webroot)
 
 - [Planet Langchain Dev](/planet) within our [Planet Repo](https://github.com/modelearth/planet) for using [LangchainJS](https://github.com/langchain-ai/langchainjs).
 
-- Our [repo pull page](../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
-
-- Our Langchain filters are being integrated with our [Storyboard Active Reader](/requests/) which loads prompts from .csv files and outputs to GitHub.
-
 - TO DO: Add to our [Planet repo](https://github.com/modelearth/planet/) interface using [Langchain's Chat Models](https://python.langchain.com/docs/concepts/chat_models/).  
 
-- Pull a page from any GitHub repo to an LLM API to provide train RAG using [LangChain.js](https://api.js.langchain.com) javascript.<!-- Dhananjay, Kelly, Adithya-->
+- Pull a page from any GitHub repo to an LLM API to provide train RAG using [LangChain.js](https://api.js.langchain.com) javascript.  Dhananjay, Kelly, Adithya
 
-- TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally.
+- Our Langchain filters are being integrated with our [Storyboard Active Reader](/requests/) which loads prompts from .csv files and outputs to GitHub.
+-->
+
+Get started with the setup steps in [modelearth webroot](https://model.earth/webroot)
+
+- Our [repo pull page](../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
+
+- TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally and override team/.env keys.
 
 
 <!--See also: DataStax Astra DB
