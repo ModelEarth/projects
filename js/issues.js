@@ -712,7 +712,7 @@ class GitHubIssuesManager {
         if (hostname.includes('modelearth') || hostname.includes('model.earth')) {
             this.owner = 'modelearth';
         }
-        // Could add more detection logic here
+        // Could Add more detection logic here
     }
 
     async loadRepositoriesWithIssues() {
@@ -721,7 +721,7 @@ class GitHubIssuesManager {
         const repositoriesWithIssues = [];
         const csvRepos = await this.loadRepositoriesFromCSV();
 
-        // Always add projects repo first (default selection)
+        // Always Add projects repo first (default selection)
         const projectsRepo = csvRepos.find(repo => repo.repo_name === 'projects');
         if (projectsRepo) {
             repositoriesWithIssues.push({
@@ -1306,13 +1306,13 @@ class GitHubIssuesManager {
 
             // Load issues for the selected repository if not already loaded
             if (this.filters.repo !== 'all' && !this.repositoryIssues[this.filters.repo]) {
-                // Check if repository exists in our list, if not try to add it dynamically
+                // Check if repository exists in our list, if not try to Add it dynamically
                 const repoExists = this.repositories.find(r => r.name === this.filters.repo);
                 if (!repoExists) {
                     try {
                         await this.addRepositoryDynamically(this.filters.repo);
                     } catch (error) {
-                        console.error(`Failed to add repository ${this.filters.repo}:`, error);
+                        console.error(`Failed to Add repository ${this.filters.repo}:`, error);
                         this.showNotification(`Repository "${this.filters.repo}" not found or has no issues`, 'error');
                         // Reset to projects repo
                         this.filters.repo = 'projects';
@@ -1675,7 +1675,7 @@ class GitHubIssuesManager {
             '• Remove your stored token\n' +
             '• Clear cached issue data\n' +
             '• Reduce API rate limit from 5,000 to 60 requests per hour\n\n' +
-            'You can always add your token back later.'
+            'You can always Add your token back later.'
         );
 
         if (confirmed) {
@@ -2146,7 +2146,7 @@ class GitHubIssuesManager {
                     const resetTime = this.rateLimitInfo.resetTime ?
                         new Date(this.rateLimitInfo.resetTime).toLocaleTimeString() : 'soon';
 
-                    this.showError(`Rate limit exceeded. ${errorData.message || 'Please wait until ' + resetTime + ' or add a GitHub token for higher limits.'}`);
+                    this.showError(`Rate limit exceeded. ${errorData.message || 'Please wait until ' + resetTime + ' or Add a GitHub token for higher limits.'}`);
                     console.error(`❌ Rate limit exceeded for ${repoName}. Reset time: ${resetTime}`);
                     this.rateLimitWarningShown = true;
                 }
@@ -3668,7 +3668,7 @@ class GitHubIssuesManager {
             }
         });
 
-        // If we have a custom repo from the hash, add it to the repository list
+        // If we have a custom repo from the hash, Add it to the repository list
         if (customRepo && customRepo !== 'all') {
             // Extract just the repo name for consistency
             const repoName = customRepo.includes('/') ? customRepo.split('/')[1] : customRepo;
@@ -3735,7 +3735,7 @@ class GitHubIssuesManager {
                 this.populateRepositoryFilter();
 
             } else {
-                // No token - add repository as placeholder
+                // No token - Add repository as placeholder
                 this.repositories.push({
                     name: repo,
                     displayName: repo,
@@ -3753,7 +3753,7 @@ class GitHubIssuesManager {
 
         } catch (error) {
 
-            // Don't add non-existent repositories to avoid confusion
+            // Don't Add non-existent repositories to avoid confusion
             // The error will be handled in the calling function
             throw new Error(`Repository "${fullRepoPath}" not found on GitHub`);
         }
@@ -4633,7 +4633,7 @@ class GitHubIssuesManager {
             <div class="no-issues">
                 <i class="fas fa-exclamation-triangle"></i>
                 <h3>API Rate Limit Exceeded</h3>
-                <p>GitHub API rate limit reached. Please try again later or add a GitHub token to increase your rate limit.</p>
+                <p>GitHub API rate limit reached. Please try again later or Add a GitHub token to increase your rate limit.</p>
                 <p>You can still use the filters - they will work once the API is accessible again.</p>
             </div>
         `;
@@ -4736,6 +4736,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const containerId = container.dataset.containerId || 'issuesWidget';
         issuesManager = new GitHubIssuesManager(containerId);
     } else {
-        console.error('Issues widget container not found. Please add <div id="issuesWidget"></div> to your page.');
+        console.error('Issues widget container not found. Please Add <div id="issuesWidget"></div> to your page.');
     }
 });
