@@ -58,7 +58,7 @@ Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
 Our weekly [DreamStudio Earth](https://dreamstudio.com/io/coders/) meetups are every [Thursday at 7pm ET](/io/coders/).
 
-Select one of the [7 project areas](../io/coders/) and add your first name below by editing a [fork of the projects repo](https://github.com/ModelEarth/projects/blob/main/active.md), then send a PR.
+Select one of the [7 project areas](../io/coders/) and Add your first name below by editing a [fork of the projects repo](https://github.com/ModelEarth/projects/blob/main/active.md), then send a PR.
 
 [OPT Volunteers Welcome!](../community/members/welcome) - Overview and New Member Signup
 
