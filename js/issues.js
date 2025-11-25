@@ -52,6 +52,7 @@ class GitHubIssuesManager {
         this.owner = config.githubOwner;
         this.detectCurrentFolder = config.detectCurrentFolder;
         this.multiRepoRoots = config.multiRepoRoots;
+        this.showProject = config.showProject;
         this.currentFolder = this.getCurrentFolder();
         this.defaultRepo = this.determineDefaultRepo();
 
@@ -109,7 +110,8 @@ class GitHubIssuesManager {
         const config = {
             githubOwner: 'modelearth',
             detectCurrentFolder: true,
-            multiRepoRoots: ['webroot', 'modelearth']
+            multiRepoRoots: ['webroot', 'modelearth'],
+            showProject: true // Default to true (show projects list)
         };
 
         // Read from data attributes if container exists
@@ -122,6 +124,9 @@ class GitHubIssuesManager {
             }
             if (container.dataset.multiRepoRoots) {
                 config.multiRepoRoots = container.dataset.multiRepoRoots.split(',').map(s => s.trim());
+            }
+            if (container.dataset.showProject !== undefined) {
+                config.showProject = container.dataset.showProject === 'true';
             }
         }
 
@@ -187,6 +192,15 @@ class GitHubIssuesManager {
             return;
         }
 
+        // When showProject is false, only create the header for authentication
+        if (!this.showProject) {
+            container.innerHTML = `
+                ${this.createHeaderHTML()}
+            `;
+            return;
+        }
+
+        // Full widget structure when showProject is true
         container.innerHTML = `
             ${this.createHeaderHTML()}
             ${this.createRateLimitHTML()}
@@ -201,10 +215,16 @@ class GitHubIssuesManager {
     }
 
     createHeaderHTML() {
+        // Check if we're on team/projects page to hide Team Members link
+        const isTeamProjectsPage = window.location.pathname.includes('/team/projects/');
+        const teamMembersLink = isTeamProjectsPage ? '' : `<span>
+       <a class="token-toggle-link" style="font-size:0.9rem;" href="/team/projects/#list=modelteam">Team Members</a>
+         </span>`;
+
         return `
             <div class="issues-header">
-                <i class="fas fa-expand header-fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="Toggle Fullscreen"></i>
-                
+                <i class="fas fa-expand header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;"></i>
+
                 <div class="header-content">
                     <h1 style="font-size:32px"><i class="fab fa-github"></i> Team Projects</h1>
                     <p class="subtitle">
@@ -216,9 +236,7 @@ class GitHubIssuesManager {
                     <p class="subtitle" style="margin-top: 5px;">
                         <input type="text" id="gitIssuesAccount" class="textInput" style="width:150px; font-size: 14px; display: none;" placeholder="GitHub Account" onfocus="this.select()" oninput="updateGitIssuesAccount()">
                     </p>
-                     <span>
-       <a class="token-toggle-link" style="font-size:0.9rem;" href="/team/projects/#list=modelteam">Team Members</a>
-         </span>
+                     ${teamMembersLink}
                 </div>
                 
                 <!-- GitHub Authentication -->
@@ -572,6 +590,20 @@ class GitHubIssuesManager {
         // Create the widget structure first
         this.createWidgetStructure();
 
+        // If showProject is false, don't load data or setup most functionality
+        // This creates a minimal widget showing only the .issues-header for authentication
+        if (!this.showProject) {
+            this.setupTokenEventListeners();
+            this.updateTokenUI();
+
+            // Make the widget visible but minimal (header only)
+            this.initialized = false; // Track that we haven't fully initialized yet
+            return;
+        }
+
+        // Full initialization for showProject=true
+        this.initialized = true;
+
         // Ensure initial responsive state is correct
         this.updateAssigneeButton();
         this.updateToggleButtonDisplay();
@@ -613,6 +645,43 @@ class GitHubIssuesManager {
 
         // Add resize observer to handle responsive label changes
         this.setupResizeObserver();
+    }
+
+    /**
+     * Complete initialization for widgets that started with showProject=false
+     * Call this when user clicks "Repos" button in team/projects
+     * This only initializes authentication, NOT the projects list
+     */
+    async initializeProjectsList() {
+        if (this.initialized) {
+            // Already initialized, nothing to do
+            return;
+        }
+
+        // Mark as initialized (but keep showProject=false to avoid showing projects)
+        this.initialized = true;
+
+        // Note: We deliberately keep showProject=false here
+        // This ensures only .issues-header is shown for authentication
+        // No projects list, filters, or stats will be displayed
+
+        // Only setup what's needed for authentication
+        this.loadRateLimitFromCache();
+
+        // If we have a token but no recent rate limit info, clear it to get fresh data
+        if (this.githubToken && this.rateLimitInfo.remaining !== null) {
+            const now = Date.now();
+            const resetTime = new Date(this.rateLimitInfo.resetTime).getTime();
+            // If reset time has passed, clear the old info
+            if (now > resetTime) {
+                this.clearRateLimit();
+            }
+        }
+
+        this.startRateLimitTimer();
+
+        // Don't load projects data when showProject is false
+        // User only wants authentication UI, not the projects list
     }
 
     updateSearchStatus() {
@@ -1265,14 +1334,33 @@ class GitHubIssuesManager {
         }, 60000); // Update every minute
     }
 
+    setupTokenEventListeners() {
+        // Token management only - for minimal mode (showProject=false)
+        const toggleTokenSection = document.getElementById('toggleTokenSection');
+        const saveToken = document.getElementById('saveToken');
+        const clearToken = document.getElementById('clearToken');
+        const fullscreenBtn = document.querySelector('.header-fullscreen-btn');
+
+        if (toggleTokenSection) {
+            toggleTokenSection.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleTokenSection();
+            });
+        }
+        if (saveToken) {
+            saveToken.addEventListener('click', () => this.saveToken());
+        }
+        if (clearToken) {
+            clearToken.addEventListener('click', () => this.clearToken());
+        }
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+        }
+    }
+
     setupEventListeners() {
         // Token management
-        document.getElementById('toggleTokenSection').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.toggleTokenSection();
-        });
-        document.getElementById('saveToken').addEventListener('click', () => this.saveToken());
-        document.getElementById('clearToken').addEventListener('click', () => this.clearToken());
+        this.setupTokenEventListeners();
 
         // Filters
         document.getElementById('repoFilter').addEventListener('change', async (e) => {
@@ -3898,8 +3986,10 @@ class GitHubIssuesManager {
 
         }
 
-        // Update icon in pagination
-        this.updatePagination();
+        // Update icon in pagination (only if showProject is true)
+        if (this.showProject && typeof this.updatePagination === 'function') {
+            this.updatePagination();
+        }
     }
 
     toggleFilters() {
@@ -4735,7 +4825,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Get container ID from data attribute or use default
         const containerId = container.dataset.containerId || 'issuesWidget';
         issuesManager = new GitHubIssuesManager(containerId);
-    } else {
-        console.error('Issues widget container not found. Please Add <div id="issuesWidget"></div> to your page.');
     }
+    // Note: No error if container not found - manual initialization may be used (e.g., team/projects)
 });
