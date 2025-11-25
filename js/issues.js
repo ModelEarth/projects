@@ -594,7 +594,12 @@ class GitHubIssuesManager {
         // This creates a minimal widget showing only the .issues-header for authentication
         if (!this.showProject) {
             this.setupTokenEventListeners();
+
+            // Try to load token from API if not in localStorage
+            await this.loadTokenFromAPI();
+
             this.updateTokenUI();
+            this.updateTokenSectionUI();
 
             // Make the widget visible but minimal (header only)
             this.initialized = false; // Track that we haven't fully initialized yet
@@ -603,6 +608,9 @@ class GitHubIssuesManager {
 
         // Full initialization for showProject=true
         this.initialized = true;
+
+        // Try to load token from API if not in localStorage
+        await this.loadTokenFromAPI();
 
         // Ensure initial responsive state is correct
         this.updateAssigneeButton();
@@ -613,6 +621,7 @@ class GitHubIssuesManager {
         this.loadFromHash();
         this.loadFromCache();
         this.updateTokenUI();
+        this.updateTokenSectionUI();
 
         // Load saved view preference
         this.loadViewPreference();
@@ -1662,6 +1671,35 @@ class GitHubIssuesManager {
 
         // Update the refresh time display
         this.updateHeaderRefreshDisplay();
+    }
+
+    async loadTokenFromAPI() {
+        // If token already exists in localStorage, don't fetch from API
+        if (this.githubToken) {
+            return;
+        }
+
+        try {
+            // Try to fetch token from Rust API server (reads from docker/.env)
+            const response = await fetch('http://localhost:8081/api/github/token');
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.token) {
+                    // Store in localStorage so it persists and is shared across widgets
+                    localStorage.setItem('github_token', data.token);
+                    this.githubToken = data.token;
+                    console.log('✅ GitHub token loaded from API (docker/.env)');
+                } else {
+                    console.log('ℹ️ No GitHub token available in docker/.env');
+                }
+            } else {
+                console.log('ℹ️ API server not available or no token configured');
+            }
+        } catch (error) {
+            // API not available or error - this is expected if server isn't running
+            console.log('ℹ️ Could not load token from API:', error.message);
+        }
     }
 
     async saveToken() {
