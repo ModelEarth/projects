@@ -429,7 +429,7 @@ class GitHubIssuesManager {
                     </div>
                     
                     <div class="filter-group" style="margin-left: auto;">
-                        <button id="clearCacheButton" class="btn btn-secondary">
+                        <button id="clearCacheButton" class="btn btn-primary">
                             Clear Cache
                         </button>
                     </div>
