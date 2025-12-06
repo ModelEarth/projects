@@ -103,6 +103,9 @@ class GitHubIssuesManager {
         this.searchDebounceTimer = null;
         this.searchDebounceDelay = 300; // 300ms delay
 
+        // Track previous filter hash for cache invalidation
+        this.previousFilterHash = null;
+
         this.init();
     }
 
@@ -615,6 +618,9 @@ class GitHubIssuesManager {
         // Ensure initial responsive state is correct
         this.updateAssigneeButton();
         this.updateToggleButtonDisplay();
+
+        // Initialize previous filter hash for tracking changes
+        this.previousFilterHash = window.location.hash.substring(1);
 
         this.setupEventListeners();
         this.setupMenuClickHandler(); // Add menu click handler
@@ -1547,8 +1553,8 @@ class GitHubIssuesManager {
             });
         });
 
-        // Hash change listener
-        window.addEventListener('hashchange', () => this.loadFromHash());
+        // Hash change listener with cache invalidation on filter changes
+        window.addEventListener('hashchange', () => this.handleHashChange());
 
         // Resize listener to update width display
         window.addEventListener('resize', () => this.updatePagination());
@@ -3769,8 +3775,99 @@ class GitHubIssuesManager {
             }
         });
 
-        const hash = params.toString() ? `#${params.toString()}` : '';
-        window.history.replaceState(null, null, window.location.pathname + hash);
+        const newHash = params.toString();
+        const currentHash = window.location.hash.substring(1);
+
+        // Check if hash actually changed and clear cache if needed
+        if (this.previousFilterHash !== null && newHash !== currentHash) {
+            const filtersChanged = this.hasFiltersChanged(this.previousFilterHash, newHash);
+
+            if (filtersChanged) {
+                // Clear main issues cache
+                localStorage.removeItem('github_issues_cache');
+
+                // Clear repository-specific caches
+                this.clearRepositoryCache();
+
+                // Clear memory cache
+                this.repositoryIssues = {};
+            }
+        }
+
+        // Update the hash in URL
+        const hashString = newHash ? `#${newHash}` : '';
+        window.history.replaceState(null, null, window.location.pathname + hashString);
+
+        // Update tracking for next comparison
+        this.previousFilterHash = newHash;
+    }
+
+    // Extract filters from a hash string
+    getFiltersFromHash(hashString) {
+        const filters = {
+            repo: this.defaultRepo,
+            sort: 'updated',
+            assignee: 'all',
+            projectstatus: 'open',
+            label: 'all',
+            search: ''
+        };
+
+        if (!hashString) return filters;
+
+        const params = new URLSearchParams(hashString);
+        params.forEach((value, key) => {
+            if (filters.hasOwnProperty(key)) {
+                filters[key] = value;
+            }
+        });
+
+        return filters;
+    }
+
+    // Create a normalized hash string from filters for comparison
+    getFilterHash(filters) {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value && value !== 'all' && value !== '') {
+                params.set(key, value);
+            }
+        });
+        return params.toString();
+    }
+
+    // Check if filters have changed between two hash states
+    hasFiltersChanged(oldHash, newHash) {
+        const oldFilters = this.getFiltersFromHash(oldHash);
+        const newFilters = this.getFiltersFromHash(newHash);
+
+        const filterKeys = ['repo', 'sort', 'assignee', 'projectstatus', 'label', 'search'];
+
+        for (const key of filterKeys) {
+            if (oldFilters[key] !== newFilters[key]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Handle hash changes with cache invalidation for browser back/forward navigation
+    async handleHashChange() {
+        const currentHash = window.location.hash.substring(1);
+
+        if (this.previousFilterHash !== null) {
+            const filtersChanged = this.hasFiltersChanged(this.previousFilterHash, currentHash);
+
+            if (filtersChanged) {
+                localStorage.removeItem('github_issues_cache');
+                this.clearRepositoryCache();
+                this.repositoryIssues = {};
+            }
+        }
+
+        this.previousFilterHash = currentHash;
+        await this.loadFromHash();
     }
 
     async loadFromHash() {
