@@ -18,9 +18,136 @@
             padding: 20px;
         }
         
-        .container {
-            max-width: 1200px;
+        .wrapper {
+            display: flex;
+            max-width: 1400px;
             margin: 0 auto;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .category-list {
+            list-style: none;
+        }
+        
+        .category-item {
+            margin-bottom: 10px;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        
+        .category-title {
+            flex: 1;
+            background-color: #f9f9f9;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+            transition: background-color 0.3s;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .category-title:hover {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        
+        .category-title.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .category-arrow {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.3s;
+        }
+        
+        .category-arrow:hover {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        
+        .toggle-arrow {
+            display: inline-block;
+            transition: transform 0.3s;
+            width: 16px;
+            text-align: center;
+        }
+        
+        .toggle-arrow.open {
+            transform: rotate(90deg);
+        }
+        
+        .subcategory-list {
+            display: none;
+            list-style: none;
+            margin-top: 8px;
+            margin-left: 0;
+            padding-left: 15px;
+            border-left: 2px solid #ddd;
+        }
+        
+        .subcategory-list.open {
+            display: block;
+        }
+        
+        .subcategory-item {
+            margin-bottom: 6px;
+        }
+        
+        .subcategory-link {
+            display: block;
+            padding: 6px 10px;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            border-radius: 3px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .subcategory-link:hover {
+            background-color: #f0f0f0;
+            color: #333;
+            padding-left: 15px;
+        }
+        
+        .container {
+            flex: 1;
             background-color: white;
             padding: 30px;
             border-radius: 8px;
@@ -81,7 +208,7 @@
             background-color: #0b7dda;
         }
         
-        .btn-Add {
+        .btn-add {
             background-color: #4CAF50;
             color: white;
         }
@@ -103,43 +230,277 @@
             text-align: center;
             margin-top: 30px;
         }
+        
+        .search-results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f7ff;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .search-results h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Nutritious Meal Planner</h1>
+    <div class="wrapper">
+        <!-- Sidebar with Categories -->
+        <aside class="sidebar">
+            <h2>Categories</h2>
+            <ul class="category-list">
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="fruits">Fruits</button>
+                        <button class="category-arrow" data-toggle="fruits">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="fruits">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="apples">Apples</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="bananas">Bananas</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="berries">Berries</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="vegetables">Vegetables</button>
+                        <button class="category-arrow" data-toggle="vegetables">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="vegetables">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="leafy-greens">Leafy Greens</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="root-vegetables">Root Vegetables</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="cruciferous">Cruciferous</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="grains">Grains</button>
+                        <button class="category-arrow" data-toggle="grains">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="grains">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="wheat">Wheat</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="rice">Rice</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="oats">Oats</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="proteins">Proteins</button>
+                        <button class="category-arrow" data-toggle="proteins">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="proteins">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="poultry">Poultry</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="beef">Beef</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="fish">Fish</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="dairy">Dairy</button>
+                        <button class="category-arrow" data-toggle="dairy">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="dairy">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="milk">Milk</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="cheese">Cheese</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="yogurt">Yogurt</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="legumes">Legumes</button>
+                        <button class="category-arrow" data-toggle="legumes">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="legumes">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="beans">Beans</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="lentils">Lentils</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="peas">Peas</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="nuts">Nuts & Seeds</button>
+                        <button class="category-arrow" data-toggle="nuts">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="nuts">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="almonds">Almonds</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="walnuts">Walnuts</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="sunflower-seeds">Sunflower Seeds</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="oils">Oils & Fats</button>
+                        <button class="category-arrow" data-toggle="oils">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="oils">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="olive-oil">Olive Oil</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="coconut-oil">Coconut Oil</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="butter">Butter</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="beverages">Beverages</button>
+                        <button class="category-arrow" data-toggle="beverages">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="beverages">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="water">Water</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="tea">Tea</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="coffee">Coffee</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="spices">Spices & Herbs</button>
+                        <button class="category-arrow" data-toggle="spices">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="spices">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="black-pepper">Black Pepper</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="garlic">Garlic</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="basil">Basil</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="sweets">Sweets & Sugars</button>
+                        <button class="category-arrow" data-toggle="sweets">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="sweets">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="honey">Honey</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="maple-syrup">Maple Syrup</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="stevia">Stevia</a></li>
+                    </ul>
+                </li>
+                
+                <li class="category-item">
+                    <div class="category-header">
+                        <button class="category-title" data-category="frozen">Frozen Foods</button>
+                        <button class="category-arrow" data-toggle="frozen">
+                            <span class="toggle-arrow">▶</span>
+                        </button>
+                    </div>
+                    <ul class="subcategory-list" data-subcategory="frozen">
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="frozen-vegetables">Frozen Vegetables</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="frozen-fruits">Frozen Fruits</a></li>
+                        <li class="subcategory-item"><a class="subcategory-link" data-search="frozen-meals">Frozen Meals</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
         
-        <div class="menu-section">
-            <h2>Your Menu</h2>
+        <!-- Main Content -->
+        <div class="container">
+            <h1>Nutritious Meal Planner</h1>
             
-            <div class="menu-item">
-                <span class="item-name">Chicken Breast</span>
-                <div class="button-group">
-                    <button class="btn-more">More </button>
-                    <button class="btn-add-item">Add</button>
+            <div class="menu-section">
+                <h2>Your Menu</h2>
+                
+                <div class="menu-item">
+                    <span class="item-name">Chicken Breast</span>
+                    <div class="button-group">
+                        <button class="btn-more">More</button>
+                        <button class="btn-add">Add</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <span class="item-name">Broccoli</span>
+                    <div class="button-group">
+                        <button class="btn-more">More</button>
+                        <button class="btn-add">Add</button>
+                    </div>
+                </div>
+                
+                <div class="menu-item">
+                    <span class="item-name">Brown Rice</span>
+                    <div class="button-group">
+                        <button class="btn-more">More</button>
+                        <button class="btn-add">Add</button>
+                    </div>
                 </div>
             </div>
             
-            <div class="menu-item">
-                <span class="item-name">Broccoli</span>
-                <div class="button-group">
-                    <button class="btn-more">More </button>
-                    <button class="btn-add-item">Add</button>
-                </div>
-            </div>
+            <div id="searchResults"></div>
             
-            <div class="menu-item">
-                <span class="item-name">Brown Rice</span>
-                <div class="button-group">
-                    <button class="btn-more">More </button>
-                    <button class="btn-add-item">Add</button>
-                </div>
+            <div class="add-new-section">
+                <button class="btn-add-item">Add New Item</button>
             </div>
-        </div>
-        
-        <div class="add-new-section">
-            <button class="btn-add-item">Add New Item</button>
         </div>
     </div>
+    
+    <script>
+        // Handle arrow button click to expand/collapse submenu
+        document.querySelectorAll('.category-arrow').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const toggleId = this.getAttribute('data-toggle');
+                const arrow = this.querySelector('.toggle-arrow');
+                const subcategoryList = document.querySelector(`[data-subcategory="${toggleId}"]`);
+                
+                arrow.classList.toggle('open');
+                subcategoryList.classList.toggle('open');
+            });
+        });
+        
+        // Handle category title click to show search results for entire category
+        document.querySelectorAll('.category-title').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const category = this.getAttribute('data-category');
+                const categoryName = this.textContent.trim();
+                
+                // Remove active state from all category titles
+                document.querySelectorAll('.category-title').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active state to clicked category
+                this.classList.add('active');
+                
+                // Display search results
+                const searchResults = document.getElementById('searchResults');
+                searchResults.innerHTML = `
+                    <div class="search-results">
+                        <h3>Search Results for: ${categoryName}</h3>
+                        <p>Showing items in the ${categoryName} category...</p>
+                        <p>Integration with USDA API would display filtered results here.</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
 </body>
 </html>
