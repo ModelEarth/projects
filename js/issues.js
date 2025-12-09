@@ -4786,7 +4786,8 @@ function updateGitIssuesAccount() {
 }
 
 function updateGitAccountDisplay() {
-    const gitAccount = localStorage.gitAccount || document.getElementById("gitIssuesAccount").value;
+    const gitIssuesAccountElement = document.getElementById("gitIssuesAccount");
+    const gitAccount = localStorage.gitAccount || (gitIssuesAccountElement ? gitIssuesAccountElement.value : '');
     const gitAccountDisplay = document.getElementById("gitAccountDisplay");
     const gitAccountLink = document.getElementById("gitAccountLink");
 
