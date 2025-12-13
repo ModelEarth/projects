@@ -18,7 +18,7 @@ The universal filters we use are:
 
 - Location (country, state, county or zip)
 - Topics (Sets of Industries, Map Datasets, Census Attributes)
-- Across Time (2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024)
+- Across Time (2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026)
 - Attributes - Number of employees, establishments and payroll
 - Industry Indicators - [Jobs Created](../../localsite/info/#indicators=JOBS), Value Added, Impacts on Air, Water, Energy, Land and Health.
 
