@@ -1202,17 +1202,22 @@ class GitHubIssuesManager {
         const cacheStatusDiv = document.getElementById('cacheStatus');
         if (!cacheStatusDiv) return;
 
-        const cached = localStorage.getItem('github_issues_cache');
+        // Check both base and filtered caches
+        const baseCache = localStorage.getItem('github_issues_base_cache');
+        const filteredCache = localStorage.getItem('github_issues_filtered_cache');
+        const cached = filteredCache || baseCache;
+
         if (cached) {
             try {
                 const data = JSON.parse(cached);
                 const cacheAge = Date.now() - data.timestamp;
                 const cacheAgeMinutes = Math.round(cacheAge / 60000);
                 const remainingMinutes = Math.max(0, this.cacheConfig.duration - cacheAgeMinutes);
+                const cacheType = filteredCache ? 'Filtered' : 'Base';
 
                 cacheStatusDiv.innerHTML = `
                     <span class="cache-info">
-                        Cache: ${cacheAgeMinutes}m old, expires in ${remainingMinutes}m 
+                        ${cacheType} Cache: ${cacheAgeMinutes}m old, expires in ${remainingMinutes}m
                         (${this.cacheConfig.duration}m duration)
                         ${this.cacheConfig.autoRefresh ? ' • Auto-refresh enabled' : ' • Auto-refresh disabled'}
                     </span>
@@ -1229,9 +1234,10 @@ class GitHubIssuesManager {
         this.cacheConfig.duration = Math.max(1, Math.min(60, minutes)); // Limit between 1-60 minutes
         localStorage.setItem('github_cache_duration', this.cacheConfig.duration.toString());
 
-        // Clear existing cache to apply new duration
-        localStorage.removeItem('github_issues_cache');
-        this.clearRepositoryCache(); // Clear all repository-specific caches
+        // Clear existing caches to apply new duration
+        localStorage.removeItem('github_issues_base_cache');
+        localStorage.removeItem('github_issues_filtered_cache');
+        this.clearRepositoryCache();
 
         this.showNotification(`Cache duration set to ${this.cacheConfig.duration} minutes`, 'info');
         this.updateCacheStatusDisplay();
@@ -1723,10 +1729,11 @@ class GitHubIssuesManager {
 
             this.githubToken = token;
             localStorage.setItem('github_token', token);
-            localStorage.removeItem('github_issues_cache'); // Clear cache when token changes
-            localStorage.removeItem('github_all_repos'); // Clear repo cache to fetch fresh data
+            localStorage.removeItem('github_issues_base_cache');
+            localStorage.removeItem('github_issues_filtered_cache');
+            localStorage.removeItem('github_all_repos');
             localStorage.removeItem('github_all_repos_time');
-            this.clearRepositoryCache(); // Clear all repository-specific caches
+            this.clearRepositoryCache();
 
             // Clear rate limit info since new token likely has better limits
             this.clearRateLimit();
@@ -1813,8 +1820,9 @@ class GitHubIssuesManager {
         if (confirmed) {
             this.githubToken = '';
             localStorage.removeItem('github_token');
-            localStorage.removeItem('github_issues_cache'); // Clear cache when token changes
-            this.clearRepositoryCache(); // Clear all repository-specific caches
+            localStorage.removeItem('github_issues_base_cache');
+            localStorage.removeItem('github_issues_filtered_cache');
+            this.clearRepositoryCache();
             this.updateTokenUI();
             this.updateTokenSectionUI();
             this.showNotification('GitHub token cleared successfully', 'info');
@@ -3783,8 +3791,8 @@ class GitHubIssuesManager {
             const filtersChanged = this.hasFiltersChanged(this.previousFilterHash, newHash);
 
             if (filtersChanged) {
-                // Clear main issues cache
-                localStorage.removeItem('github_issues_cache');
+                // Only clear filtered cache, preserve base cache
+                localStorage.removeItem('github_issues_filtered_cache');
 
                 // Clear repository-specific caches
                 this.clearRepositoryCache();
@@ -3836,6 +3844,16 @@ class GitHubIssuesManager {
         return params.toString();
     }
 
+    // Check if current filters are in default state (no filters applied)
+    isDefaultFilterState() {
+        return this.filters.sort === 'updated' &&
+               this.filters.assignee === 'all' &&
+               this.filters.projectstatus === 'open' &&
+               this.filters.label === 'all' &&
+               this.filters.search === '';
+        // Note: repo filter is not checked as it's considered selection, not filtering
+    }
+
     // Check if filters have changed between two hash states
     hasFiltersChanged(oldHash, newHash) {
         const oldFilters = this.getFiltersFromHash(oldHash);
@@ -3860,7 +3878,8 @@ class GitHubIssuesManager {
             const filtersChanged = this.hasFiltersChanged(this.previousFilterHash, currentHash);
 
             if (filtersChanged) {
-                localStorage.removeItem('github_issues_cache');
+                // Only clear filtered cache, preserve base cache
+                localStorage.removeItem('github_issues_filtered_cache');
                 this.clearRepositoryCache();
                 this.repositoryIssues = {};
             }
@@ -4062,7 +4081,12 @@ class GitHubIssuesManager {
             issues: this.allIssues,
             timestamp: Date.now()
         };
-        localStorage.setItem('github_issues_cache', JSON.stringify(cacheData));
+
+        // Use separate cache for base (unfiltered) vs filtered results
+        const isDefaultState = this.isDefaultFilterState();
+        const cacheKey = isDefaultState ? 'github_issues_base_cache' : 'github_issues_filtered_cache';
+
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
 
         // Set up cache expiration timer for auto-refresh (only with token)
         if (this.cacheConfig.autoRefresh && this.githubToken) {
@@ -4373,15 +4397,28 @@ class GitHubIssuesManager {
 
     loadFromCache() {
         try {
-            const cached = localStorage.getItem('github_issues_cache');
+            // Try to load from appropriate cache based on current filter state
+            const isDefaultState = this.isDefaultFilterState();
+            const cacheKey = isDefaultState ? 'github_issues_base_cache' : 'github_issues_filtered_cache';
+
+            let cached = localStorage.getItem(cacheKey);
+
+            // If no filtered cache exists but we have base cache, use base cache
+            // This allows filters to work on top of cached base data
+            if (!cached && !isDefaultState) {
+                cached = localStorage.getItem('github_issues_base_cache');
+            }
+
             if (!cached) return null;
 
             const data = JSON.parse(cached);
 
             // Check if cache is less than configured duration old
-            const maxAge = this.cacheConfig.duration * 60 * 1000; // Convert minutes to milliseconds
+            const maxAge = this.cacheConfig.duration * 60 * 1000;
             const cacheAge = Date.now() - data.timestamp;
             if (cacheAge > maxAge) {
+                // Remove expired cache
+                localStorage.removeItem(cacheKey);
                 return null;
             }
 
@@ -4617,9 +4654,13 @@ class GitHubIssuesManager {
         this.repositoryIssues = {};
         this.repositoryIssueCounts = {};
 
-        // Clear localStorage cache
+        // Clear both base and filtered caches
+        localStorage.removeItem('github_issues_base_cache');
+        localStorage.removeItem('github_issues_filtered_cache');
+
+        // Clear all other cache keys
         Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('github_issues_') || key.startsWith('github_issue_counts_')) {
+            if (key.startsWith('github_repo_') || key.startsWith('github_issue_counts_')) {
                 localStorage.removeItem(key);
             }
         });
@@ -4635,7 +4676,7 @@ class GitHubIssuesManager {
         if (this.filters.repo && this.filters.repo !== 'all') {
             this.loadIssuesForRepository(this.filters.repo);
         } else {
-            this.loadData(true); // Force refresh all data
+            this.loadData(true);
         }
     }
 
