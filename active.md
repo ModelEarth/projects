@@ -81,7 +81,7 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-IN PROGRESS: [Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API - Sugandha is adding a new vertical LOCATIONS colored legend.<!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+IN PROGRESS: [Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API - Sugandha is adding a new vertical LOCATIONS colored legend.<!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya, Shachi-->
 
 TO DO: Help us continue to refine the [3 trade charts](../profile/trade/) (links on lower right: Trade Flow Map, Chord, and Sankey) we're developing to provide an interactive [Exiobase](https://exiobase.eu) front-end.
 
