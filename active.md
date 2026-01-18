@@ -200,7 +200,7 @@ IN PROGRESS: [Chord Chart json object](https://model.earth/profile/footprint/cho
 
 TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
 
-TO DO: [Sankey Industry eChart](/profile/charts/echarts/sankey-nodeAlign-left.html) - eCharts uses a common echarts.min.js file which we'll load in [Feed Viewer](/feed/view)
+TO DO: [Sankey Industry eChart](/profile/charts/echarts/) - eCharts uses a common echarts.min.js file which we'll load in [Feed Viewer](/feed/view)
 
 TO DO: [Python - Finalize our All the Places data by State and Zip](/places) - Poshan, Savar
 
