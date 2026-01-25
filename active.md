@@ -22,10 +22,10 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 <a href="https://github.com/modelearth/projects/issues/" style="float:right" target="_blank">Projects List on Github</a>
 # Active Projects
 
-### Webroot for Claude Code CLI
+### Webroot for Code CLIs (Claude, OpenIA Codex, Gemini)
 
 [Webroot setup](https://model.earth/webroot/) - Simple commands to send PRs from your work.  
-[CodeChat](../codechat/) - RAG training documentation and an overview of our webroot submodules.
+[CodeChat](../codechat/) - Overview of our webroot submodules for [RAG/ingestion training](https://github.com/ModelEarth/chat/tree/main/ingestion)
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
