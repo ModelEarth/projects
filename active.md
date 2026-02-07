@@ -102,7 +102,10 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 ## 2. CodeChat - RAG Interface for LLMs
 
-Our [codechat](https://model.earth/codechat) uses a NextJS frontend and [pinecone Vectors](../codechat-vectors/) for our RAG from repos.
+[Our Earthscape Chat](https://earthscape.vercel.net) - on [Github](https://github.com/earthscape/chat/)
+React, Supabase with [Vercel NextJS Hosting](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
+
+[Codechat](https://model.earth/codechat) uses Voyage AI and [pinecone Vectors](../codechat-vectors/) for our RAG from repos.
 
 Our [Dataset AI Insights](https://model.earth/team/projects/) use Gemini and Claude to investigate CSV, JSON and API feeds
 
@@ -120,10 +123,11 @@ Our work within Planet Langchain is being replaced with the [Team Projects Page]
 
 Get started with the setup steps in [modelearth webroot](https://model.earth/webroot)
 
+<!--
 - Our [repo pull page](../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
 
 - TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally and override team/.env keys.
-
+-->
 
 <!--See also: DataStax Astra DB
 
@@ -142,47 +146,36 @@ Content prep for RAG: [Innovations in Water Purification](/evaporation-kits/inno
 Using [Google Data Commons DataGemma AI](https://ai.google.dev/gemma/docs/datagemma) - For RIG, Zihan found that a paid Google plan was needed to avoid storage/memory errors/timeouts. Here's our [RIG CoLab](https://colab.research.google.com/drive/1eLtHOR6e3lAUVijUJ56VMaiTU6hA9enc?usp=sharing).
 -->
 
-### Earthscape NextJS Chatbot UI fork
-
-- Our [Earthscape Chat](https://earthscape.vercel.net) - on [Github](https://github.com/earthscape/chat/) - React, Supabase and [Vercel NextJS Hosting using GitHub Pages](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
-
-- Use commands to deploy to GitHub Pages for free static hosting.
-
-<!-- Generate .CSV prompt files from location data pulled from Industry levels, Census stats and Google Data Commons. -->
-
 
 ## 3. RealityStream Machine Learning - Server-Side Python (ML)
 
+[RealityStream](/realitystream/) - Machine Learning Classification Models
 [RealityStream ML](/realitystream/) - [Run Models Colab](/realitystream/input/industries/)
+[Update Farm Fresh Data pull](/community-data/process/python/farmfresh/) - Bhavna - DONE
+
 
 Frontend deployments to Google Cloud with Flask are in our [cloud repo](https://github.com/ModelEarth/cloud). Add a folder for your own Flask setups in the cloud repo. [Our webhook repo](https://github.com/ModelEarth/webhook) has a simple Flask example.
 
 
 TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) and finalize Flask deployment step for interacting with our RealityStream Run Models colab backup file. [Cloud run config frontend](https://model.earth/cloud/run/)
 
+
 <!--
+- [Push EPA data](https://github.com/modelearth/useeio-json) to [Google Data Commons API](https://docs.datacommons.org/api/)
+
 **Anvil with our CoLabs:**
 [Anvil Extras](https://anvil-extras.readthedocs.io/en/latest/guides/index.html) and [Anvil](https://anvil.works/learn/tutorials/data-science#connecting-notebooks) and [AnvilScope CoLab](https://colab.research.google.com/drive/1rlOPfOxRnfm4pTGSn3gk_MvmVF65iidF?usp=sharing) using Plotly - Soham
--->
 
-<!--
 - [StreamLit hosting within Open WebUI](https://github.com/streamlit/streamlit/issues/969)
--->
 
-
-- [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha, Savar (Tree Canopy Decline)
-- [Process Industry NAICS by Zip Code](/community-zipcodes/mail) - DONE Yunbo
-- [Open Data Panels - YAML Display](/profile) - Microsoft Plug and Play - TO DO
+- [Process Industry NAICS by Zip Code](/community-zipcodes/) - DONE Yunbo
 - [State Regions using Sets of Counties](/community-data/us/edd/) - Dinesh
-- [USEEIO matrix files with clustering](/machine-learning/python/cluster/) - <!--Honglin-->Rupesh
+- [USEEIO matrix files with clustering](/machine-learning/python/cluster/) - Rupesh
 
-<!--
 - [CrewAI+Ollama integration](https://lightning.ai/lightning-ai/studios/ai-agents-powered-by-crewai) within our [Open WebUI fork](location)
 - [Flowsa RStudio - API to JSON](/localsite/info/data/flowsa/)
 -->
 
-- [Update Farm Fresh Data pull](/community-data/process/python/farmfresh/) - Bhavna - DONE
-- [Push EPA date to Google Data Commons API](https://docs.datacommons.org/api/)
 
 
 ## 4. International Trade Flow - SQL, Python, Javascript (IO)
@@ -190,17 +183,16 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 [International Trade Flow SQL Data Prep](/profile/trade) - Exiobase Colab, charts and SQL
 <!-- Contributors: Gary, Satya, Himanshu, Sahil, Poorna -->
 
-NEW: We're [configuring SuiteCRM](../profile/crm/) to run in an Azure instance.
-
-NEW: Update javascript report to use json generated from our Exiobase in CoLabs.
-
-TO DO:  Find and embed/fork existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
-
 IN PROGRESS: [Chord Chart json object](https://model.earth/profile/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
 
-TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
-
 TO DO: [Sankey Industry eChart](/profile/charts/echarts/) - eCharts uses a common echarts.min.js file which we'll load in [Feed Viewer](/feed/view)
+
+TO DO: [Configure SuiteCRM](../profile/crm/) to run in an Azure PostgreSQL instance.
+
+TO DO:  Find existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
+
+
+TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
 
 TO DO: [Python - Finalize our All the Places data by State and Zip](/places) - Poshan, Savar
 
