@@ -4937,7 +4937,7 @@ function updateGitAccountDisplay() {
         gitAccountDisplay.style.display = 'inline';
     } else if (gitAccountDisplay && gitAccountLink) {
         // Show "Add my Github name" when no account is cached
-        gitAccountDisplay.innerHTML = ` <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">Add my Github name</a> - Will soon allow you to display your projects.`;
+        gitAccountDisplay.innerHTML = ` <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">Add my Github name</a>`;
         gitAccountDisplay.style.display = 'inline';
     }
 }

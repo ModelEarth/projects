@@ -220,19 +220,17 @@ TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Ga
 
 ## 5. Open Footprint Interactive Labels (Open)
 
+**BuildingTransparency and Open Footprint labels**
+
+[Product Profiles](/profile/item/#layout=product&country=US&cat=Carpet) and [Food Nutrition Labels](/profile/item/)
+
 [Open Footprint Builder](/io/template/) - [Profile Object Javascript](/profile/item/) - [BuildingTransparency.org Impact API](/profile/products/)
 
 
-**BuildingTransparency and Open Footprint labels**
-
-Bhavna, Yash, Apurva, Vennela, Himamshu
-
-- [Use our state map filter](#geoview=country) with colors for [new USEEIO reporting maps](https://figshare.com/collections/USEEIO_State_Models_v1_0_-_Supporting_Figures/7041473)
-- [BuildingTransparency - Product Impact Profiles by State and Zip](/io/template/feed/) - TO DO <!--Ronan--> - Vennela
-- [BuildingTransparency - API Aggregates of States and Countries](/io/template/product/) - Initially Luwei
-- [BuildingTransparency - JSON file pull for impact templates](/io/template/product/) - Apurva
-
-
+TO DO:
+- [BuildingTransparency - Product Profiles by State and Zip](/io/template/feed/)<!-- Aggregates of States and Countries  - Initially Luwei -->
+- [Use our state map filter](#geoview=country) with heatmap colors added for [state data](https://figshare.com/collections/USEEIO_State_Models_v1_0_-_Supporting_Figures/7041473)
+- [readme mdx experiments](/io/template/product/)
 
 ## 6. FeedPlayer with MemberSense (React)
 
@@ -278,4 +276,5 @@ Pre-processed data for county industry levels, based on employment, establishmen
 Our most challenging projects - [Take the leap](/community/projects/)
 <br>
 
+<div id="moonshotsDiv"></div>
 <div id="activeDivLoaded"></div>
