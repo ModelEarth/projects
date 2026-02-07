@@ -40,7 +40,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
-[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure your Server](../team/admin/server/)
+[Configure your Local Server](../team/admin/server/) - Commands for running Rust and Flask (Python)
 
 ### RealityStream updates in progress
 
@@ -81,7 +81,7 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-IN PROGRESS: [Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API - Sugandha is adding a new vertical LOCATIONS colored legend.<!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya, Shachi-->
+[Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API with data IDs set in a Google Sheet with UN Goal tabs.
 
 TO DO: Help us continue to refine the [3 trade charts](../profile/trade/) (links on lower right: Trade Flow Map, Chord, and Sankey) we're developing to provide an interactive [Exiobase](https://exiobase.eu) front-end.
 
@@ -144,7 +144,7 @@ Using [Google Data Commons DataGemma AI](https://ai.google.dev/gemma/docs/datage
 
 ### Earthscape NextJS Chatbot UI fork
 
-- Our [Earthscape fork of Chatbot UI](https://model.earth/earthscape/app/) - React, Supabase and [NextJS Hosting using GitHub Pages](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
+- Our [Earthscape Chat](https://earthscape.vercel.net) - on [Github](https://github.com/earthscape/chat/) - React, Supabase and [Vercel NextJS Hosting using GitHub Pages](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
 
 - Use commands to deploy to GitHub Pages for free static hosting.
 
