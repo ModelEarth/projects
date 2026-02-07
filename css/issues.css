@@ -166,7 +166,6 @@
 }
 
 .dark .cache-status-section {
-    background: var(--dark-color);
     border-color: var(--border-color);
     color: #e2e8f0 !important; /* Much lighter text for dark theme */
 }
@@ -339,19 +338,30 @@
 
 .auth-input {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     align-items: center;
 }
 
 .auth-input input {
-    flex: 1;
+    flex: 1 1 220px;
+    min-width: 200px;
     padding: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
     background: rgba(255, 255, 255, 0.1);
     color: white;
     font-family: monospace;
+}
+
+.auth-input .git-account-input {
+    flex: 1 1 160px;
+    min-width: 160px;
+}
+
+#addTokenButton {
+    flex: 0 0 auto;
 }
 
 .auth-input input::placeholder {
@@ -391,6 +401,33 @@
 .token-link:hover {
     background: #1e40af;
     transform: translateY(-1px);
+}
+
+.dashboard-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 16px 0 20px;
+}
+
+.overview-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    text-align: center;
+}
+
+.overview-number {
+    font-size: 22px;
+    font-weight: 600;
+    color: #b7f5d0;
+}
+
+.overview-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-top: 6px;
 }
 
 .auth-instructions summary .token-link {

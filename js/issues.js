@@ -83,6 +83,7 @@ class GitHubIssuesManager {
         };
         this.invalidTokenWarningShown = false; // Track if invalid token warning has been shown
         this.rateLimitWarningShown = false; // Track if rate limit warning has been shown
+        this.tokenInputRevealed = false;
 
         // State management
         this.filters = {
@@ -206,6 +207,7 @@ class GitHubIssuesManager {
         // Full widget structure when showProject is true
         container.innerHTML = `
             ${this.createHeaderHTML()}
+            ${this.createOverviewHTML()}
             ${this.createRateLimitHTML()}
             ${this.createLoadingOverlayHTML()}
             ${this.createFiltersHTML()}
@@ -218,12 +220,6 @@ class GitHubIssuesManager {
     }
 
     createHeaderHTML() {
-        // Check if we're on team/projects page to hide Team Members link
-        const isTeamProjectsPage = window.location.pathname.includes('/team/projects/');
-        const teamMembersLink = isTeamProjectsPage ? '' : `<span>
-       <a class="token-toggle-link" style="font-size:0.9rem;" href="/team/projects/#list=modelteam">Team Members</a>
-         </span>`;
-
         return `
             <div class="issues-header">
                 <i class="fas fa-expand header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;"></i>
@@ -231,23 +227,22 @@ class GitHubIssuesManager {
                 <div class="header-content">
                     <h1 style="font-size:32px"><i class="fab fa-github"></i> Team Projects</h1>
                     <p class="subtitle">
-                        <a href="#" id="toggleTokenSection" class="token-toggle-link" style="font-size: 0.9rem;">Add Your GitHub Token</a>
-                        <span id="tokenBenefitText" style="font-size: 0.9rem;"> to increase API rate limits from 60 to 5,000 requests per hour</span>
+                        <span id="gitAccountDisplay" style="font-size: 0.9rem; display: none;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
+                        <a href="#" id="toggleTokenSection" class="token-toggle-link" style="font-size: 0.9rem;">Add My Token</a>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
-                        <span id="gitAccountDisplay" style="font-size: 0.9rem; display: none;"> GitHub: <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;"></a></span>
                     </p>
-                    <p class="subtitle" style="margin-top: 5px;">
-                        <input type="text" id="gitIssuesAccount" class="textInput" style="width:150px; font-size: 14px; display: none;" placeholder="GitHub Account" onfocus="this.select()" oninput="updateGitIssuesAccount()">
-                    </p>
-                     ${teamMembersLink}
                 </div>
                 
                 <!-- GitHub Authentication -->
                 <div class="auth-section" id="authSection" style="display: none;">
-                    <div class="auth-input">
+                    <div class="auth-input" id="auth-input">
+                        <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
+                        <button id="addTokenButton" class="btn btn-secondary" type="button">
+                            Add My Token
+                        </button>
                         <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
                         <button id="saveToken" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Token
+                            <i class="fas fa-save"></i> Save
                         </button>
                         <button id="clearToken" class="btn btn-primary" style="display: none;">
                             Clear
@@ -255,7 +250,10 @@ class GitHubIssuesManager {
                     </div>
                     <div class="auth-help">
                         <i class="fas fa-info-circle"></i>
-                        <span><strong>Token Benefits:</strong> Access private repositories and higher rate limits.</span>
+                        <span><strong>Token Benefits:</strong> Access private repositories and higher rate limits. (NOT your github password.)</span>
+                    </div>
+                    <div class="auth-help" id="tokenBenefitText" style="display: none;">
+                        The token has increased your API rate limits from 60 to 5,000 requests per hour
                     </div>
                     <div class="auth-instructions">
                         <details>
@@ -273,7 +271,7 @@ class GitHubIssuesManager {
                                     <li>Select scopes: <code>repo</code> (for private repos) and <code>read:org</code> (for organization data)</li>
                                     <li>Click "Generate token" at the bottom</li>
                                     <li>Copy the generated token immediately (you won't see it again!)</li>
-                                    <li>Paste it in the field above and click "Save Token"</li>
+                                    <li>Paste it in the field above and click "Save"</li>
                                 </ol>
                                 <p class="note">
                                     <i class="fas fa-shield-alt"></i>
@@ -282,6 +280,25 @@ class GitHubIssuesManager {
                             </div>
                         </details>
                     </div>
+                </div>
+            </div>
+        `;
+    }
+
+    createOverviewHTML() {
+        return `
+            <div class="dashboard-overview" id="dashboardOverview" style="display: none;">
+                <div class="overview-card">
+                    <div class="overview-number" id="activeProjectCount">0</div>
+                    <div class="overview-label">Active Projects</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-number" id="pendingTaskCount">0</div>
+                    <div class="overview-label">Pending Tasks</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-number" id="teamMemberCount">--</div>
+                    <div class="overview-label">Team Members</div>
                 </div>
             </div>
         `;
@@ -483,7 +500,7 @@ class GitHubIssuesManager {
     createStatsHTML() {
         return `
             <div class="stats-section" id="statsSection" style="display: none;">
-                <div class="stat-card">
+                <a class="stat-card" href="/codechat">
                     <div class="stat-icon">
                         <i class="fas fa-code-branch"></i>
                     </div>
@@ -491,8 +508,8 @@ class GitHubIssuesManager {
                         <div class="stat-number" id="repoCount">0</div>
                         <div class="stat-label">Repositories</div>
                     </div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
@@ -500,8 +517,8 @@ class GitHubIssuesManager {
                         <div class="stat-number" id="openIssueCount">0</div>
                         <div class="stat-label">Open Issues</div>
                     </div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
                         <i class="fas fa-check-circle"></i>
                     </div>
@@ -509,8 +526,8 @@ class GitHubIssuesManager {
                         <div class="stat-number" id="closedIssueCount">0</div>
                         <div class="stat-label">Closed Issues</div>
                     </div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
                         <i class="fas fa-comments"></i>
                     </div>
@@ -518,7 +535,7 @@ class GitHubIssuesManager {
                         <div class="stat-number" id="totalComments">0</div>
                         <div class="stat-label">Comments</div>
                     </div>
-                </div>
+                </a>
             </div>
         `;
     }
@@ -1360,6 +1377,7 @@ class GitHubIssuesManager {
         const toggleTokenSection = document.getElementById('toggleTokenSection');
         const saveToken = document.getElementById('saveToken');
         const clearToken = document.getElementById('clearToken');
+        const addTokenButton = document.getElementById('addTokenButton');
         const fullscreenBtn = document.querySelector('.header-fullscreen-btn');
 
         if (toggleTokenSection) {
@@ -1373,6 +1391,9 @@ class GitHubIssuesManager {
         }
         if (clearToken) {
             clearToken.addEventListener('click', () => this.clearToken());
+        }
+        if (addTokenButton) {
+            addTokenButton.addEventListener('click', () => this.revealTokenInput());
         }
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
@@ -1604,28 +1625,58 @@ class GitHubIssuesManager {
     updateTokenUI() {
         const tokenInput = document.getElementById('githubToken');
         const clearButton = document.getElementById('clearToken');
+        const addTokenButton = document.getElementById('addTokenButton');
+
+        if (!tokenInput || !clearButton || !addTokenButton) {
+            return;
+        }
 
         if (this.githubToken) {
             tokenInput.value = '••••••••••••••••';
             clearButton.style.display = 'inline-block';
+            tokenInput.style.display = 'inline-block';
+            addTokenButton.style.display = 'none';
+            this.tokenInputRevealed = true;
         } else {
             tokenInput.value = '';
             clearButton.style.display = 'none';
+            if (this.tokenInputRevealed) {
+                tokenInput.style.display = 'inline-block';
+                addTokenButton.style.display = 'none';
+            } else {
+                tokenInput.style.display = 'none';
+                addTokenButton.style.display = 'inline-flex';
+            }
         }
+    }
+
+    revealTokenInput() {
+        const tokenInput = document.getElementById('githubToken');
+        const addTokenButton = document.getElementById('addTokenButton');
+        if (!tokenInput || !addTokenButton) return;
+
+        this.tokenInputRevealed = true;
+        tokenInput.style.display = 'inline-block';
+        addTokenButton.style.display = 'none';
+        tokenInput.focus();
     }
 
     toggleTokenSection() {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
 
-        if (authSection.style.display === 'none') {
+        if (authSection && authSection.style.display === 'none') {
             // Show the token section
             authSection.style.display = 'block';
-            subtitleDescription.style.display = 'block';
-        } else {
+            if (subtitleDescription) {
+                subtitleDescription.style.display = 'block';
+            }
+        } else if (authSection) {
             // Hide the token section
             authSection.style.display = 'none';
-            subtitleDescription.style.display = 'none';
+            if (subtitleDescription) {
+                subtitleDescription.style.display = 'none';
+            }
         }
     }
 
@@ -1658,8 +1709,8 @@ class GitHubIssuesManager {
         const headerRefreshSpan = document.getElementById('headerLastRefreshTime');
 
         if (this.githubToken) {
-            toggleLink.textContent = 'Change or Remove your Github Token';
-            let text = ' The token has increased your API rate limits from 60 to 5,000 requests per hour';
+            toggleLink.textContent = 'Update your Github Name and Token';
+            let text = 'The token has increased your API rate limits from 60 to 5,000 requests per hour';
 
             // Add current request count and reset time if available
             if (this.rateLimitInfo.remaining !== null && this.rateLimitInfo.resetTime) {
@@ -1670,10 +1721,16 @@ class GitHubIssuesManager {
                 text += `. ${this.rateLimitInfo.remaining} requests remaining`;
             }
 
-            benefitText.textContent = text;
+            if (benefitText) {
+                benefitText.textContent = text;
+                benefitText.style.display = 'flex';
+            }
         } else {
-            toggleLink.textContent = 'Add Your GitHub Token';
-            benefitText.textContent = ' to increase API rate limits from 60 to 5,000 requests per hour';
+            toggleLink.textContent = 'Add My Token';
+            if (benefitText) {
+                benefitText.textContent = 'Add your token to increase API rate limits from 60 to 5,000 requests per hour';
+                benefitText.style.display = 'none';
+            }
         }
 
         // Always keep refresh time info hidden (now sent to console)
@@ -1757,6 +1814,7 @@ class GitHubIssuesManager {
             }
         }
 
+        commitGitIssuesAccount({ allowEmpty: true });
         this.updateTokenUI();
         this.updateTokenSectionUI();
 
@@ -1819,6 +1877,7 @@ class GitHubIssuesManager {
 
         if (confirmed) {
             this.githubToken = '';
+            this.tokenInputRevealed = false;
             localStorage.removeItem('github_token');
             localStorage.removeItem('github_issues_base_cache');
             localStorage.removeItem('github_issues_filtered_cache');
@@ -3046,11 +3105,9 @@ class GitHubIssuesManager {
         });
 
         // Set default assignee based on gitAccount if available
-        setTimeout(() => {
-            if (typeof updateAssigneeButtonDefault === 'function') {
-                updateAssigneeButtonDefault();
-            }
-        }, 100);
+        if (typeof updateAssigneeButtonDefault === 'function') {
+            updateAssigneeButtonDefault();
+        }
     }
 
     populateLabelFilter() {
@@ -3076,10 +3133,23 @@ class GitHubIssuesManager {
         const closedIssues = this.allIssues.filter(issue => issue.state === 'closed').length;
         const totalComments = this.allIssues.reduce((sum, issue) => sum + (issue.comments || 0), 0);
 
-        document.getElementById('repoCount').textContent = totalRepos;
-        document.getElementById('openIssueCount').textContent = openIssues;
-        document.getElementById('closedIssueCount').textContent = closedIssues;
-        document.getElementById('totalComments').textContent = totalComments;
+        const repoCount = document.getElementById('repoCount');
+        const openIssueCount = document.getElementById('openIssueCount');
+        const closedIssueCount = document.getElementById('closedIssueCount');
+        const totalCommentsCount = document.getElementById('totalComments');
+        const activeProjectCount = document.getElementById('activeProjectCount');
+        const pendingTaskCount = document.getElementById('pendingTaskCount');
+        const dashboardOverview = document.getElementById('dashboardOverview');
+
+        if (repoCount) repoCount.textContent = totalRepos;
+        if (openIssueCount) openIssueCount.textContent = openIssues;
+        if (closedIssueCount) closedIssueCount.textContent = closedIssues;
+        if (totalCommentsCount) totalCommentsCount.textContent = totalComments;
+        if (activeProjectCount) activeProjectCount.textContent = totalRepos;
+        if (pendingTaskCount) pendingTaskCount.textContent = openIssues;
+        const teamMemberCount = document.getElementById('teamMemberCount');
+        if (teamMemberCount) teamMemberCount.textContent = '88';
+        if (dashboardOverview) dashboardOverview.style.display = 'grid';
     }
 
     filterAndDisplayIssues() {
@@ -4885,10 +4955,23 @@ class GitHubIssuesManager {
         this.updateRateLimitDisplay();
 
         // Set basic stats
-        document.getElementById('repoCount').textContent = '1';
-        document.getElementById('openIssueCount').textContent = '?';
-        document.getElementById('closedIssueCount').textContent = '?';
-        document.getElementById('totalComments').textContent = '?';
+        const repoCount = document.getElementById('repoCount');
+        const openIssueCount = document.getElementById('openIssueCount');
+        const closedIssueCount = document.getElementById('closedIssueCount');
+        const totalCommentsCount = document.getElementById('totalComments');
+        const activeProjectCount = document.getElementById('activeProjectCount');
+        const pendingTaskCount = document.getElementById('pendingTaskCount');
+        const dashboardOverview = document.getElementById('dashboardOverview');
+
+        if (repoCount) repoCount.textContent = '1';
+        if (openIssueCount) openIssueCount.textContent = '?';
+        if (closedIssueCount) closedIssueCount.textContent = '?';
+        if (totalCommentsCount) totalCommentsCount.textContent = '?';
+        if (activeProjectCount) activeProjectCount.textContent = '1';
+        if (pendingTaskCount) pendingTaskCount.textContent = '?';
+        const teamMemberCount = document.getElementById('teamMemberCount');
+        if (teamMemberCount) teamMemberCount.textContent = '88';
+        if (dashboardOverview) dashboardOverview.style.display = 'grid';
 
         // Show stats section
         document.getElementById('statsSection').style.display = 'flex';
@@ -4910,11 +4993,21 @@ class GitHubIssuesManager {
 }
 
 // Git Issues Account Management Functions
-function updateGitIssuesAccount() {
-    const gitIssuesAccount = document.getElementById("gitIssuesAccount").value;
+function commitGitIssuesAccount(options = {}) {
+    const { allowEmpty = false } = options;
+    const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
+    if (!gitIssuesAccountField) return;
 
-    // Store in localStorage using same cache as other git fields - store even if empty to clear cache
-    localStorage.gitAccount = gitIssuesAccount;
+    const gitIssuesAccount = gitIssuesAccountField.value.trim();
+    if (!gitIssuesAccount && !allowEmpty) {
+        return;
+    }
+
+    if (gitIssuesAccount) {
+        localStorage.gitAccount = gitIssuesAccount;
+    } else {
+        localStorage.removeItem('gitAccount');
+    }
 
     // Update the display
     updateGitAccountDisplay();
@@ -4933,24 +5026,10 @@ function updateGitAccountDisplay() {
         // Show GitHub account when available
         gitAccountLink.textContent = gitAccount;
         gitAccountLink.href = `https://github.com/${gitAccount}`;
-        gitAccountDisplay.innerHTML = ` GitHub: <a href="https://github.com/${gitAccount}" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">${gitAccount}</a>`;
+        gitAccountDisplay.innerHTML = ` Your GitHub account: <a href="https://github.com/${gitAccount}" id="gitAccountLink">${gitAccount}</a>&nbsp;&nbsp;`;
         gitAccountDisplay.style.display = 'inline';
-    } else if (gitAccountDisplay && gitAccountLink) {
-        // Show "Add my Github name" when no account is cached
-        gitAccountDisplay.innerHTML = ` <a href="#" id="gitAccountLink" onclick="toggleGitIssuesAccount(); return false;">Add my Github name</a>`;
-        gitAccountDisplay.style.display = 'inline';
-    }
-}
-
-function toggleGitIssuesAccount() {
-    const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
-    if (gitIssuesAccountField) {
-        if (gitIssuesAccountField.style.display === 'none' || !gitIssuesAccountField.style.display) {
-            gitIssuesAccountField.style.display = 'inline-block';
-            gitIssuesAccountField.focus();
-        } else {
-            gitIssuesAccountField.style.display = 'none';
-        }
+    } else if (gitAccountDisplay) {
+        gitAccountDisplay.style.display = 'none';
     }
 }
 
@@ -4970,28 +5049,30 @@ function updateAssigneeButtonDefault() {
 }
 
 // Initialize Git Issues Account on page load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
-        if (gitIssuesAccountField) {
-            // Load from localStorage if available
-            if (localStorage.gitAccount) {
-                gitIssuesAccountField.value = localStorage.gitAccount;
-            }
+function initGitIssuesAccountField() {
+    const gitIssuesAccountField = document.getElementById("gitIssuesAccount");
+    if (!gitIssuesAccountField) return;
 
-            // Add keypress event listener for clearing cache on Enter when field is empty
-            gitIssuesAccountField.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter' && this.value.trim() === '') {
-                    localStorage.removeItem('gitAccount');
-                    updateGitIssuesAccount();
-                }
-            });
+    // Load from localStorage if available
+    if (localStorage.gitAccount) {
+        gitIssuesAccountField.value = localStorage.gitAccount;
+    }
+
+    gitIssuesAccountField.addEventListener('blur', () => {
+        if (gitIssuesAccountField.value.trim() !== '') {
+            commitGitIssuesAccount({ allowEmpty: false });
         }
+    });
 
-        // Update the display initially
-        updateGitAccountDisplay();
-    }, 100);
-});
+    // Update the display initially
+    updateGitAccountDisplay();
+}
+
+if (typeof waitForElm === 'function') {
+    waitForElm('#gitIssuesAccount').then(() => initGitIssuesAccountField());
+} else {
+    document.addEventListener('DOMContentLoaded', initGitIssuesAccountField);
+}
 
 // Initialize the issues manager when the page loads
 let issuesManager;
