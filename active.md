@@ -181,6 +181,8 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 ## 4. International Trade Flow - SQL, Python, Javascript (IO)
 
 [International Trade Flow SQL Data Prep](/profile/trade) - Exiobase Colab, charts and SQL
+- Harshitha (Trade Flow SQL – Spark → Azure PostgreSQL)
+
 <!-- Contributors: Gary, Satya, Himanshu, Sahil, Poorna -->
 
 IN PROGRESS: [Chord Chart json object](https://model.earth/profile/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
