@@ -236,11 +236,17 @@ class GitHubIssuesManager {
                 <!-- GitHub Authentication -->
                 <div class="auth-section" id="authSection" style="display: none;">
                     <div class="auth-input" id="auth-input">
-                        <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
+                        <div style="flex: 1 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label for="gitIssuesAccount" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Account</label>
+                            <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
+                        </div>
                         <button id="addTokenButton" class="btn btn-secondary" type="button">
                             Add My Token
                         </button>
-                        <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
+                        <div style="flex: 1 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
+                            <label for="githubToken" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Token</label>
+                            <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
+                        </div>
                         <button id="saveToken" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save
                         </button>
@@ -1664,6 +1670,7 @@ class GitHubIssuesManager {
     toggleTokenSection() {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
+        const mainHeader = document.querySelector('.issues-header');
 
         if (authSection && authSection.style.display === 'none') {
             // Show the token section
@@ -1671,11 +1678,34 @@ class GitHubIssuesManager {
             if (subtitleDescription) {
                 subtitleDescription.style.display = 'block';
             }
+
+            // Add close button to header (to the left of minimize-btn if it exists)
+            if (mainHeader && !mainHeader.querySelector('.close-token-btn')) {
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'close-token-btn';
+                closeBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+                closeBtn.title = 'Close Token Section';
+                closeBtn.onclick = () => this.toggleTokenSection();
+
+                // Insert before minimize-btn if it exists, otherwise append to header
+                const minimizeBtn = mainHeader.querySelector('.minimize-btn');
+                if (minimizeBtn) {
+                    mainHeader.insertBefore(closeBtn, minimizeBtn);
+                } else {
+                    mainHeader.appendChild(closeBtn);
+                }
+            }
         } else if (authSection) {
             // Hide the token section
             authSection.style.display = 'none';
             if (subtitleDescription) {
                 subtitleDescription.style.display = 'none';
+            }
+
+            // Remove close button
+            const closeBtn = mainHeader?.querySelector('.close-token-btn');
+            if (closeBtn) {
+                closeBtn.remove();
             }
         }
     }

@@ -344,12 +344,11 @@
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
-    align-items: center;
+    align-items: flex-end; /* Changed from center to flex-end to align with input bottoms */
 }
 
 .auth-input input {
-    flex: 1 1 220px;
-    min-width: 200px;
+    width: 100%; /* Fill container width */
     padding: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: var(--border-radius);
@@ -359,8 +358,7 @@
 }
 
 .auth-input .git-account-input {
-    flex: 1 1 160px;
-    min-width: 160px;
+    width: 100%; /* Fill container width */
 }
 
 #addTokenButton {
@@ -1899,6 +1897,36 @@ body.widget-fullscreen-active {
     transform: scale(1.1);
 }
 
+/* Close token section button */
+.close-token-btn {
+    position: absolute;
+    top: 1rem;
+    right: 4rem; /* Position to the left of minimize-btn (which is at 1rem) */
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 50%; /* Circular button */
+    cursor: pointer;
+    font-size: 1.2rem;
+    z-index: 10000;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.close-token-btn:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: scale(1.1);
+}
+
+/* When minimize-btn is not present, close-token-btn should be at right: 1rem */
+.issues-header:not(:has(.minimize-btn)) .close-token-btn {
+    right: 1rem;
+}
 
 /* Fullscreen toggle button in pagination */
 .fullscreen-btn:hover {
