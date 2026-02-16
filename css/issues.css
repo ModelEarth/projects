@@ -18,7 +18,7 @@
 
 /* Dark theme support */
 .dark {
-    --primary-color: #58a6ff;
+    --primary-color: #fff;
     --light-color: #21262d;
     --dark-color: #c9d1d9;
     --border-color: #30363d;
@@ -50,7 +50,10 @@
     position: relative;
     overflow: hidden;
 }
-
+.dark .issues-header {
+    background: none;
+    border: 1px solid #777;
+}
 .issues-header::before {
     content: '';
     position: absolute;
@@ -71,7 +74,7 @@
     margin: 0 0 0.5rem 0;
     font-size: 2.5rem;
     font-weight: 700;
-    color: white;
+    colorX: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
@@ -82,7 +85,7 @@
 }
 
 .issues-header .subtitle a {
-    color: #ffffff;
+    colorX: #ffffff;
     text-decoration: underline;
     opacity: 1;
 }
@@ -2132,7 +2135,6 @@ body.widget-fullscreen-active {
 
 .btn-secondary {
     background: var(--light-color);
-    /* color: var(--primary-color) !important; */
     border: 2px solid #333;
 }
 
