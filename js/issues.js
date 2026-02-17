@@ -200,6 +200,17 @@ class GitHubIssuesManager {
         if (!this.showProject) {
             container.innerHTML = `
                 ${this.createHeaderHTML()}
+                <div id="projectsSectionsContainer" style="display: none;">
+                    ${this.createOverviewHTML()}
+                    ${this.createRateLimitHTML()}
+                    ${this.createLoadingOverlayHTML()}
+                    ${this.createFiltersHTML()}
+                    ${this.createIssuesContainerHTML()}
+                    ${this.createStatsHTML()}
+                    ${this.createCacheStatusHTML()}
+                    ${this.createErrorHTML()}
+                    ${this.createModalHTML()}
+                </div>
             `;
             return;
         }
@@ -228,7 +239,8 @@ class GitHubIssuesManager {
                     <h1 style="font-size:32px"><i class="fab fa-github"></i> Team Projects</h1>
                     <p class="subtitle">
                         <span id="gitAccountDisplay" style="font-size: 0.9rem; display: none;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
-                        <a href="#" id="toggleTokenSection" class="token-toggle-link" style="font-size: 0.9rem;">Add My Token</a>
+                        <button type="button" id="toggleTokenSection" class="btn btn-med">Add My Token</button>
+                        <button type="button" id="toggleProjectsSection" class="btn btn-med" style="margin-left: 8px; display: none;">View Projects</button>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
                     </p>
                 </div>
@@ -619,6 +631,7 @@ class GitHubIssuesManager {
         // If showProject is false, don't load data or setup most functionality
         // This creates a minimal widget showing only the .issues-header for authentication
         if (!this.showProject) {
+            this.projectsViewInitialized = false;
             this.setupTokenEventListeners();
 
             // Try to load token from API if not in localStorage
@@ -633,6 +646,15 @@ class GitHubIssuesManager {
         }
 
         // Full initialization for showProject=true
+        await this.initializeFullProjectView();
+    }
+
+    async initializeFullProjectView() {
+        if (this.projectsViewInitialized) {
+            return;
+        }
+
+        this.projectsViewInitialized = true;
         this.initialized = true;
 
         // Try to load token from API if not in localStorage
@@ -1379,8 +1401,14 @@ class GitHubIssuesManager {
     }
 
     setupTokenEventListeners() {
+        if (this.tokenEventListenersBound) {
+            return;
+        }
+        this.tokenEventListenersBound = true;
+
         // Token management only - for minimal mode (showProject=false)
         const toggleTokenSection = document.getElementById('toggleTokenSection');
+        const toggleProjectsSection = document.getElementById('toggleProjectsSection');
         const saveToken = document.getElementById('saveToken');
         const clearToken = document.getElementById('clearToken');
         const addTokenButton = document.getElementById('addTokenButton');
@@ -1390,6 +1418,12 @@ class GitHubIssuesManager {
             toggleTokenSection.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.toggleTokenSection();
+            });
+        }
+        if (toggleProjectsSection) {
+            toggleProjectsSection.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await this.toggleProjectsSection();
             });
         }
         if (saveToken) {
@@ -1710,6 +1744,26 @@ class GitHubIssuesManager {
         }
     }
 
+    async toggleProjectsSection() {
+        const projectsSections = document.getElementById('projectsSectionsContainer');
+        if (!projectsSections) return;
+
+        const currentlyVisible = projectsSections.style.display !== 'none';
+        if (currentlyVisible) {
+            projectsSections.style.display = 'none';
+            this.updateTokenSectionUI();
+            return;
+        }
+
+        projectsSections.style.display = 'block';
+
+        if (!this.projectsViewInitialized) {
+            await this.initializeFullProjectView();
+        }
+
+        this.updateTokenSectionUI();
+    }
+
     showTokenSectionAndOpenTab() {
         // First scroll to top and reveal auth section
         const authSection = document.getElementById('authSection');
@@ -1735,11 +1789,12 @@ class GitHubIssuesManager {
 
     updateTokenSectionUI() {
         const toggleLink = document.getElementById('toggleTokenSection');
+        const projectsToggleLink = document.getElementById('toggleProjectsSection');
         const benefitText = document.getElementById('tokenBenefitText');
         const headerRefreshSpan = document.getElementById('headerLastRefreshTime');
 
         if (this.githubToken) {
-            toggleLink.textContent = 'Update your Github Name and Token';
+            toggleLink.textContent = 'Update Github Settings';
             let text = 'The token has increased your API rate limits from 60 to 5,000 requests per hour';
 
             // Add current request count and reset time if available
@@ -1766,6 +1821,18 @@ class GitHubIssuesManager {
         // Always keep refresh time info hidden (now sent to console)
         if (headerRefreshSpan) {
             headerRefreshSpan.style.display = 'none';
+        }
+
+        // Show View/Hide Projects only when project sections are hidden under the header.
+        if (projectsToggleLink) {
+            const projectsSections = document.getElementById('projectsSectionsContainer');
+            if (!this.showProject && projectsSections) {
+                const isVisible = projectsSections.style.display !== 'none';
+                projectsToggleLink.style.display = 'inline';
+                projectsToggleLink.textContent = isVisible ? 'Hide Projects' : 'View Projects';
+            } else {
+                projectsToggleLink.style.display = 'none';
+            }
         }
 
         // Update the refresh time display
@@ -4214,15 +4281,21 @@ class GitHubIssuesManager {
         const container = document.getElementById(this.containerId);
         if (!container) return;
 
+        // In minimal mode (showProject=false), fullscreen the surrounding panel/card
+        // so related page content remains visible instead of showing only the auth header.
+        const fullscreenTarget = (!this.showProject && container.parentElement)
+            ? (container.closest('.card') || container.closest('#contributionsPanel') || container)
+            : container;
+
         this.isFullscreen = !this.isFullscreen;
 
         if (this.isFullscreen) {
             // Enter fullscreen
-            container.classList.add('widget-fullscreen');
+            fullscreenTarget.classList.add('widget-fullscreen');
             document.body.classList.add('widget-fullscreen-active');
 
             // Add minimize button to main header next to search icon
-            const mainHeader = document.querySelector('.issues-header');
+            const mainHeader = container.querySelector('.issues-header');
             if (mainHeader && !mainHeader.querySelector('.minimize-btn')) {
                 const minimizeBtn = document.createElement('button');
                 minimizeBtn.className = 'minimize-btn';
@@ -4234,11 +4307,11 @@ class GitHubIssuesManager {
 
         } else {
             // Exit fullscreen
-            container.classList.remove('widget-fullscreen');
+            fullscreenTarget.classList.remove('widget-fullscreen');
             document.body.classList.remove('widget-fullscreen-active');
 
             // Remove minimize button
-            const minimizeBtn = document.querySelector('.minimize-btn');
+            const minimizeBtn = container.querySelector('.minimize-btn');
             if (minimizeBtn) {
                 minimizeBtn.remove();
             }
