@@ -96,7 +96,7 @@ class GitHubIssuesManager {
         };
 
         // UI state
-        this.currentView = 'short'; // Default view
+        this.currentView = 'summary'; // Default view
         this.isFullscreen = false;
         this.currentRefreshIssueId = null;
 
@@ -201,7 +201,6 @@ class GitHubIssuesManager {
             container.innerHTML = `
                 ${this.createHeaderHTML()}
                 <div id="projectsSectionsContainer" style="display: none;">
-                    ${this.createOverviewHTML()}
                     ${this.createRateLimitHTML()}
                     ${this.createLoadingOverlayHTML()}
                     ${this.createFiltersHTML()}
@@ -218,7 +217,6 @@ class GitHubIssuesManager {
         // Full widget structure when showProject is true
         container.innerHTML = `
             ${this.createHeaderHTML()}
-            ${this.createOverviewHTML()}
             ${this.createRateLimitHTML()}
             ${this.createLoadingOverlayHTML()}
             ${this.createFiltersHTML()}
@@ -237,9 +235,10 @@ class GitHubIssuesManager {
 
                 <div class="header-content">
                     <h1 style="font-size:32px"><i class="fab fa-github"></i> Team Projects</h1>
-                    <p class="subtitle">
-                        <span id="gitAccountDisplay" style="font-size: 0.9rem; display: none;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
-                        <button type="button" id="toggleTokenSection" class="btn btn-med">Add My Token</button>
+                    <p class="subtitle" style="font-size: 0.9rem;">
+                        <span id="gitAccountDisplay" style="display: none;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
+                        <span id="toggleTokenSectionPrefix" style="display: none;">— </span>
+                        <a href="#" id="toggleTokenSection">Add My Token</a>
                         <button type="button" id="toggleProjectsSection" class="btn btn-med" style="margin-left: 8px; display: none;">View Projects</button>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
                     </p>
@@ -248,27 +247,25 @@ class GitHubIssuesManager {
                 <!-- GitHub Authentication -->
                 <div class="auth-section" id="authSection" style="display: none;">
                     <div class="auth-input" id="auth-input">
-                        <div style="flex: 1 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div style="flex: 0 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="gitIssuesAccount" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Account</label>
                             <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
                         </div>
                         <button id="addTokenButton" class="btn btn-secondary" type="button">
                             Add My Token
                         </button>
-                        <div style="flex: 1 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div style="flex: 0 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="githubToken" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Token</label>
                             <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
                         </div>
-                        <button id="saveToken" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save
-                        </button>
-                        <button id="clearToken" class="btn btn-primary" style="display: none;">
-                            Clear
-                        </button>
-                    </div>
-                    <div class="auth-help">
-                        <i class="fas fa-info-circle"></i>
-                        <span><strong>Token Benefits:</strong> Access private repositories and higher rate limits. (NOT your github password.)</span>
+                        <div class="auth-actions">
+                            <button id="saveToken" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button id="clearToken" class="btn" style="display: none;">
+                                Clear
+                            </button>
+                        </div>
                     </div>
                     <div class="auth-help" id="tokenBenefitText" style="display: none;">
                         The token has increased your API rate limits from 60 to 5,000 requests per hour
@@ -303,25 +300,6 @@ class GitHubIssuesManager {
         `;
     }
 
-    createOverviewHTML() {
-        return `
-            <div class="dashboard-overview" id="dashboardOverview" style="display: none;">
-                <div class="overview-card">
-                    <div class="overview-number" id="activeProjectCount">0</div>
-                    <div class="overview-label">Active Projects</div>
-                </div>
-                <div class="overview-card">
-                    <div class="overview-number" id="pendingTaskCount">0</div>
-                    <div class="overview-label">Pending Tasks</div>
-                </div>
-                <div class="overview-card">
-                    <div class="overview-number" id="teamMemberCount">--</div>
-                    <div class="overview-label">Team Members</div>
-                </div>
-            </div>
-        `;
-    }
-
     createRateLimitHTML() {
         return `
             <div id="rateLimitInfo" class="rate-limit-info" style="display: none;">
@@ -347,6 +325,7 @@ class GitHubIssuesManager {
 
     createFiltersHTML() {
         return `
+            <div class="filters-holder">
             <!-- Always visible filters row -->
             <div class="filters-always-visible">
                 <!-- First row: View controls and repo filter -->
@@ -359,7 +338,7 @@ class GitHubIssuesManager {
                     </div>
                     <div class="view-controls">
                         <div class="view-toggle">
-                            <button id="shortView" class="view-btn active" title="Short View">
+                            <button id="summaryView" class="view-btn active" title="Summary View">
                                 <i class="fas fa-align-justify"></i>
                             </button>
                             <button id="listView" class="view-btn" title="List View">
@@ -490,6 +469,7 @@ class GitHubIssuesManager {
   <div class="search-stats" id="searchStats" aria-live="polite"></div>
 </div>
 
+            </div>
             </div>
         `;
     }
@@ -1587,7 +1567,7 @@ class GitHubIssuesManager {
         });
 
         // View controls
-        document.getElementById('shortView').addEventListener('click', () => this.setView('short'));
+        document.getElementById('summaryView').addEventListener('click', () => this.setView('summary'));
         document.getElementById('listView').addEventListener('click', () => this.setView('list'));
         document.getElementById('cardView').addEventListener('click', () => this.setView('card'));
 
@@ -1789,29 +1769,32 @@ class GitHubIssuesManager {
 
     updateTokenSectionUI() {
         const toggleLink = document.getElementById('toggleTokenSection');
+        const togglePrefix = document.getElementById('toggleTokenSectionPrefix');
         const projectsToggleLink = document.getElementById('toggleProjectsSection');
         const benefitText = document.getElementById('tokenBenefitText');
         const headerRefreshSpan = document.getElementById('headerLastRefreshTime');
 
         if (this.githubToken) {
-            toggleLink.textContent = 'Update Github Settings';
-            let text = 'The token has increased your API rate limits from 60 to 5,000 requests per hour';
+            toggleLink.textContent = 'Update Token';
+            if (togglePrefix) togglePrefix.style.display = 'inline';
+            let text = '<strong>Token Benefits:</strong> Your API limit increased from 60 to 5,000 requests per hour.';
 
             // Add current request count and reset time if available
             if (this.rateLimitInfo.remaining !== null && this.rateLimitInfo.resetTime) {
                 const resetTime = new Date(this.rateLimitInfo.resetTime);
                 const resetTimeString = resetTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-                text += `. ${this.rateLimitInfo.remaining} requests remaining before ${resetTimeString}`;
+                text += ` ${this.rateLimitInfo.remaining} remain. Resets at ${resetTimeString}.`;
             } else if (this.rateLimitInfo.remaining !== null) {
-                text += `. ${this.rateLimitInfo.remaining} requests remaining`;
+                text += ` ${this.rateLimitInfo.remaining} remain.`;
             }
 
             if (benefitText) {
-                benefitText.textContent = text;
+                benefitText.innerHTML = text;
                 benefitText.style.display = 'flex';
             }
         } else {
             toggleLink.textContent = 'Add My Token';
+            if (togglePrefix) togglePrefix.style.display = 'none';
             if (benefitText) {
                 benefitText.textContent = 'Add your token to increase API rate limits from 60 to 5,000 requests per hour';
                 benefitText.style.display = 'none';
@@ -3406,14 +3389,11 @@ class GitHubIssuesManager {
                 </span>
             `).join('') : '';
 
-        // Short view content (title + body preview)
-        if (currentView === 'short') {
-            // Process body: limit to 180 chars and remove line returns
-            const processedBody = issue.body ?
-                issue.body.replace(/\r?\n/g, ' ').substring(0, 180) : '';
-            const hasMore = issue.body && issue.body.length > 180;
+        // Summary view content (always expanded details)
+        if (currentView === 'summary') {
+            const hideOwnerOnlyAssignee = this.shouldHideOwnerOnlyAssignee(issue);
 
-            // Prepare detailed content for expansion
+            // Prepare detailed content
             const assigneesDetailHtml = issue.assignees && issue.assignees.length > 0 ?
                 issue.assignees.map(assignee => `
                     <div class="assignee-detail">
@@ -3427,7 +3407,7 @@ class GitHubIssuesManager {
                     <span class="issue-label" style="background-color: #${label.color}; color: ${this.getContrastColor(label.color)}">
                         ${label.name}
                     </span>
-                `).join('') : '<span class="text-muted">No labels</span>';
+                `).join('') : '';
 
             const commentsHtml = issue.comment_details && issue.comment_details.length > 0 ?
                 issue.comment_details.map(comment => `
@@ -3455,7 +3435,7 @@ class GitHubIssuesManager {
                         </a>
 
                         <!-- Issue Actions Menu -->
-                        <div class="issue-actions-menu shifted-menu">
+                        <div class="issue-actions-menu">
                             <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
@@ -3478,14 +3458,8 @@ class GitHubIssuesManager {
                         #${issue.number} ${this.escapeHtml(issue.title)}
                     </h4>
                 </div>
-                ${processedBody ? `
-                    <div class="issue-description short-description" onclick="issuesManager.expandIssueDetails('${issue.id}', event)" style="cursor: pointer;" title="Click to expand details">
-                        ${this.escapeHtml(processedBody)}${hasMore ? '... ' : ''}${hasMore ? `<a href="#" class="more-link" onclick="issuesManager.expandIssueDetails('${issue.id}', event); return false;" title="Show full description">more</a>` : ''}
-                    </div>
-                ` : ''}
 
-                <!-- Hidden full details -->
-                <div class="issue-full-details" id="fullDetails-${issue.id}" style="display: none;">
+                <div class="issue-full-details" id="fullDetails-${issue.id}" style="display: block;">
                     <div class="issue-detail-inline">
                         <!-- Metadata Section -->
                         <div class="issue-meta-inline">
@@ -3513,13 +3487,13 @@ class GitHubIssuesManager {
                             <div class="issue-section-inline">
                                 <h5 class="section-title">Description</h5>
                                 <div class="issue-description-full">
-                                    ${this.formatMarkdown(issue.body)}
+                                    ${this.renderSummaryDescription(issue)}
                                 </div>
                             </div>
                         ` : ''}
 
                         <!-- Labels Section -->
-                        ${labelsDetailHtml ? `
+                        ${labelsDetailHtml.length > 0 ? `
                             <div class="issue-section-inline">
                                 <h5 class="section-title">Labels</h5>
                                 <div class="issue-labels-detail">
@@ -3529,12 +3503,14 @@ class GitHubIssuesManager {
                         ` : ''}
 
                         <!-- Assignees Section -->
-                        <div class="issue-section-inline">
-                            <h5 class="section-title">Assignees</h5>
-                            <div class="assignees-detail">
-                                ${assigneesDetailHtml}
+                        ${hideOwnerOnlyAssignee ? '' : `
+                            <div class="issue-section-inline">
+                                <h5 class="section-title">Assignees</h5>
+                                <div class="assignees-detail">
+                                    ${assigneesDetailHtml}
+                                </div>
                             </div>
-                        </div>
+                        `}
 
                         <!-- Comments Section -->
                         ${issue.comments > 0 ? `
@@ -3553,13 +3529,6 @@ class GitHubIssuesManager {
                             </a>
                             <a href="${issue.html_url}/edit" target="_blank" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-edit"></i> Edit Issue
-                            </a>
-                        </div>
-
-                        <!-- Collapse Link -->
-                        <div class="collapse-link-container">
-                            <a href="#" class="less-link" onclick="issuesManager.collapseIssueDetails('${issue.id}', event); return false;" title="Show less">
-                                <i class="fas fa-chevron-up"></i> less
                             </a>
                         </div>
                     </div>
@@ -3663,6 +3632,72 @@ class GitHubIssuesManager {
         `;
 
         return issueDiv;
+    }
+
+    getRepoOwnerLogin(issue) {
+        const fromApiUrl = issue.repository_url && issue.repository_url.match(/\/repos\/([^/]+)\//i);
+        if (fromApiUrl && fromApiUrl[1]) {
+            return fromApiUrl[1].toLowerCase();
+        }
+
+        const fromWebUrl = issue.html_url && issue.html_url.match(/github\.com\/([^/]+)\//i);
+        if (fromWebUrl && fromWebUrl[1]) {
+            return fromWebUrl[1].toLowerCase();
+        }
+
+        return (this.owner || '').toLowerCase();
+    }
+
+    shouldHideOwnerOnlyAssignee(issue) {
+        if (!issue.assignees || issue.assignees.length !== 1) {
+            return false;
+        }
+        const repoOwner = this.getRepoOwnerLogin(issue);
+        const onlyAssignee = (issue.assignees[0].login || '').toLowerCase();
+        return repoOwner && onlyAssignee === repoOwner;
+    }
+
+    renderSummaryDescription(issue) {
+        if (!issue.body) {
+            return '<span class="text-muted">No description provided</span>';
+        }
+
+        const fullBody = issue.body;
+        const descriptionLimit = 750;
+        if (fullBody.length <= descriptionLimit) {
+            return this.formatMarkdown(fullBody);
+        }
+
+        const truncatedBody = fullBody.substring(0, descriptionLimit);
+        return `
+            <div id="issueDescPreview-${issue.id}">
+                ${this.formatMarkdown(truncatedBody)}...
+                <a href="#" class="more-link" onclick="issuesManager.toggleIssueDescription('${issue.id}', event); return false;">more</a>
+            </div>
+            <div id="issueDescFull-${issue.id}" style="display: none;">
+                ${this.formatMarkdown(fullBody)}
+                <div class="collapse-link-container">
+                    <a href="#" class="less-link" onclick="issuesManager.toggleIssueDescription('${issue.id}', event); return false;">less</a>
+                </div>
+            </div>
+        `;
+    }
+
+    toggleIssueDescription(issueId, event) {
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+
+        const issueItem = document.querySelector(`[data-issue-id="${issueId}"]`);
+        if (!issueItem) return;
+
+        const preview = issueItem.querySelector(`#issueDescPreview-${issueId}`);
+        const full = issueItem.querySelector(`#issueDescFull-${issueId}`);
+        if (!preview || !full) return;
+
+        const showingFull = full.style.display !== 'none';
+        full.style.display = showingFull ? 'none' : 'block';
+        preview.style.display = showingFull ? 'block' : 'none';
     }
 
     async showIssueDetails(issueId) {
@@ -4271,9 +4306,10 @@ class GitHubIssuesManager {
 
     loadViewPreference() {
         const savedView = localStorage.getItem('github_issues_view');
-        if (savedView && (savedView === 'short' || savedView === 'list' || savedView === 'card')) {
-            this.currentView = savedView;
-            this.setView(savedView, false); // Don't save when loading
+        const normalizedView = savedView === 'short' ? 'summary' : savedView;
+        if (normalizedView && (normalizedView === 'summary' || normalizedView === 'list' || normalizedView === 'card')) {
+            this.currentView = normalizedView;
+            this.setView(normalizedView, false); // Don't save when loading
         }
     }
 
@@ -4881,10 +4917,16 @@ class GitHubIssuesManager {
 
     // View management
     setView(viewType, savePreference = true) {
+        if (viewType === 'short') {
+            viewType = 'summary';
+        }
         this.currentView = viewType;
 
         document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(viewType + 'View').classList.add('active');
+        const activeViewButton = document.getElementById(viewType + 'View');
+        if (activeViewButton) {
+            activeViewButton.classList.add('active');
+        }
 
         const issuesList = document.getElementById('issuesList');
         issuesList.className = `issues-list ${viewType}-view`;
