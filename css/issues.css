@@ -20,7 +20,7 @@
 .dark {
     --primary-color: #fff;
     --light-color: #21262d;
-    --dark-color: #c9d1d9;
+    --dark-color: #444;
     --border-color: #30363d;
     --text-muted: #8b949e;
     --bg-overlay: rgba(0, 0, 0, 0.8);
@@ -334,8 +334,9 @@
 
 .auth-actions {
     display: inline-flex;
-    gap: 0.35rem;
+    gap: 0.18rem;
     margin-top: 12px;
+    margin-bottom: 6px;
     margin-left: 10px;
     align-self: flex-end;
     transform: translateY(7px);
@@ -348,15 +349,7 @@
     border-radius: var(--border-radius);
     background: rgba(255, 255, 255, 0.1);
     font-family: monospace;
-    border-width: 0px !important;
     border-color: #ccc !important;
-}
-.auth-input input[type="password" i] {
-    border-width: 0px !important;
-    border-color: #ccc !important;
-}
-.dark .auth-input input {
-    color: #fff;
 }
 #addTokenButton {
     flex: 0 0 auto;
@@ -444,7 +437,6 @@
 .instructions-content {
     padding: 0 1rem 1rem 1rem;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.2);
 }
 
 .instructions-content ol {
@@ -732,7 +724,6 @@
 .filters-holder {
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1rem;
     margin-bottom: 1rem;
     box-shadow: var(--box-shadow);
     position: relative;
@@ -742,6 +733,8 @@
 /* Ensure filters start hidden by default */
 #filtersSection {
     display: none !important;
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
 }
 
 /* Only show when explicitly toggled */
@@ -1436,6 +1429,7 @@
     gap: 6px;
     padding: 1rem;
     container-type: inline-size;
+    border-radius: var(--border-radius);
 }
 
 /* Filter row styling */
@@ -1540,10 +1534,11 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     padding-right: 2.25rem;
+    background-color: white;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat !important;
-    background-position: right 0.7rem center;
-    background-size: 1em;
+    background-position: right 0.75rem center !important;
+    background-size: 1em !important;
 }
 /* Force elements to fit on one line when needed - STRONGER CONSTRAINTS */
 @media (max-width: 1100px) {
@@ -1676,9 +1671,12 @@
 }
 
 .dark #repoFilter {
-    background: #3a3a3a;
+    background-color: #3a3a3a;
     color: white;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9d1d9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat !important;
+    background-position: right 0.75rem center !important;
+    background-size: 1em !important;
 }
 
 /* Clean layout with proper flex containers */
@@ -1759,7 +1757,6 @@
 /* Dark mode styling for toggle filters button */
 .dark .toggle-filters-btn {
     background: #3a3a3a !important;
-    border: 1px solid white !important;
     color: white !important;
 }
 
@@ -1916,33 +1913,22 @@ body.widget-fullscreen-active {
 
 /* Close token section button */
 .close-token-btn {
-    position: absolute;
-    top: 1rem;
-    right: 4rem; /* Position to the left of minimize-btn (which is at 1rem) */
     background: rgba(0, 0, 0, 0.2);
     color: white;
     border: none;
-    padding: 0.5rem;
+    padding: 0.053rem 0.09rem;
     border-radius: 50%; /* Circular button */
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 0.177rem;
+    line-height: 1;
     z-index: 10000;
     transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    display: inline;
 }
 
 .close-token-btn:hover {
     background: rgba(0, 0, 0, 0.4);
     transform: scale(1.1);
-}
-
-/* Keep close token button left of the top-right control icon */
-.issues-header:not(:has(.minimize-btn)) .close-token-btn {
-    right: 4rem;
 }
 
 /* Fullscreen toggle button in pagination */
@@ -2133,6 +2119,7 @@ body.widget-fullscreen-active {
 }
 .dark .issue-actions .btn-outline {
     background: var(--dark-color);
+    border: 1px solid var(--dark-color);
 }
 /* Wide view - show button text */
 @container (min-width: 769px) {

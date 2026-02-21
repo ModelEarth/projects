@@ -234,12 +234,11 @@ class GitHubIssuesManager {
                 <i class="fas fa-expand header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;"></i>
 
                 <div class="header-content">
-                    <h1 style="font-size:32px"><i class="fab fa-github"></i> Team Projects</h1>
+                    <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><i class="fab fa-github"></i> Team Projects</h1>
                     <p class="subtitle" style="font-size: 0.9rem;">
-                        <span id="gitAccountDisplay" style="display: none;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
-                        <span id="toggleTokenSectionPrefix" style="display: none;">— </span>
-                        <a href="#" id="toggleTokenSection">Add My Token</a>
-                        <button type="button" id="toggleProjectsSection" class="btn btn-med" style="margin-left: 8px; display: none;">View Projects</button>
+                        <span id="gitAccountDisplay" style="display: none; margin-bottom: 6px;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
+                        <a href="#" id="toggleTokenSection" class="btn-nice">Add My Token</a>
+                        <a href="#" id="toggleProjectsSection" class="btn-nice" style="margin-left: 8px; display: none;">View Projects</a>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
                     </p>
                 </div>
@@ -247,14 +246,14 @@ class GitHubIssuesManager {
                 <!-- GitHub Authentication -->
                 <div class="auth-section" id="authSection" style="display: none;">
                     <div class="auth-input" id="auth-input">
-                        <div style="flex: 0 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div class="config-field" style="flex: 0 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="gitIssuesAccount" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Account</label>
                             <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
                         </div>
                         <button id="addTokenButton" class="btn btn-secondary" type="button">
                             Add My Token
                         </button>
-                        <div style="flex: 0 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
+                        <div class="config-field" style="flex: 0 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
                             <label for="githubToken" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Token</label>
                             <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
                         </div>
@@ -274,7 +273,7 @@ class GitHubIssuesManager {
                         <details>
                             <summary>
                                 <span><i class="fas fa-question-circle"></i> How to create a GitHub token?</span>
-                                <a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link">
+                                <a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link btn-nice">
                                     <i class="fas fa-external-link-alt"></i> Get Your Token
                                 </a>
                             </summary>
@@ -1684,7 +1683,7 @@ class GitHubIssuesManager {
     toggleTokenSection() {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
-        const mainHeader = document.querySelector('.issues-header');
+        const toggleTokenLink = document.getElementById('toggleTokenSection');
 
         if (authSection && authSection.style.display === 'none') {
             // Show the token section
@@ -1693,20 +1692,23 @@ class GitHubIssuesManager {
                 subtitleDescription.style.display = 'block';
             }
 
-            // Add close button to header (to the left of minimize-btn if it exists)
-            if (mainHeader && !mainHeader.querySelector('.close-token-btn')) {
+            // Hide the add/update link and show close button in the same location.
+            if (toggleTokenLink) {
+                toggleTokenLink.style.display = 'none';
+            }
+
+            if (!document.getElementById('closeTokenSectionBtn')) {
                 const closeBtn = document.createElement('button');
+                closeBtn.id = 'closeTokenSectionBtn';
                 closeBtn.className = 'close-token-btn';
-                closeBtn.innerHTML = '<i class="fas fa-times-circle"></i>';
+                closeBtn.innerHTML = '<span class="material-icons">close</span>';
                 closeBtn.title = 'Close Token Section';
                 closeBtn.onclick = () => this.toggleTokenSection();
 
-                // Insert before minimize-btn if it exists, otherwise append to header
-                const minimizeBtn = mainHeader.querySelector('.minimize-btn');
-                if (minimizeBtn) {
-                    mainHeader.insertBefore(closeBtn, minimizeBtn);
+                if (toggleTokenLink && toggleTokenLink.parentNode) {
+                    toggleTokenLink.parentNode.insertBefore(closeBtn, toggleTokenLink.nextSibling);
                 } else {
-                    mainHeader.appendChild(closeBtn);
+                    authSection.parentNode.appendChild(closeBtn);
                 }
             }
         } else if (authSection) {
@@ -1716,12 +1718,30 @@ class GitHubIssuesManager {
                 subtitleDescription.style.display = 'none';
             }
 
-            // Remove close button
-            const closeBtn = mainHeader?.querySelector('.close-token-btn');
+            if (toggleTokenLink) {
+                toggleTokenLink.style.display = '';
+            }
+
+            // Remove inline close button
+            const closeBtn = document.getElementById('closeTokenSectionBtn');
             if (closeBtn) {
                 closeBtn.remove();
             }
         }
+
+        this.updateTokenSectionUI();
+    }
+
+    hideTokenSectionAndRestoreToggle() {
+        const authSection = document.getElementById('authSection');
+        const subtitleDescription = document.getElementById('subtitleDescription');
+        const toggleTokenLink = document.getElementById('toggleTokenSection');
+        const closeBtn = document.getElementById('closeTokenSectionBtn');
+
+        if (authSection) authSection.style.display = 'none';
+        if (subtitleDescription) subtitleDescription.style.display = 'none';
+        if (toggleTokenLink) toggleTokenLink.style.display = '';
+        if (closeBtn) closeBtn.remove();
     }
 
     async toggleProjectsSection() {
@@ -1769,14 +1789,16 @@ class GitHubIssuesManager {
 
     updateTokenSectionUI() {
         const toggleLink = document.getElementById('toggleTokenSection');
-        const togglePrefix = document.getElementById('toggleTokenSectionPrefix');
         const projectsToggleLink = document.getElementById('toggleProjectsSection');
         const benefitText = document.getElementById('tokenBenefitText');
         const headerRefreshSpan = document.getElementById('headerLastRefreshTime');
+        const headerFullscreenBtn = document.querySelector('.header-fullscreen-btn');
+        const projectsSections = document.getElementById('projectsSectionsContainer');
+        const authSection = document.getElementById('authSection');
+        const tokenEditorOpen = authSection && authSection.style.display !== 'none';
 
         if (this.githubToken) {
             toggleLink.textContent = 'Update Token';
-            if (togglePrefix) togglePrefix.style.display = 'inline';
             let text = '<strong>Token Benefits:</strong> Your API limit increased from 60 to 5,000 requests per hour.';
 
             // Add current request count and reset time if available
@@ -1794,7 +1816,6 @@ class GitHubIssuesManager {
             }
         } else {
             toggleLink.textContent = 'Add My Token';
-            if (togglePrefix) togglePrefix.style.display = 'none';
             if (benefitText) {
                 benefitText.textContent = 'Add your token to increase API rate limits from 60 to 5,000 requests per hour';
                 benefitText.style.display = 'none';
@@ -1808,14 +1829,23 @@ class GitHubIssuesManager {
 
         // Show View/Hide Projects only when project sections are hidden under the header.
         if (projectsToggleLink) {
-            const projectsSections = document.getElementById('projectsSectionsContainer');
             if (!this.showProject && projectsSections) {
                 const isVisible = projectsSections.style.display !== 'none';
-                projectsToggleLink.style.display = 'inline';
-                projectsToggleLink.textContent = isVisible ? 'Hide Projects' : 'View Projects';
+                if (tokenEditorOpen) {
+                    projectsToggleLink.style.display = 'none';
+                } else {
+                    projectsToggleLink.style.display = 'inline-flex';
+                    projectsToggleLink.textContent = isVisible ? 'Hide Projects' : 'View Projects';
+                }
             } else {
                 projectsToggleLink.style.display = 'none';
             }
+        }
+
+        // Hide fullscreen control when only auth/token editor is shown.
+        if (headerFullscreenBtn) {
+            const authOnlyView = !this.showProject && (!projectsSections || projectsSections.style.display === 'none');
+            headerFullscreenBtn.style.display = authOnlyView ? 'none' : '';
         }
 
         // Update the refresh time display
@@ -1897,12 +1927,7 @@ class GitHubIssuesManager {
         commitGitIssuesAccount({ allowEmpty: true });
         this.updateTokenUI();
         this.updateTokenSectionUI();
-
-        // Hide the token section after saving (with null checks)
-        const authSection = document.getElementById('authSection');
-        const subtitleDescription = document.getElementById('subtitleDescription');
-        if (authSection) authSection.style.display = 'none';
-        if (subtitleDescription) subtitleDescription.style.display = 'none';
+        this.hideTokenSectionAndRestoreToggle();
     }
 
     async refreshIssuesAfterTokenSave() {
@@ -1965,10 +1990,7 @@ class GitHubIssuesManager {
             this.updateTokenUI();
             this.updateTokenSectionUI();
             this.showNotification('GitHub token cleared successfully', 'info');
-
-            // Hide the token section after clearing
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('subtitleDescription').style.display = 'none';
+            this.hideTokenSectionAndRestoreToggle();
         }
     }
 
@@ -5172,7 +5194,7 @@ function updateGitAccountDisplay() {
         gitAccountLink.textContent = gitAccount;
         gitAccountLink.href = `https://github.com/${gitAccount}`;
         gitAccountDisplay.innerHTML = ` Your GitHub account: <a href="https://github.com/${gitAccount}" id="gitAccountLink">${gitAccount}</a>&nbsp;&nbsp;`;
-        gitAccountDisplay.style.display = 'inline';
+        gitAccountDisplay.style.display = 'inline-block';
     } else if (gitAccountDisplay) {
         gitAccountDisplay.style.display = 'none';
     }
