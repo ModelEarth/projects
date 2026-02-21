@@ -1874,19 +1874,19 @@ class GitHubIssuesManager {
 
         if (this.githubToken) {
             toggleLink.textContent = 'Update Token';
-            let text = '<strong>Token Benefits:</strong> Your API limit increased from 60 to 5,000 requests per hour.';
+            let detailText = 'Your API limit increased from 60 to 5,000 requests per hour.';
 
             // Add current request count and reset time if available
             if (this.rateLimitInfo.remaining !== null && this.rateLimitInfo.resetTime) {
                 const resetTime = new Date(this.rateLimitInfo.resetTime);
                 const resetTimeString = resetTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
-                text += ` ${this.rateLimitInfo.remaining} remain. Resets at ${resetTimeString}.`;
+                detailText += ` ${this.rateLimitInfo.remaining} remain. Resets at ${resetTimeString}.`;
             } else if (this.rateLimitInfo.remaining !== null) {
-                text += ` ${this.rateLimitInfo.remaining} remain.`;
+                detailText += ` ${this.rateLimitInfo.remaining} remain.`;
             }
 
             if (benefitText) {
-                benefitText.innerHTML = text;
+                benefitText.innerHTML = `<strong>Token Benefits:</strong> <span class="token-benefit-detail">${detailText}</span>`;
                 benefitText.style.display = 'flex';
             }
         } else {

@@ -452,8 +452,8 @@
     }
 
     #tokenBenefitText strong {
-        flex-basis: 100%;
-        display: block;
+        flex-basis: auto;
+        display: inline;
         margin: 0;
     }
 
@@ -472,6 +472,19 @@
 
     .instructions-content .note .note-text {
         flex-basis: 100%;
+    }
+}
+
+@container (max-width: 300px) {
+    #tokenBenefitText strong {
+        display: block;
+        flex-basis: 100%;
+        margin: 0;
+    }
+
+    #tokenBenefitText .token-benefit-detail {
+        display: block;
+        width: 100%;
     }
 }
 
@@ -2052,7 +2065,7 @@ body.widget-fullscreen-active {
     background: rgba(0, 0, 0, 0.2);
     color: white;
     border: none;
-    padding: 0.053rem 0.09rem;
+    padding: 0.09rem 0.14rem;
     border-radius: 50%; /* Circular button */
     cursor: pointer;
     font-size: 0.177rem;
