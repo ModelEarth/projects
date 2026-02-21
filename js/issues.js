@@ -231,7 +231,7 @@ class GitHubIssuesManager {
     createHeaderHTML() {
         return `
             <div class="issues-header">
-                <i class="fas fa-expand header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;"></i>
+                <span class="material-icons header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;">fullscreen</span>
 
                 <div class="header-content">
                     <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><i class="fab fa-github"></i> Team Projects</h1>
@@ -291,8 +291,9 @@ class GitHubIssuesManager {
                                     <li>Paste it in the field above and click "Save"</li>
                                 </ol>
                                 <p class="note">
-                                    <i class="fas fa-shield-alt"></i>
-                                    <strong>Security:</strong> Tokens are stored locally in your browser only. Never share your token with others.
+                                    <span class="material-icons">shield</span>
+                                    <strong>Security:</strong>
+                                    <span class="note-text">Tokens are stored locally in your browser only. Never share your token with others.</span>
                                 </p>
                             </div>
                         </details>
@@ -1743,6 +1744,7 @@ class GitHubIssuesManager {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
         const toggleTokenLink = document.getElementById('toggleTokenSection');
+        const subtitleLine = document.querySelector('.issues-header .subtitle');
 
         if (authSection && authSection.style.display === 'none') {
             // Show the token section
@@ -1764,11 +1766,17 @@ class GitHubIssuesManager {
                 closeBtn.title = 'Close Token Section';
                 closeBtn.onclick = () => this.toggleTokenSection();
 
-                if (toggleTokenLink && toggleTokenLink.parentNode) {
+                const gitAccountDisplay = document.getElementById('gitAccountDisplay');
+                if (gitAccountDisplay && gitAccountDisplay.parentNode) {
+                    gitAccountDisplay.parentNode.insertBefore(closeBtn, gitAccountDisplay.nextSibling);
+                } else if (toggleTokenLink && toggleTokenLink.parentNode) {
                     toggleTokenLink.parentNode.insertBefore(closeBtn, toggleTokenLink.nextSibling);
                 } else {
                     authSection.parentNode.appendChild(closeBtn);
                 }
+            }
+            if (subtitleLine) {
+                subtitleLine.classList.add('token-editor-open');
             }
 
             this.updateAuthInstructionsCompactState();
@@ -1789,6 +1797,9 @@ class GitHubIssuesManager {
             if (closeBtn) {
                 closeBtn.remove();
             }
+            if (subtitleLine) {
+                subtitleLine.classList.remove('token-editor-open');
+            }
         }
 
         this.updateTokenSectionUI();
@@ -1799,11 +1810,13 @@ class GitHubIssuesManager {
         const subtitleDescription = document.getElementById('subtitleDescription');
         const toggleTokenLink = document.getElementById('toggleTokenSection');
         const closeBtn = document.getElementById('closeTokenSectionBtn');
+        const subtitleLine = document.querySelector('.issues-header .subtitle');
 
         if (authSection) authSection.style.display = 'none';
         if (subtitleDescription) subtitleDescription.style.display = 'none';
         if (toggleTokenLink) toggleTokenLink.style.display = '';
         if (closeBtn) closeBtn.remove();
+        if (subtitleLine) subtitleLine.classList.remove('token-editor-open');
     }
 
     async toggleProjectsSection() {
@@ -3945,6 +3958,7 @@ class GitHubIssuesManager {
         // Update pagination info with width and fullscreen controls
         const paginationInfo = document.getElementById('paginationInfo');
         const fullscreenIcon = this.isFullscreen ? 'fa-compress' : 'fa-expand';
+        const headerFullscreenIcon = this.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
         const fullscreenTitle = this.isFullscreen ? 'Exit Fullscreen' : 'Toggle Fullscreen';
 
         const leftText = this.filteredIssues.length === 0 ?
@@ -3958,7 +3972,8 @@ class GitHubIssuesManager {
         // Update header fullscreen icon
         const headerIcon = document.querySelector('.header-fullscreen-btn');
         if (headerIcon) {
-            headerIcon.className = `fas ${fullscreenIcon} header-fullscreen-btn`;
+            headerIcon.className = 'material-icons header-fullscreen-btn';
+            headerIcon.textContent = headerFullscreenIcon;
             headerIcon.title = fullscreenTitle;
         }
 

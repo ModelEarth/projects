@@ -45,9 +45,9 @@
     padding: 2rem;
     border: 1px solid #ccc;
     border-radius: var(--border-radius);
-    margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
+    container-type: inline-size;
 }
 .dark .issues-header {
     background: none;
@@ -376,6 +376,105 @@
     text-decoration: underline;
 }
 
+/* Narrow header container adjustments (based on parent width, not viewport) */
+@container (max-width: 500px) {
+    .issues-header {
+        padding: 0.75rem;
+    }
+
+    .issues-header .subtitle {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    #gitAccountDisplay {
+        flex: 1 1 auto;
+        min-width: 0;
+        order: 1;
+    }
+
+    #gitAccountDisplay a {
+        overflow-wrap: anywhere;
+    }
+
+    #closeTokenSectionBtn.close-token-btn,
+    .close-token-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        flex: 0 0 auto;
+        order: 2;
+    }
+
+    .issues-header .subtitle.token-editor-open {
+        flex-wrap: nowrap;
+        align-items: flex-start;
+    }
+
+    .issues-header .subtitle.token-editor-open #closeTokenSectionBtn.close-token-btn {
+        margin-left: auto;
+        align-self: flex-start;
+    }
+
+    .auth-input {
+        align-items: stretch;
+        gap: 0.4rem;
+    }
+
+    .auth-input .config-field {
+        flex: 1 1 100% !important;
+        min-width: 0 !important;
+    }
+
+    .auth-input input,
+    #githubToken {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .auth-actions {
+        margin-left: 0;
+        margin-top: 6px;
+        transform: none;
+        align-self: flex-start;
+        flex-wrap: wrap;
+    }
+
+    #tokenBenefitText {
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.15rem;
+    }
+
+    #tokenBenefitText strong {
+        flex-basis: 100%;
+        display: block;
+        margin: 0;
+    }
+
+    .auth-instructions.compact-actions .auth-instructions-actions {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .auth-instructions.compact-actions .auth-instructions-actions .token-link {
+        max-width: 100%;
+    }
+
+    .instructions-content .note {
+        flex-wrap: wrap;
+    }
+
+    .instructions-content .note .note-text {
+        flex-basis: 100%;
+    }
+}
+
 .token-link {
     display: inline-flex;
     align-items: center;
@@ -462,10 +561,17 @@
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
+    align-items: stretch;
 }
 
 .auth-instructions.compact-actions .view-steps-link {
     display: inline-flex;
+}
+
+.auth-instructions.compact-actions .auth-instructions-actions .token-link {
+    min-width: 9.4rem;
+    justify-content: center;
+    margin-left: 0;
 }
 .instructions-content ol {
     margin: 1rem 0;
@@ -495,9 +601,14 @@
     gap: 0.5rem;
 }
 
-.instructions-content .note i {
+.instructions-content .note i,
+.instructions-content .note .material-icons {
     margin-top: 0.1rem;
     color: #ffd700;
+}
+
+.instructions-content .note .note-text {
+    min-width: 0;
 }
 
 /* Rate Limit Information */
