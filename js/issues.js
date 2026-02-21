@@ -237,8 +237,8 @@ class GitHubIssuesManager {
                     <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><i class="fab fa-github"></i> Team Projects</h1>
                     <p class="subtitle" style="font-size: 0.9rem;">
                         <span id="gitAccountDisplay" style="display: none; margin-bottom: 6px;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
-                        <a href="#" id="toggleTokenSection" class="btn-nice">Add My Token</a>
-                        <a href="#" id="toggleProjectsSection" class="btn-nice" style="margin-left: 8px; display: none;">View Projects</a>
+                        <a href="#" id="toggleTokenSection" class="btn-nice" style="margin-right: 8px;">Add My Token</a>
+                        <a href="#" id="toggleProjectsSection" class="btn-nice" style="display: none;">View Projects</a>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
                     </p>
                 </div>
