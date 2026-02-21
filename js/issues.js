@@ -273,9 +273,12 @@ class GitHubIssuesManager {
                         <details>
                             <summary>
                                 <span><i class="fas fa-question-circle"></i> How to create a GitHub token?</span>
-                                <a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link btn-nice">
-                                    <i class="fas fa-external-link-alt"></i> Get Your Token
-                                </a>
+                                <span class="auth-instructions-actions">
+                                    <a href="#" class="view-steps-link token-link btn-nice">View Steps</a>
+                                    <a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link btn-nice">
+                                        <i class="fas fa-external-link-alt"></i> Get Your Token
+                                    </a>
+                                </span>
                             </summary>
                             <div class="instructions-content">
                                 <ol>
@@ -1414,9 +1417,31 @@ class GitHubIssuesManager {
         if (addTokenButton) {
             addTokenButton.addEventListener('click', () => this.revealTokenInput());
         }
+        document.querySelectorAll('.view-steps-link').forEach(link => {
+            const details = link.closest('details');
+            if (details) {
+                this.updateViewStepsLinkLabel(details, link);
+                details.addEventListener('toggle', () => this.updateViewStepsLinkLabel(details, link));
+            }
+
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (details) {
+                    if (details.hasAttribute('open')) {
+                        details.removeAttribute('open');
+                    } else {
+                        details.setAttribute('open', '');
+                    }
+                    this.updateViewStepsLinkLabel(details, link);
+                }
+            });
+        });
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
         }
+
+        this.updateAuthInstructionsCompactState();
     }
 
     setupEventListeners() {
@@ -1603,7 +1628,10 @@ class GitHubIssuesManager {
         window.addEventListener('hashchange', () => this.handleHashChange());
 
         // Resize listener to update width display
-        window.addEventListener('resize', () => this.updatePagination());
+        window.addEventListener('resize', () => {
+            this.updatePagination();
+            this.updateAuthInstructionsCompactState();
+        });
     }
 
     setupDropdown(buttonId, dropdownId, callback) {
@@ -1680,6 +1708,37 @@ class GitHubIssuesManager {
         tokenInput.focus();
     }
 
+    updateAuthInstructionsCompactState() {
+        const headerContent = document.querySelector('.header-content');
+        const authInstructions = document.querySelector('.auth-instructions');
+        if (!headerContent || !authInstructions) return;
+
+        const headerWidth = headerContent.getBoundingClientRect().width;
+        authInstructions.classList.toggle('compact-actions', headerWidth <= 500);
+    }
+
+    updateViewStepsLinkLabel(details, link) {
+        if (!details || !link) return;
+        link.textContent = details.hasAttribute('open') ? 'Hide Steps' : 'View Steps';
+    }
+
+    maybeOpenAuthInstructionsForUpdateToken() {
+        const headerContent = document.querySelector('.header-content');
+        const authInstructionsDetails = document.querySelector('.auth-instructions details');
+        const toggleTokenLink = document.getElementById('toggleTokenSection');
+        if (!headerContent || !authInstructionsDetails || !toggleTokenLink) return;
+
+        const headerWidth = headerContent.getBoundingClientRect().width;
+        const isUpdateToken = toggleTokenLink.textContent.trim() === 'Update Token';
+        if (isUpdateToken && headerWidth > 500) {
+            authInstructionsDetails.setAttribute('open', '');
+            const viewStepsLink = document.querySelector('.view-steps-link');
+            if (viewStepsLink) {
+                this.updateViewStepsLinkLabel(authInstructionsDetails, viewStepsLink);
+            }
+        }
+    }
+
     toggleTokenSection() {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
@@ -1711,6 +1770,9 @@ class GitHubIssuesManager {
                     authSection.parentNode.appendChild(closeBtn);
                 }
             }
+
+            this.updateAuthInstructionsCompactState();
+            this.maybeOpenAuthInstructionsForUpdateToken();
         } else if (authSection) {
             // Hide the token section
             authSection.style.display = 'none';
