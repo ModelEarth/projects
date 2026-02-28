@@ -43,17 +43,17 @@ JAM Stack with Rust API and Azure PostgreSQL and Google Sheets
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
 [Configure your Local Server](../team/admin/server/) - Commands for running Rust and Flask (Python)
 
-### RealityStream updates in progress
+### RealityStream ML
 
-[Pull features and targets into our Run Models colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
+[Setting up local run for 6 ML forcasting models](../realitystream/models/)  
 RealityStream industry titles in importance report <!-- Abivish -->
 Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
+<!--
 ### Possible Resources
 
 [Full-Stack Cloudflare SaaS kit](https://github.com/Dhravya/cloudflare-saas-stack) - and SuperMemoryAI
-<!--Coming soon: Flow Diagrams using [n8n automation](https://n8n.io/) and NextJS-->
-
+-->
 
 ## Get Involved!
 
