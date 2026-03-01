@@ -42,7 +42,7 @@
 
 /* Base Layout */
 .issues-header {
-    padding: 2rem;
+    padding: 22px 32px 8px 32px;
     border: 1px solid #ccc;
     border-radius: var(--border-radius);
     position: relative;
@@ -105,14 +105,17 @@
 }
 
 /* Header fullscreen button - hidden by default, shown in narrow view */
+.minimize-btn {
+    font-size: 42px;
+}
+
 .header-fullscreen-btn {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    color: white !important;
-    font-size: 1.2rem;
+    color: #555 !important;
+    font-size: 30px;
     cursor: pointer;
-    background: rgba(0, 0, 0, 0.2);
     padding: 0.5rem;
     border-radius: var(--border-radius);
     transition: var(--transition);
@@ -120,8 +123,11 @@
 }
 
 .header-fullscreen-btn:hover {
-    background: rgba(0, 0, 0, 0.4);
     transform: scale(1.1);
+}
+
+.dark .header-fullscreen-btn {
+    color: #bbb !important;
 }
 
 /* Header search button - positioned to the left of fullscreen button */
@@ -355,6 +361,29 @@
     flex: 0 0 auto;
 }
 
+.config-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+#authInfoIcon {
+    color: #666;
+}
+.dark #authInfoIcon {
+    color: #aaa;
+}
+
+#getTokenLink {
+    display: inline-block;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
+.dark #getTokenLink {
+    color: #aaa;
+}
+
 .auth-input input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
@@ -379,7 +408,7 @@
 /* Narrow header container adjustments (based on parent width, not viewport) */
 @container (max-width: 500px) {
     .issues-header {
-        padding: 0.75rem;
+        padding: 0px 0.65rem;
     }
 
     .issues-header .subtitle {
@@ -421,7 +450,7 @@
 
     .auth-input {
         align-items: stretch;
-        gap: 0.4rem;
+        gap: 0;
     }
 
     .auth-input .config-field {
@@ -528,7 +557,7 @@
 }
 
 .auth-instructions {
-    margin-top: 1rem;
+    margin-top: 6px;
     position: relative;
     z-index: 1;
 }
@@ -543,12 +572,15 @@
     padding: 0.75rem 1rem;
     cursor: pointer;
     font-weight: 500;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
     transition: var(--transition);
     user-select: none;
+}
+.auth-instructions details[open] summary {
+    display: flex;
 }
 
 .auth-instructions summary span {
@@ -2041,13 +2073,12 @@ body.widget-fullscreen-active {
     position: absolute;
     top: 1rem;
     right: 1rem; /* Position to the right of search icon (search icon is at 3.5rem) */
-    background: rgba(0, 0, 0, 0.2);
-    color: white;
+    background: none;
+    color: #555;
     border: none;
     padding: 0.5rem;
     border-radius: var(--border-radius);
     cursor: pointer;
-    font-size: 1.2rem;
     z-index: 10000;
     transition: var(--transition);
     display: flex;
@@ -2056,7 +2087,6 @@ body.widget-fullscreen-active {
 }
 
 .minimize-btn:hover {
-    background: rgba(0, 0, 0, 0.4);
     transform: scale(1.1);
 }
 

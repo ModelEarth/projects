@@ -66,5 +66,3 @@ One of the great UX features of our design is that content is never obstructed b
 
 Gotta story to share? Create a repo and Add your text in README.md files. Add copies of our localsite [index.html starter](/localsite/start/template/).
 
-DreamStudio open source projects are coordinated by [Loren Heyns](https://dreamstudio.com/loren) and our [DreamStudio Team](https://dreamstudio.com/earth).
-

@@ -84,6 +84,7 @@ class GitHubIssuesManager {
         this.invalidTokenWarningShown = false; // Track if invalid token warning has been shown
         this.rateLimitWarningShown = false; // Track if rate limit warning has been shown
         this.tokenInputRevealed = false;
+        this.saveTokenVisible = false;
 
         // State management
         this.filters = {
@@ -247,18 +248,18 @@ class GitHubIssuesManager {
                 <div class="auth-section" id="authSection" style="display: none;">
                     <div class="auth-input" id="auth-input">
                         <div class="config-field" style="flex: 0 1 160px; min-width: 160px; display: flex; flex-direction: column; gap: 0.25rem;">
-                            <label for="gitIssuesAccount" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Account</label>
+                            <label for="gitIssuesAccount" class="config-label">Github Account</label>
                             <input type="text" id="gitIssuesAccount" class="textInput git-account-input" placeholder="GitHub Name" onfocus="this.select()">
                         </div>
                         <button id="addTokenButton" class="btn btn-secondary" type="button">
                             Add My Token
                         </button>
                         <div class="config-field" style="flex: 0 1 220px; min-width: 200px; display: flex; flex-direction: column; gap: 0.25rem;">
-                            <label for="githubToken" style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 0;">Github Token</label>
+                            <label for="githubToken" class="config-label">Github Token (not password) <span id="authInfoIcon" class="material-icons" style="display: none; cursor: pointer; font-size: 1.3rem; vertical-align: middle; line-height: 1;">info</span></label>
                             <input type="password" id="githubToken" placeholder="Enter GitHub Personal Access Token (optional for public repos)">
                         </div>
                         <div class="auth-actions">
-                            <button id="saveToken" class="btn btn-primary">
+                            <button id="saveToken" class="btn btn-primary" style="display: none;">
                                 <i class="fas fa-save"></i> Save
                             </button>
                             <button id="clearToken" class="btn" style="display: none;">
@@ -266,6 +267,7 @@ class GitHubIssuesManager {
                             </button>
                         </div>
                     </div>
+                    <a id="getTokenLink" href="#">Get Token</a>
                     <div class="auth-help" id="tokenBenefitText" style="display: none;">
                         The token has increased your API rate limits from 60 to 5,000 requests per hour
                     </div>
@@ -274,10 +276,10 @@ class GitHubIssuesManager {
                             <summary>
                                 <span><i class="fas fa-question-circle"></i> How to create a GitHub token?</span>
                                 <span class="auth-instructions-actions">
-                                    <a href="#" class="view-steps-link token-link btn-nice">View Steps</a>
-                                    <a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link btn-nice">
+<a href="https://github.com/settings/tokens/new?description=ModelEarth+Projects+Hub&scopes=repo,read:org" target="_blank" class="token-link btn-nice">
                                         <i class="fas fa-external-link-alt"></i> Get Your Token
                                     </a>
+                                    <button class="close-auth-instructions" title="Close" style="background:none; border:1px solid #aaa; border-radius:50%; width:22px; height:22px; cursor:pointer; color:#888; font-size:0.85rem; line-height:1; padding:0; display:flex; align-items:center; justify-content:center;">&#x2715;</button>
                                 </span>
                             </summary>
                             <div class="instructions-content">
@@ -1442,6 +1444,59 @@ class GitHubIssuesManager {
             fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
         }
 
+        const tokenInputEl = document.getElementById('githubToken');
+        if (tokenInputEl) {
+            tokenInputEl.addEventListener('focus', () => {
+                if (!this.githubToken) {
+                    this.saveTokenVisible = true;
+                    const saveBtn = document.getElementById('saveToken');
+                    const infoIcon = document.getElementById('authInfoIcon');
+                    if (saveBtn) saveBtn.style.display = '';
+                    if (infoIcon) infoIcon.style.display = 'inline';
+                }
+            });
+        }
+
+        const authInfoIcon = document.getElementById('authInfoIcon');
+        const getTokenLink = document.getElementById('getTokenLink');
+
+        const toggleAuthInstructions = () => {
+            const authInstructionsDetails = document.querySelector('.auth-instructions details');
+            if (authInstructionsDetails) {
+                if (authInstructionsDetails.hasAttribute('open')) {
+                    authInstructionsDetails.removeAttribute('open');
+                    if (getTokenLink) getTokenLink.style.display = 'inline-block';
+                } else {
+                    authInstructionsDetails.setAttribute('open', '');
+                    if (getTokenLink) getTokenLink.style.display = 'none';
+                    const summary = authInstructionsDetails.querySelector('summary');
+                    if (summary) summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        };
+
+        if (authInfoIcon) {
+            authInfoIcon.addEventListener('click', toggleAuthInstructions);
+        }
+        if (getTokenLink) {
+            getTokenLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleAuthInstructions();
+            });
+        }
+
+        const closeAuthBtn = document.querySelector('.close-auth-instructions');
+        if (closeAuthBtn) {
+            closeAuthBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const authInstructionsDetails = document.querySelector('.auth-instructions details');
+                if (authInstructionsDetails) {
+                    authInstructionsDetails.removeAttribute('open');
+                    if (getTokenLink) getTokenLink.style.display = 'inline-block';
+                }
+            });
+        }
+
         this.updateAuthInstructionsCompactState();
     }
 
@@ -1674,6 +1729,8 @@ class GitHubIssuesManager {
         const tokenInput = document.getElementById('githubToken');
         const clearButton = document.getElementById('clearToken');
         const addTokenButton = document.getElementById('addTokenButton');
+        const saveButton = document.getElementById('saveToken');
+        const authInfoIcon = document.getElementById('authInfoIcon');
 
         if (!tokenInput || !clearButton || !addTokenButton) {
             return;
@@ -1684,16 +1741,27 @@ class GitHubIssuesManager {
             clearButton.style.display = 'inline-block';
             tokenInput.style.display = 'inline-block';
             addTokenButton.style.display = 'none';
+            if (saveButton) saveButton.style.display = '';
+            if (authInfoIcon) authInfoIcon.style.display = 'inline';
             this.tokenInputRevealed = true;
         } else {
             tokenInput.value = '';
             clearButton.style.display = 'none';
-            if (this.tokenInputRevealed) {
-                tokenInput.style.display = 'inline-block';
-                addTokenButton.style.display = 'none';
-            } else {
-                tokenInput.style.display = 'none';
-                addTokenButton.style.display = 'inline-flex';
+            tokenInput.style.display = 'inline-block';
+            addTokenButton.style.display = 'none';
+            // Auto-show auth section when no token exists
+            const authSection = document.getElementById('authSection');
+            if (authSection && authSection.style.display === 'none') {
+                authSection.style.display = 'block';
+                const toggleLink = document.getElementById('toggleTokenSection');
+                if (toggleLink) toggleLink.style.display = 'none';
+                const subtitleLine = document.querySelector('.issues-header .subtitle');
+                if (subtitleLine) subtitleLine.classList.add('token-editor-open');
+                this.updateAuthInstructionsCompactState();
+            }
+            if (authInfoIcon) authInfoIcon.style.display = 'inline';
+            if (!this.saveTokenVisible) {
+                if (saveButton) saveButton.style.display = 'none';
             }
         }
     }
@@ -1704,8 +1772,13 @@ class GitHubIssuesManager {
         if (!tokenInput || !addTokenButton) return;
 
         this.tokenInputRevealed = true;
+        this.saveTokenVisible = true;
         tokenInput.style.display = 'inline-block';
         addTokenButton.style.display = 'none';
+        const saveButton = document.getElementById('saveToken');
+        const authInfoIcon = document.getElementById('authInfoIcon');
+        if (saveButton) saveButton.style.display = '';
+        if (authInfoIcon) authInfoIcon.style.display = 'inline';
         tokenInput.focus();
     }
 
@@ -2058,6 +2131,7 @@ class GitHubIssuesManager {
         if (confirmed) {
             this.githubToken = '';
             this.tokenInputRevealed = false;
+            this.saveTokenVisible = false;
             localStorage.removeItem('github_token');
             localStorage.removeItem('github_issues_base_cache');
             localStorage.removeItem('github_issues_filtered_cache');
@@ -4434,7 +4508,7 @@ class GitHubIssuesManager {
             if (mainHeader && !mainHeader.querySelector('.minimize-btn')) {
                 const minimizeBtn = document.createElement('button');
                 minimizeBtn.className = 'minimize-btn';
-                minimizeBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                minimizeBtn.innerHTML = '<span class="material-icons">fullscreen_exit</span>';
                 minimizeBtn.title = 'Exit Fullscreen';
                 minimizeBtn.onclick = () => this.toggleFullscreen();
                 mainHeader.appendChild(minimizeBtn);
