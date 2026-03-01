@@ -316,7 +316,7 @@ class GitHubIssuesManager {
     createLoadingOverlayHTML() {
         return `
             <div class="loading-overlay" id="loadingOverlay">
-                <div class="loading-spinner">
+                <div class="projects-loading-spinner">
                     <div class="spinner"></div>
                     <p>Loading GitHub data...</p>
                     <div class="loading-progress">

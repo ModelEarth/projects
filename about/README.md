@@ -1,10 +1,10 @@
-# About Our Projects
+# About our Projects
 
 We're combining [data&nbsp;visualization](../../io/charts/), [lifecycle&nbsp;analysis](../../community/tools/) and [machine&nbsp;learning](../../realitystream/) using [International Trade](../../profile/trade/) and [US environmental&nbsp;data](../../io/about/) to create tools for [industry&nbsp;comparisons](../../localsite/info/), [Active Reader Storyboards](../../requests/) and [collaborative programming](/projects/). 
 
 ## What makes our UX unique and exciting
 
-The DreamStudio model.earth interface makes [selecting locations](#geoview=country) and [topics](#appview=topics) quick-and-easy for viewing local industries and census attributes. Our maps, tables and charts load faster than most websites thanks to our use of static files and Tabulator&nbsp;grids.
+DreamStudio's model.earth interface makes [selecting locations](#geoview=country) and [topics](#appview=topics) quick-and-easy for viewing local industries and census attributes. Our maps, tables and charts load faster than most websites thanks to our use of static files and Tabulator&nbsp;grids.
 
 <!--
 The industry timeline we're working on will have a short Tabulator grid below it with the top 10 local industries and columns for employees, establishments, payroll.
