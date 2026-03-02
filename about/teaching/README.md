@@ -8,4 +8,4 @@
 
 **Product Impact Labels** - Common JAM Stack interface for both USDA food nutrition and BuildingTransparency construction material details using nutrition label formatting and impact boxplot charts. ([Product Labels](../../../profile/item/))
 
-**Github Team Orchestration** - Our Project Hub app for project management and submodule deployments replaces or complements Jira, Trello, Asana, Monday.com, Basecamp, etc using git.sh to push/pull site webroots. ([Projects Hub](../../../projects/hub/))
+**Github Team Orchestration** - Our Project Hub app for project management replaces or complements Jira, Trello, Asana, Monday.com, Basecamp, etc. by using simple push/pull prompts with our git.sh file to deploy webroots and their submodule changes for review. ([Projects Hub](../../../projects/hub/))
