@@ -1,4 +1,4 @@
-**Markdown Converter** - Allows css styles to be included throughout README.md files using span tags. Makes well-formatted content maintenance easier and load times faster. ([Localsite&nbsp;Repo](../../../localsite))
+**Markdown Converter** - Allows css styles to be included throughout README.md files using span tags. Makes well-formatted content maintenance easier and page load times faster. ([Localsite&nbsp;Repo](../../../localsite))
 
 **Machine Learning Run Models Colab** - Six mainstream forecasting models (Logistic Regression, XGBoost, Random Forests, Multi-Layer Neural Networks) in a streamlined process for teaching and data analysis that narrows in on the most accurate results for the data. ([Realitystream](../../../realitystream/models))
 
