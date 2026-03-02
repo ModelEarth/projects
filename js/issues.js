@@ -4637,20 +4637,6 @@ class GitHubIssuesManager {
         }
     }
 
-    getRelativeGithubIconPath() {
-        // Determine the relative path to localsite based on current page location
-        const currentPath = window.location.pathname;
-        const pathDepth = currentPath.split('/').filter(segment => segment !== '').length;
-
-        // Calculate relative path climbing up from current location
-        let relativePath = '';
-        if (pathDepth > 1) {
-            relativePath = '../'.repeat(pathDepth - 1);
-        }
-
-        return relativePath + 'localsite/img/icon/github/github.png';
-    }
-
     expandIssueDetails(issueId, event) {
         // Prevent default link behavior
         if (event && event.preventDefault) {
