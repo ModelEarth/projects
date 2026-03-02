@@ -1,6 +1,6 @@
-**Advanced Markdown Partner Tools** - Allows rich formatting to be included throughout README.md files using span tags. Makes team content collaboration easier and page load times faster. ([Projects](../../../projects))
+**Partner Tools Markdown Editor** - Allows rich formatting and interactivity to be included throughout README.md files using span tags. Makes team content collaboration easier and page load times faster. ([Projects](../../../projects))
 
-**Machine Learning Community Forecasting** - Six mainstream models (Logistic Regression, XGBoost, Random Forests, Multi-Layer Neural Networks) in a streamlined process for teaching and data analysis that narrows in on the most accurate results for the data. ([Realitystream](../../../realitystream/models))
+**RealityStream Machine Learning** - Six mainstream forecasting models (Logistic Regression, XGBoost, Random Forests, Multi-Layer Neural Networks) in a streamlined process for teaching and data analysis that narrows in on the most accurate results for the data. ([RealityStream](../../../realitystream/models))
 
 **Model.Earth Codechat** - AI chat expanding the Vercel NextJS starter to include Retrieval-Augmented Generation (RAG) with external content from any Github codebase trained using Voyage AI and Pinecone vectors. ([CodeChat](../../../codechat/))
 
