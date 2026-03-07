@@ -236,12 +236,12 @@ class GitHubIssuesManager {
 
                 <div class="header-content">
                     <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><i class="fab fa-github"></i> Team Projects</h1>
-                    <p class="subtitle" style="font-size: 0.9rem;">
+                    <div id="gitAccountHeaderRow" style="font-size: 0.9rem; padding: calc(0.35rem + 5px) 0 0.35rem 0;">
                         <span id="gitAccountDisplay" style="display: none; margin-bottom: 6px;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
                         <a href="#" id="toggleTokenSection" class="btn-nice" style="margin-right: 8px;">Add My Token</a>
                         <a href="#" id="toggleProjectsSection" class="btn-nice" style="display: none;">View Projects</a>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
-                    </p>
+                    </div>
                 </div>
                 
                 <!-- GitHub Authentication -->
@@ -1755,7 +1755,7 @@ class GitHubIssuesManager {
                 authSection.style.display = 'block';
                 const toggleLink = document.getElementById('toggleTokenSection');
                 if (toggleLink) toggleLink.style.display = 'none';
-                const subtitleLine = document.querySelector('.issues-header .subtitle');
+                const subtitleLine = document.getElementById('gitAccountHeaderRow');
                 if (subtitleLine) subtitleLine.classList.add('token-editor-open');
                 this.updateAuthInstructionsCompactState();
             }
@@ -1817,7 +1817,7 @@ class GitHubIssuesManager {
         const authSection = document.getElementById('authSection');
         const subtitleDescription = document.getElementById('subtitleDescription');
         const toggleTokenLink = document.getElementById('toggleTokenSection');
-        const subtitleLine = document.querySelector('.issues-header .subtitle');
+        const subtitleLine = document.getElementById('gitAccountHeaderRow');
 
         if (authSection && authSection.style.display === 'none') {
             // Show the token section
@@ -1883,7 +1883,7 @@ class GitHubIssuesManager {
         const subtitleDescription = document.getElementById('subtitleDescription');
         const toggleTokenLink = document.getElementById('toggleTokenSection');
         const closeBtn = document.getElementById('closeTokenSectionBtn');
-        const subtitleLine = document.querySelector('.issues-header .subtitle');
+        const subtitleLine = document.getElementById('gitAccountHeaderRow');
 
         if (authSection) authSection.style.display = 'none';
         if (subtitleDescription) subtitleDescription.style.display = 'none';

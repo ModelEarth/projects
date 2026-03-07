@@ -77,19 +77,19 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.issues-header .subtitle {
+#gitAccountHeaderRow {
     margin: 0;
     font-size: 1.2rem;
     opacity: 0.9;
 }
 
-.issues-header .subtitle a {
+#gitAccountHeaderRow a {
     colorX: #ffffff;
     text-decoration: underline;
     opacity: 1;
 }
 
-.issues-header .subtitle a:hover {
+#gitAccountHeaderRow a:hover {
     color: #f0f6ff;
     text-decoration: none;
 }
@@ -411,7 +411,7 @@
         padding: 0px 0.65rem;
     }
 
-    .issues-header .subtitle {
+    #gitAccountHeaderRow {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -419,7 +419,8 @@
     }
 
     #gitAccountDisplay {
-        flex: 1 1 auto;
+        flex: 0 0 100%;
+        width: 100%;
         min-width: 0;
         order: 1;
     }
@@ -433,17 +434,23 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin-left: 8px;
+        margin-left: 4px;
         flex: 0 0 auto;
         order: 2;
     }
 
-    .issues-header .subtitle.token-editor-open {
+    #gitAccountHeaderRow.token-editor-open {
         flex-wrap: nowrap;
         align-items: flex-start;
     }
 
-    .issues-header .subtitle.token-editor-open #closeTokenSectionBtn.close-token-btn {
+    #gitAccountHeaderRow.token-editor-open #gitAccountDisplay {
+        flex: 1 1 auto;
+        width: auto;
+        max-width: calc(100% - 18px);
+    }
+
+    #gitAccountHeaderRow.token-editor-open #closeTokenSectionBtn.close-token-btn {
         margin-left: auto;
         align-self: flex-start;
     }
@@ -2092,22 +2099,46 @@ body.widget-fullscreen-active {
 
 /* Close token section button */
 .close-token-btn {
-    background: rgba(0, 0, 0, 0.2);
-    color: white;
-    border: none;
-    padding: 0.09rem 0.14rem;
+    background: transparent;
+    color: #666;
+    border: 2px solid #666;
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    padding: 0;
+    box-sizing: border-box;
     border-radius: 50%; /* Circular button */
     cursor: pointer;
-    font-size: 0.177rem;
+    font-size: 1.3rem;
     line-height: 1;
+    position: relative;
+    top: 3px;
     z-index: 10000;
     transition: var(--transition);
-    display: inline;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-token-btn .material-icons {
+    font-size: 12px;
+    line-height: 1;
 }
 
 .close-token-btn:hover {
-    background: rgba(0, 0, 0, 0.4);
-    transform: scale(1.1);
+    background: transparent;
+    color: #555;
+    border-color: #555;
+}
+
+.dark .close-token-btn {
+    color: #aaa;
+    border-color: #aaa;
+}
+
+.dark .close-token-btn:hover {
+    color: #ccc;
+    border-color: #ccc;
 }
 
 /* Fullscreen toggle button in pagination */
