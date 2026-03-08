@@ -14,6 +14,7 @@
     --border-radius: 12px;
     --box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
     --transition: all 0.2s ease-in-out;
+    --token-clear-shared-color: #343434;
 }
 
 /* Dark theme support */
@@ -24,6 +25,7 @@
     --border-color: #30363d;
     --text-muted: #8b949e;
     --bg-overlay: rgba(0, 0, 0, 0.8);
+    --token-clear-shared-color: #fff;
 }
 
 /* Refresh link styling */
@@ -74,7 +76,6 @@
     font-size: 2.5rem;
     font-weight: 700;
     colorX: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #gitAccountHeaderRow {
@@ -84,18 +85,78 @@
 }
 
 #gitAccountHeaderRow a {
-    colorX: #ffffff;
-    text-decoration: underline;
+    color: #137AD1;
+    text-decoration: none;
     opacity: 1;
 }
 
 #gitAccountHeaderRow a:hover {
-    color: #f0f6ff;
+    color: #0f67b0;
+    text-decoration: none;
+}
+.dark #gitAccountHeaderRow a {
+    color: #8fc2ff;
+}
+.dark #gitAccountHeaderRow a:hover {
+    color: #b8d8ff;
+}
+#gitAccountDisplay a,
+#gitAccountDisplay a:hover {
     text-decoration: none;
 }
 
 #toggleTokenSection:hover {
     color: inherit;
+}
+
+/* Plain ghost button on light backgrounds */
+.btn-nice.btn-white {
+    background: #fff;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    color: #555 !important;
+}
+.btn-nice.btn-white:hover {
+    background: #f4f4f4;
+    border-color: #aaa;
+    color: #333 !important;
+}
+.dark .btn-nice.btn-white {
+    background: #2a2a2a;
+    border-color: #555;
+    color: #ccc !important;
+}
+.dark .btn-nice.btn-white:hover {
+    background: #333;
+    color: #eee !important;
+}
+
+/* Projects button always plain; token button plain when token exists */
+#toggleProjectsSection.btn-nice,
+#toggleTokenSection.btn-nice.btn-plain {
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    color: #555 !important;
+    opacity: 0.9;
+}
+#toggleProjectsSection.btn-nice:hover,
+#toggleTokenSection.btn-nice.btn-plain:hover {
+    background: #f4f4f4;
+    border-color: #aaa;
+    color: #333 !important;
+    opacity: 1;
+}
+.dark #toggleProjectsSection.btn-nice,
+.dark #toggleTokenSection.btn-nice.btn-plain {
+    border-color: #666;
+    color: #d6d6d6 !important;
+}
+.dark #toggleProjectsSection.btn-nice:hover,
+.dark #toggleTokenSection.btn-nice.btn-plain:hover {
+    background: #333;
+    border-color: #888;
+    color: #fff !important;
 }
 
 .issues-header .subtitle-description {
@@ -367,23 +428,6 @@
     margin-bottom: 0;
 }
 
-#authInfoIcon {
-    color: #666;
-}
-.dark #authInfoIcon {
-    color: #aaa;
-}
-
-#getTokenLink {
-    display: inline-block;
-    margin-top: 2px;
-    margin-bottom: 4px;
-    font-size: 0.85rem;
-}
-.dark #getTokenLink {
-    color: #aaa;
-}
-
 .auth-input input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
@@ -394,6 +438,21 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+#tokenBenefitText {
+    align-items: center;
+    gap: 0.35rem;
+}
+#tokenBenefitText strong {
+    white-space: nowrap;
+}
+#tokenBenefitText .token-benefit-detail {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+#tokenBenefitText .close-auth-instructions {
+    margin-left: auto;
+    flex: 0 0 auto;
 }
 
 .auth-help a {
@@ -422,7 +481,7 @@
         flex: 0 0 100%;
         width: 100%;
         min-width: 0;
-        order: 1;
+        order: -1;
     }
 
     #gitAccountDisplay a {
@@ -482,24 +541,9 @@
     }
 
     #tokenBenefitText {
-        flex-wrap: wrap;
-        align-items: flex-start;
-        gap: 0.15rem;
-    }
-
-    #tokenBenefitText strong {
-        flex-basis: auto;
-        display: inline;
-        margin: 0;
-    }
-
-    .auth-instructions.compact-actions .auth-instructions-actions {
-        flex-wrap: wrap;
-        gap: 0.3rem;
-    }
-
-    .auth-instructions.compact-actions .auth-instructions-actions .token-link {
-        max-width: 100%;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .instructions-content .note {
@@ -513,54 +557,23 @@
 
 @container (max-width: 300px) {
     #tokenBenefitText strong {
-        display: block;
-        flex-basis: 100%;
+        display: inline;
+        flex-basis: auto;
         margin: 0;
     }
 
     #tokenBenefitText .token-benefit-detail {
-        display: block;
-        width: 100%;
+        display: inline;
+        width: auto;
     }
 }
 
-.token-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: white !important;
-    font-weight: 600;
-    text-decoration: none !important;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background: #1e3a8a;
-    transition: var(--transition);
-}
-
-.token-link:hover {
-    background: #1e40af;
-    transform: translateY(-1px);
-}
-
-.auth-instructions summary .token-link {
-    margin-left: auto;
-    flex-shrink: 0;
-}
-
-.auth-instructions-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-left: auto;
-    flex-shrink: 0;
+#clearToken {
+    color: var(--token-clear-shared-color);
 }
 
 .auth-instructions .view-steps-link {
     display: none;
-}
-
-.auth-instructions-actions .token-link {
-    margin-left: 0;
 }
 
 .auth-instructions {
@@ -609,21 +622,8 @@
     flex: 1 1 100%;
 }
 
-.auth-instructions.compact-actions .auth-instructions-actions {
-    width: 100%;
-    margin-left: 0;
-    justify-content: flex-start;
-    align-items: stretch;
-}
-
 .auth-instructions.compact-actions .view-steps-link {
     display: inline-flex;
-}
-
-.auth-instructions.compact-actions .auth-instructions-actions .token-link {
-    min-width: 9.4rem;
-    justify-content: center;
-    margin-left: 0;
 }
 .instructions-content ol {
     margin: 1rem 0;
@@ -1144,7 +1144,8 @@
     
     .search-group #searchButton {
         flex-shrink: 0;
-        width: auto;
+        width: 38px;
+        height: 38px;
     }
     
     /* View controls compact layout */
@@ -1446,7 +1447,7 @@
     color: var(--dark-color);
 }
 
-/* Search button - make it square around the search icon */
+/* Search button - circular icon button */
 #searchButton, #clearSearch {
     width: auto;
     min-width: auto;
@@ -1455,7 +1456,14 @@
 }
 
 #searchButton {
-    padding: 0.5rem;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* View Controls */
@@ -1484,7 +1492,7 @@
 
 .dark .view-btn {
     background: var(--light-color);
-    color: var(--dark-color);
+    color: #d7dde7;
 }
 
 .view-btn:last-child {
@@ -1667,6 +1675,10 @@
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
 }
+.filter-row-2 .toggle-filters-btn {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
 
 /* Narrow container adjustments for filters */
 @container (max-width: 500px) {
@@ -1675,6 +1687,10 @@
         max-width: 18%;
         font-size: 0.7rem;
         padding: 0.25rem 0.25rem;
+    }
+    .filter-row-2 .toggle-filters-btn {
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
     }
 }
 
@@ -1711,8 +1727,7 @@
 #repoFilter,
 #stateButton,
 #assigneeButton,
-#sortButton,
-#searchInput {
+#sortButton {
     min-height: 38px;
 }
 
@@ -1924,6 +1939,8 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     background: white;
@@ -1936,6 +1953,9 @@
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+#toggleFiltersBtn {
+    min-width: 93px;
 }
 
 .toggle-filters-btn:hover {
@@ -1966,6 +1986,8 @@
     
     .toggle-filters-btn {
         padding: 0.5rem;
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
         min-width: 38px;
         justify-content: center;
     }
@@ -1982,6 +2004,10 @@
     padding: 0.5rem;
     min-width: 38px;
     justify-content: center;
+}
+.toggle-filters-btn.narrow-container {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
 }
 
 /* Clear filters button - compact style */
@@ -2095,50 +2121,6 @@ body.widget-fullscreen-active {
 
 .minimize-btn:hover {
     transform: scale(1.1);
-}
-
-/* Close token section button */
-.close-token-btn {
-    background: transparent;
-    color: #666;
-    border: 2px solid #666;
-    width: 17px;
-    height: 17px;
-    min-width: 17px;
-    padding: 0;
-    box-sizing: border-box;
-    border-radius: 50%; /* Circular button */
-    cursor: pointer;
-    font-size: 1.3rem;
-    line-height: 1;
-    position: relative;
-    top: 3px;
-    z-index: 10000;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-token-btn .material-icons {
-    font-size: 12px;
-    line-height: 1;
-}
-
-.close-token-btn:hover {
-    background: transparent;
-    color: #555;
-    border-color: #555;
-}
-
-.dark .close-token-btn {
-    color: #aaa;
-    border-color: #aaa;
-}
-
-.dark .close-token-btn:hover {
-    color: #ccc;
-    border-color: #ccc;
 }
 
 /* Fullscreen toggle button in pagination */
@@ -2924,6 +2906,18 @@ body.widget-fullscreen-active {
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 0.75rem;
 }
+.issue-actions-inline .btn,
+.issue-actions-inline > div {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.9rem !important;
+}
+.issue-actions-inline .btn i,
+.issue-actions-inline > div i {
+    margin-right: 0;
+}
 
 .dark .issue-actions-inline {
     border-top-color: #30363d;
@@ -3321,11 +3315,6 @@ body.widget-fullscreen-active {
     .auth-help span {
         display: block;
         margin-bottom: 0.5rem;
-    }
-    
-    .token-link {
-        display: inline-flex;
-        margin-top: 0.5rem;
     }
     
     .instructions-content ol {
