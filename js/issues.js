@@ -5377,15 +5377,29 @@ if (typeof waitForElm === 'function') {
     document.addEventListener('DOMContentLoaded', initGitIssuesAccountField);
 }
 
-// Initialize the issues manager when the page loads
-let issuesManager;
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if there's a specific container, otherwise use default
-    const container = document.getElementById('issuesWidget');
-    if (container) {
-        // Get container ID from data attribute or use default
-        const containerId = container.dataset.containerId || 'issuesWidget';
-        issuesManager = new GitHubIssuesManager(containerId);
+// Initialize the issues manager.
+// Supports lazy script loading after DOMContentLoaded.
+var issuesManager;
+function initIssuesManager(containerElement = null) {
+    if (issuesManager) {
+        return issuesManager;
     }
-    // Note: No error if container not found - manual initialization may be used (e.g., team/projects)
-});
+
+    const container = containerElement || document.getElementById('issuesWidget');
+    if (!container) {
+        return null;
+    }
+
+    const containerId = container.dataset.containerId || 'issuesWidget';
+    issuesManager = new GitHubIssuesManager(containerId);
+    return issuesManager;
+}
+
+// Expose for pages that lazy-load this script.
+window.initIssuesManager = initIssuesManager;
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initIssuesManager());
+} else {
+    initIssuesManager();
+}
