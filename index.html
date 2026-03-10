@@ -80,6 +80,8 @@
 			const projectsDiv = document.getElementById('activeDiv');
 			const missingReposFound = document.getElementById('missingReposFound');
 			const localsiteView = document.getElementById('localsiteView');
+			const checkLocalReposBtn = document.getElementById('checkLocalReposBtn');
+			const localRepoCheckNote = document.getElementById('localRepoCheckNote');
 			const links = projectsDiv.getElementsByTagName('a');
 
 			const repoArray = [];
@@ -106,6 +108,11 @@
 
 			// Check for missing repos and build missingRepoCount
 			const checkRepos = async () => {
+				presentRepos.length = 0;
+				missingRepos.length = 0;
+				Object.keys(presentRepoCount).forEach((key) => delete presentRepoCount[key]);
+				Object.keys(missingRepoCount).forEach((key) => delete missingRepoCount[key]);
+
 				console.log("The following errors are By Design for the list of missing repos.")
 				for (let i = 0; i < repoArray.length; i++) {
 					const folder = repoArray[i];
@@ -173,15 +180,33 @@
 				const cloneMissingReposTextbox = document.getElementById('cloneMissingRepos');
 				cloneMissingReposTextbox.value = githubCloneCmds;
 
-				const boldTitle = document.createElement('div');
-				boldTitle.className = 'bold-title';
+				let boldTitle = document.getElementById('cloneMissingReposTitle');
+				if (!boldTitle) {
+					boldTitle = document.createElement('div');
+					boldTitle.id = 'cloneMissingReposTitle';
+					boldTitle.className = 'bold-title';
+					cloneMissingReposTextbox.insertAdjacentElement('beforebegin', boldTitle);
+				}
 				boldTitle.textContent =
 					'You can run in your webroot to clone additional repos featured above.';
-				cloneMissingReposTextbox.insertAdjacentElement('beforebegin', boldTitle);
 			};
 
-			// Start the checking process
-			checkRepos();
+			// Start local checks only after an explicit user click.
+			if (checkLocalReposBtn) {
+				checkLocalReposBtn.addEventListener('click', async () => {
+					checkLocalReposBtn.disabled = true;
+					checkLocalReposBtn.textContent = 'Checking...';
+					if (localRepoCheckNote) {
+						localRepoCheckNote.textContent = 'Checking your local folders...';
+					}
+					await checkRepos();
+					checkLocalReposBtn.textContent = 'Check Local Repos Again';
+					checkLocalReposBtn.disabled = false;
+					if (localRepoCheckNote) {
+						localRepoCheckNote.textContent = 'Local repo check complete.';
+					}
+				});
+			}
 		});
 	});
 	</script>
@@ -208,6 +233,12 @@
 			<div id="activeDiv" class="mTable"></div>
 		</div>
 		
+		<div id="localRepoCheckPrompt" style="margin: 10px 0 18px;">
+			<button id="checkLocalReposBtn" class="btn">Check Local Repos</button>
+			<div id="localRepoCheckNote" class="micro" style="margin-top: 8px;">
+				Click to allow local repo detection. Your browser may ask for device/local access.
+			</div>
+		</div>
 
 		<div id="allReposPresent" style="displayX: none">
 			<h2>Model.earth repos</h2>
