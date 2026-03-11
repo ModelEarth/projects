@@ -30,18 +30,18 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
 
-### New IO Data Pipeline
+### IO Data Pipeline
 
-[Data-Pipeline Python Nodes](../data-pipeline/admin/) - Browser UX for running python data pulls
+[Data-Pipeline Python Admin](../data-pipeline/admin/) - Browser UX for running python data pulls
 [Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Summary Report](../profile/footprint/) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
 [US Interstate Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
 ### PartnerTools for Teams
 
-JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
+JAM Stack with Rust API hitting Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
-[Configure your Local Server](../team/admin/server/) - Commands for running Rust and Flask (Python)
+[Database Admin](../team/admin/sql/panel/) - SQL connections for automation using Rust and Python
 
 ### RealityStream ML
 

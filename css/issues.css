@@ -1958,6 +1958,9 @@
 #toggleFiltersBtn {
     min-width: 93px;
 }
+#toggleFiltersBtn.narrow-container {
+    min-width: 38px;
+}
 
 .toggle-filters-btn:hover {
     background: var(--hover-color);
@@ -1991,6 +1994,9 @@
         padding-right: 0.65rem;
         min-width: 38px;
         justify-content: center;
+    }
+    #toggleFiltersBtn {
+        min-width: 38px;
     }
 }
 
