@@ -1496,10 +1496,6 @@
     color: #d7dde7;
 }
 
-.view-btn:last-child {
-    border-right: none;
-}
-
 .view-btn.active {
     background: var(--primary-color);
     color: white;
