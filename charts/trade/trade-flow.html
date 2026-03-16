@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>EXIOBASE Trade Flow</title>
+
+<link rel="stylesheet" href="https://model.earth/localsite/css/styles/notion.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body class="notion">
+
+<h2>EXIOBASE Trade Flow Prototype</h2>
+
+<canvas id="tradeChart"></canvas>
+
+<script>
+
+const ctx = document.getElementById('tradeChart');
+
+new Chart(ctx, {
+type: 'bar',
+
+data: {
+labels: ['USA','China','India','Germany'],
+
+datasets: [{
+label: 'Trade Flow',
+data: [120,190,80,150]
+}]
+}
+
+});
+
+</script>
+
+</body>
+</html>
