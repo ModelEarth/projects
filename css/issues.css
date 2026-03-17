@@ -329,7 +329,7 @@
 }
 
 .dark .menu-item {
-    color: var(--light-color);
+    color: #eee;
     border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
