@@ -2005,6 +2005,13 @@ class GitHubIssuesManager {
             return;
         }
 
+        const allowLocalhostAccess = (typeof window.shouldAccessLocalhost == 'function')
+            ? window.shouldAccessLocalhost()
+            : (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1');
+        if (!allowLocalhostAccess) {
+            return;
+        }
+
         try {
             // Try to fetch token from Rust API server (reads from docker/.env)
             const response = await fetch('http://localhost:8081/api/github/token');
