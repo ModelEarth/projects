@@ -75,8 +75,8 @@ Each repository entry contains:
 
 ## Maintenance
 
-To add more repositories in the future:
-1. Edit `repos.csv` to add new entries
+To Add more repositories in the future:
+1. Edit `repos.csv` to Add new entries
 2. Update hardcoded fallback list in `issues.js`
 
 To remove repositories:

@@ -19,45 +19,48 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 4. NullSchool Maps + NISAR satellite data to visualize earth surface movements
 -->
 
+<a href="https://github.com/modelearth/projects/issues/" style="float:right" target="_blank">Projects List on Github</a>
 # Active Projects
 
-### Webroot for Claude Code CLI
+### Webroot for Code CLIs (Claude, OpenIA Codex, Gemini)
 
-[Webroot setup](https://model.earth/webroot/) - "update" and "commit" to send PRs for your work in submodules  
-[CodeChat](../codechat/) - RAG training documentation, after overview of webroot submodule repos
+[Webroot setup](https://model.earth/webroot/) - Simple commands to send PRs from your work.  
+[CodeChat](../codechat/) - Overview of our webroot submodules for [RAG Ingestion Pipeline training](../chat/ingestion)
+[Meet Our Team](../cv) - CV Automation
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
 
-### New IO Data Pipeline
+### IO Data Pipeline
 
-[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Report](../profile/footprint/sample.html)
+[Data-Pipeline Python Admin](../data-pipeline/admin/) - Browser UX for running python data pulls
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Summary Report](../profile/footprint/) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
-
+[US Interstate Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
 ### PartnerTools for Teams
 
-JAM Stack with Rust API and Azure PostgreSQL and Google Sheets  
+JAM Stack with Rust API hitting Azure PostgreSQL and Google Sheets  
 [Admin Dashboard](../team/admin/) and our [Model.Earth Team List](../team/projects#list=modelteam)  
-[Fork our teams repo](https://github.com/modelearth/team) and contribute using [Claude Code CLI](https://www.anthropic.com/engineering/claude-code-best-practices) - [Configure Your Local Server](../team/admin/server/)
+[Database Admin](../team/admin/sql/panel/) - SQL connections for automation using Rust and Python
 
-### RealityStream updates in progress
+### RealityStream ML
 
-[Pull features and targets into colab from Google Data Commons](https://github.com/ModelEarth/realitystream/issues/22) <!-- Prathuyusha -->
+[Setting up local run for 6 ML forcasting models](../realitystream/models/)  
 RealityStream industry titles in importance report <!-- Abivish -->
 Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
-### Resources
+<!--
+### Possible Resources
 
 [Full-Stack Cloudflare SaaS kit](https://github.com/Dhravya/cloudflare-saas-stack) - and SuperMemoryAI
-<!--Coming soon: Flow Diagrams using [n8n automation](https://n8n.io/) and NextJS-->
-
+-->
 
 ## Get Involved!
 
 Our weekly [DreamStudio Earth](https://dreamstudio.com/io/coders/) meetups are every [Thursday at 7pm ET](/io/coders/).
 
-Select one of the 7 project areas below and add your first name below by editing a [fork of the projects repo](https://github.com/ModelEarth/projects/blob/main/active.md), then send a PR.
+Select one of the [7 project areas](../io/coders/) and Add your first name below by editing a [fork of the projects repo](https://github.com/ModelEarth/projects/blob/main/active.md), then send a PR.
 
 [OPT Volunteers Welcome!](../community/members/welcome) - Overview and New Member Signup
 
@@ -67,7 +70,7 @@ Consider focusing on one of the following:
 1. [Complete Flask+Colab install script](/cloud/run/)
 2. [Test install of Apache & PHP in our SuiteCRM .sh script](/profile/crm/)
 3. [Add python to RealityStream for Google Data Commons DCIDs](/realitystream/)
-4. [Apply best of Planet Lanchain](/planet/langchain/) to [Team Repo AI Insights](../team/projects/)
+4. [Apply best of Planet Lanchain](/planet/langchain/) to [Team Repo AI Insights](../team/projects/) and [CodeChat UX](../codechat/chat/)
 5. [UX with our Azure backend and Rust API](/profile/crm) - [Admin Dashboard](/team/admin/)
 <!--
 https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lovable-dev-and-azure-openai-accelerate-apps-that-change-li/4413375
@@ -80,9 +83,11 @@ https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lov
 
 Our [Everybody's Home Page](../home) process is being designed to display infinite content based on parameters.
 
-TO DO: [Moving Javascript Timelines from Google Data Commons API]() <!--riyanka, Niranjan, Kirthika, Mehul, Aishwrya, Vishnupriya-->
+[Our Javascript Timelines](../localsite/timeline/) pull from the Google Data Commons API with data IDs set in a Google Sheet with UN Goal tabs.
 
-We're pulling images and video via [our FeedPlayer](../feed) which can be pointed at a Github repo or any API.
+TO DO: Help us continue to refine the [3 trade charts](../profile/trade/) (links on lower right: Trade Flow Map, Chord, and Sankey) we're developing to provide an interactive [Exiobase](https://exiobase.eu) front-end.
+
+We're pulling images and video via [our React FeedPlayer](../feed) which can be updated to point at any Github repo or API.
 
 <!--
 **More Data Commons Visualization Projects**
@@ -99,24 +104,32 @@ TO DO: [Hosting DataCommons locally with Flask](/localsite/info/data/datacommons
 
 ## 2. CodeChat - RAG Interface for LLMs
 
-Recent work is also underway in [codechat](https://model.earth/codechat) and [Team AI Insights](https://model.earth/team/)
+[Our Earthscape Chat](https://earthscape.vercel.net) - on [Github](https://github.com/earthscape/chat/)
+React, Supabase with [Vercel NextJS Hosting](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
 
+[Codechat](https://model.earth/codechat) uses Voyage AI and [pinecone Vectors](../codechat-vectors/) for our RAG from repos.
+
+Our [Dataset AI Insights](https://model.earth/team/projects/) use Gemini and Claude to investigate CSV, JSON and API feeds
+
+<!--
 Our work within Planet Langchain is being replaced with the [Team Projects Page](https://model.earth/team/projects) which allows any data feed to be sent to our AI Insights process using Claude and Gemini.
-
-When you're ready to jump in, start with the setup steps in [modelearth webroot](https://model.earth/webroot)
 
 - [Planet Langchain Dev](/planet) within our [Planet Repo](https://github.com/modelearth/planet) for using [LangchainJS](https://github.com/langchain-ai/langchainjs).
 
-- Our [repo pull page](../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
-
-- Our Langchain filters are being integrated with our [Storyboard Active Reader](/requests/) which loads prompts from .csv files and outputs to GitHub.
-
 - TO DO: Add to our [Planet repo](https://github.com/modelearth/planet/) interface using [Langchain's Chat Models](https://python.langchain.com/docs/concepts/chat_models/).  
 
-- Pull a page from any GitHub repo to an LLM API to provide train RAG using [LangChain.js](https://api.js.langchain.com) javascript.<!-- Dhananjay, Kelly, Adithya-->
+- Pull a page from any GitHub repo to an LLM API to provide train RAG using [LangChain.js](https://api.js.langchain.com) javascript.  Dhananjay, Kelly, Adithya
 
-- TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally.
+- Our Langchain filters are being integrated with our [Storyboard Active Reader](/requests/) which loads prompts from .csv files and outputs to GitHub.
+-->
 
+Get started with the setup steps in [modelearth webroot](https://model.earth/webroot)
+
+<!--
+- Our [repo pull page](../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
+
+- TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally and override team/.env keys.
+-->
 
 <!--See also: DataStax Astra DB
 
@@ -135,41 +148,35 @@ Content prep for RAG: [Innovations in Water Purification](/evaporation-kits/inno
 Using [Google Data Commons DataGemma AI](https://ai.google.dev/gemma/docs/datagemma) - For RIG, Zihan found that a paid Google plan was needed to avoid storage/memory errors/timeouts. Here's our [RIG CoLab](https://colab.research.google.com/drive/1eLtHOR6e3lAUVijUJ56VMaiTU6hA9enc?usp=sharing).
 -->
 
-### Earthscape NextJS Chatbot UI fork
-
-- Our [Earthscape fork of Chatbot UI](https://model.earth/earthscape/app/) - React, Supabase and [NextJS Hosting using GitHub Pages](https://www.freecodecamp.org/news/how-to-deploy-next-js-app-to-github-pages/).
-
-- Use commands to deploy to GitHub Pages for free static hosting.
-
-<!-- Generate .CSV prompt files from location data pulled from Industry levels, Census stats and Google Data Commons. -->
-
 
 ## 3. RealityStream Machine Learning - Server-Side Python (ML)
 
+[RealityStream](/realitystream/) - Machine Learning Classification Models
 [RealityStream ML](/realitystream/) - [Run Models Colab](/realitystream/input/industries/)
+[Update Farm Fresh Data pull](/community-data/process/python/farmfresh/) - Bhavna - DONE
+
 
 Frontend deployments to Google Cloud with Flask are in our [cloud repo](https://github.com/ModelEarth/cloud). Add a folder for your own Flask setups in the cloud repo. [Our webhook repo](https://github.com/ModelEarth/webhook) has a simple Flask example.
 
 
 TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) and finalize Flask deployment step for interacting with our RealityStream Run Models colab backup file. [Cloud run config frontend](https://model.earth/cloud/run/)
 
-<!--
-**Anvil with our CoLabs:**
-[Anvil Extras](https://anvil-extras.readthedocs.io/en/latest/guides/index.html) and [Anvil](https://anvil.works/learn/tutorials/data-science#connecting-notebooks) and [AnvilScope CoLab](https://colab.research.google.com/drive/1rlOPfOxRnfm4pTGSn3gk_MvmVF65iidF?usp=sharing) using Plotly - Soham
--->
 
 <!--
+- [Push EPA data](https://github.com/modelearth/useeio-json) to [Google Data Commons API](https://docs.datacommons.org/api/)
+
+**Anvil with our CoLabs:**
+[Anvil Extras](https://anvil-extras.readthedocs.io/en/latest/guides/index.html) and [Anvil](https://anvil.works/learn/tutorials/data-science#connecting-notebooks) and [AnvilScope CoLab](https://colab.research.google.com/drive/1rlOPfOxRnfm4pTGSn3gk_MvmVF65iidF?usp=sharing) using Plotly - Soham
+
 - [StreamLit hosting within Open WebUI](https://github.com/streamlit/streamlit/issues/969)
--->
 
 
 - [RealityStream](/realitystream/) - Machine Learning Classification Models - Xucen - Prathyusha, Savar (Tree Canopy Decline)
 - [Process Industry NAICS by Zip Code](/community-zipcodes/mail) - DONE Yunbo
 - [Open Data Panels - YAML Display](/profile) - Microsoft Plug and Play - TO DO
 - [State Regions using Sets of Counties](/community-data/us/edd/) - Dinesh
-- [USEEIO matrix files with clustering](/machine-learning/python/cluster/) - <!--Honglin-->Rupesh
+- [USEEIO matrix files with clustering](/machine-learning/python/cluster/) - Rupesh
 
-<!--
 - [CrewAI+Ollama integration](https://lightning.ai/lightning-ai/studios/ai-agents-powered-by-crewai) within our [Open WebUI fork](location)
 - [Flowsa RStudio - API to JSON](/localsite/info/data/flowsa/)
 -->
@@ -183,19 +190,20 @@ TO DO: Use our [cloud repo](https://github.com/ModelEarth/cloud/tree/main/run) a
 ## 4. International Trade Flow - SQL, Python, Javascript (IO)
 
 [International Trade Flow SQL Data Prep](/profile/trade) - Exiobase Colab, charts and SQL
+- Harshitha (Trade Flow SQL – Spark → Azure PostgreSQL)
+
 <!-- Contributors: Gary, Satya, Himanshu, Sahil, Poorna -->
 
-NEW: We're [configuring SuiteCRM](../profile/crm/) to run in an Azure instance.
+IN PROGRESS: [Chord Chart json object](https://model.earth/profile/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
 
-NEW: Update javascript report to use json generated from our Exiobase in CoLabs.
+TO DO: [Sankey Industry eChart](/profile/charts/echarts/) - eCharts uses a common echarts.min.js file which we'll load in [Feed Viewer](/feed/view)
 
-TO DO:  Find and embed/fork existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
+TO DO: [Configure SuiteCRM](../profile/crm/) to run in an Azure PostgreSQL instance.
 
-IN PROGRESS: [Chord Chart json object](https://model.earth/useeio.js/footprint/chord) and [D3 Chord](/profile/charts/d3/chord_diagram_d3/) - Bindu and Lakshi
+TO DO:  Find existing open source [UN Comtrade visualizations](https://comtradeplus.un.org/Visualization/Labs) with Exiobase data and/or [MARIO python](https://mario-suite.readthedocs.io/en/latest/intro.html).
+
 
 TO DO: [Python to pull Harmonized Code (HS) lookups into Supabase](/profile/harmonized-system/) - Kruthi
-
-TO DO: [Sankey Industry eChart](/profile/charts/echarts/sankey-nodeAlign-left.html) - eCharts uses a common echarts.min.js file which we'll load in [Feed Viewer](/feed/view)
 
 TO DO: [Python - Finalize our All the Places data by State and Zip](/places) - Poshan, Savar
 
@@ -207,7 +215,7 @@ For our [International Trade Flow](/profile/trade/) we can integrate our [Exioba
 
 TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Gary
 
-[Javascript updates for US EPA impact reports](/useeio.js/footprint/) - Lakshit, Abhishek N, Hitesh R
+[Javascript updates for US EPA impact reports](/profile/footprint/) - Lakshit, Abhishek N, Hitesh R
 [React Team - Mosaic column checkboxes](/io/charts)  - Pallavi 
 [React Team - Commodity Totals](/localsite/info/data/totals/) in [Jobs Reports](/localsite/info/#indicators=JOBS)
 [Impact Label Pipeline](/apps/impact) - Starting point for duplicating US EPA RStudio in python
@@ -215,19 +223,17 @@ TO DO: Generate scripts to pull state .csv output into Azure PostgresSQL with Ga
 
 ## 5. Open Footprint Interactive Labels (Open)
 
+**BuildingTransparency and Open Footprint labels**
+
+[Product Profiles](/profile/item/#layout=product&country=US&cat=Carpet) and [Food Nutrition Labels](/profile/item/)
+
 [Open Footprint Builder](/io/template/) - [Profile Object Javascript](/profile/item/) - [BuildingTransparency.org Impact API](/profile/products/)
 
 
-**BuildingTransparency and Open Footprint labels**
-
-Bhavna, Yash, Apurva, Vennela
-
-- [Use our state map filter](#geoview=country) with colors for [new USEEIO reporting maps](https://figshare.com/collections/USEEIO_State_Models_v1_0_-_Supporting_Figures/7041473)
-- [BuildingTransparency - Product Impact Profiles by State and Zip](/io/template/feed/) - TO DO <!--Ronan--> - Vennela
-- [BuildingTransparency - API Aggregates of States and Countries](/io/template/product/) - Initially Luwei
-- [BuildingTransparency - JSON file pull for impact templates](/io/template/product/) - Apurva
-
-
+TO DO:
+- [BuildingTransparency - Product Profiles by State and Zip](/io/template/feed/)<!-- Aggregates of States and Countries  - Initially Luwei -->
+- [Use our state map filter](#geoview=country) with heatmap colors added for [state data](https://figshare.com/collections/USEEIO_State_Models_v1_0_-_Supporting_Figures/7041473)
+- [readme mdx experiments](/io/template/product/)
 
 ## 6. FeedPlayer with MemberSense (React)
 
@@ -273,4 +279,5 @@ Pre-processed data for county industry levels, based on employment, establishmen
 Our most challenging projects - [Take the leap](/community/projects/)
 <br>
 
+<div id="moonshotsDiv"></div>
 <div id="activeDivLoaded"></div>
