@@ -2013,7 +2013,7 @@ class GitHubIssuesManager {
         }
 
         try {
-            // Try to fetch token from Rust API server (reads from docker/.env)
+            // Try to fetch token from Rust API server (reads the .env set by automation/paths.yaml)
             const response = await fetch('http://localhost:8081/api/github/token');
 
             if (response.ok) {
@@ -2022,9 +2022,9 @@ class GitHubIssuesManager {
                     // Store in localStorage so it persists and is shared across widgets
                     localStorage.setItem('github_token', data.token);
                     this.githubToken = data.token;
-                    console.log('✅ GitHub token loaded from API (docker/.env)');
+                    console.log('✅ GitHub token loaded from API (server .env)');
                 } else {
-                    console.log('ℹ️ No GitHub token available in docker/.env');
+                    console.log('ℹ️ No GitHub token available in server .env');
                 }
             } else {
                 console.log('ℹ️ API server not available or no token configured');
