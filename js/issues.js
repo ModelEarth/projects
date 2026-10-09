@@ -53,6 +53,7 @@ class GitHubIssuesManager {
         this.detectCurrentFolder = config.detectCurrentFolder;
         this.multiRepoRoots = config.multiRepoRoots;
         this.showProject = config.showProject;
+        this.showTokenSource = !!options.showTokenSource; // Adds "(Source: …)" after the rate limit text
         this.currentFolder = this.getCurrentFolder();
         this.defaultRepo = this.determineDefaultRepo();
 
@@ -270,7 +271,6 @@ class GitHubIssuesManager {
                     </div>
                     <div class="auth-help" id="tokenBenefitText" style="display: none;">
                         <span><strong>Token Benefits:</strong> <span class="token-benefit-detail" id="tokenBenefitDetail"></span></span>
-                        <button class="close-auth-instructions icon-circle-btn" type="button" title="Close">&#x2715;</button>
                     </div>
                     <div class="auth-instructions">
                         <details>
@@ -1474,18 +1474,6 @@ class GitHubIssuesManager {
             });
         }
 
-        const closeAuthBtn = document.querySelector('.close-auth-instructions');
-        if (closeAuthBtn) {
-            closeAuthBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const authInstructionsDetails = document.querySelector('.auth-instructions details');
-                if (authInstructionsDetails) {
-                    authInstructionsDetails.removeAttribute('open');
-                    if (getTokenLink) getTokenLink.style.display = '';
-                }
-            });
-        }
-
         this.updateAuthInstructionsCompactState();
     }
 
@@ -1933,6 +1921,9 @@ class GitHubIssuesManager {
             toggleLink.textContent = 'Update Token';
             toggleLink.classList.add('btn-plain');
             let detailText = 'Your API limit increased from 60 to 5,000 requests per hour.';
+            if (this.showTokenSource) {
+                detailText += ` (Source: ${this.getTokenSourceLabel()})`;
+            }
 
             // Add current request count and reset time if available
             if (this.rateLimitInfo.remaining !== null && this.rateLimitInfo.resetTime) {
@@ -1978,7 +1969,10 @@ class GitHubIssuesManager {
         if (projectsToggleLink) {
             if (!this.showProject && projectsSections) {
                 const isVisible = projectsSections.style.display !== 'none';
-                if (tokenEditorOpen) {
+                // Hide beside the open token editor only while it shares the header row
+                // (requests/engine moves it into its own Projects panel).
+                const inHeaderRow = !!projectsToggleLink.closest('#gitAccountHeaderRow');
+                if (tokenEditorOpen && inHeaderRow) {
                     projectsToggleLink.style.display = 'none';
                 } else {
                     projectsToggleLink.style.display = 'inline-flex';
@@ -1997,6 +1991,13 @@ class GitHubIssuesManager {
 
         // Update the refresh time display
         this.updateHeaderRefreshDisplay();
+    }
+
+    // Where the stored token came from, recorded in localStorage 'github_token_source'
+    getTokenSourceLabel() {
+        const source = localStorage.getItem('github_token_source');
+        if (source === 'env') return '.env file, cached in browser';
+        return 'browser cache';
     }
 
     async loadTokenFromAPI() {
@@ -2021,6 +2022,7 @@ class GitHubIssuesManager {
                 if (data.token) {
                     // Store in localStorage so it persists and is shared across widgets
                     localStorage.setItem('github_token', data.token);
+                    localStorage.setItem('github_token_source', 'env');
                     this.githubToken = data.token;
                     console.log('✅ GitHub token loaded from API (server .env)');
                 } else {
@@ -2050,6 +2052,7 @@ class GitHubIssuesManager {
 
             this.githubToken = token;
             localStorage.setItem('github_token', token);
+            localStorage.setItem('github_token_source', 'entered');
             localStorage.removeItem('github_issues_base_cache');
             localStorage.removeItem('github_issues_filtered_cache');
             localStorage.removeItem('github_all_repos');
@@ -2139,6 +2142,7 @@ class GitHubIssuesManager {
             this.tokenInputRevealed = false;
             this.saveTokenVisible = false;
             localStorage.removeItem('github_token');
+            localStorage.removeItem('github_token_source');
             localStorage.removeItem('github_issues_base_cache');
             localStorage.removeItem('github_issues_filtered_cache');
             this.clearRepositoryCache();
@@ -2373,7 +2377,7 @@ class GitHubIssuesManager {
             }
         }
 
-        this.showNotification(`All ${loadedCount} repositories loaded successfully`, 'success');
+        this.showNotificationAboveIssues(`All ${loadedCount} repositories loaded successfully`, 'success');
     }
 
     async addRepositoryDynamically(repoName) {
@@ -2559,6 +2563,7 @@ class GitHubIssuesManager {
                 // Clear the invalid token
                 this.githubToken = null;
                 localStorage.removeItem('github_token');
+                localStorage.removeItem('github_token_source');
                 this.clearRateLimit();
                 this.updateTokenUI(); // Update UI to reflect cleared token
 
@@ -5217,6 +5222,41 @@ class GitHubIssuesManager {
 
         // Add to top of issues list
         issuesList.insertBefore(notification, issuesList.firstChild);
+
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+
+    // Inline notification placed just above #issuesContainer (falls back to floating)
+    showNotificationAboveIssues(message, type = 'info') {
+        const issuesContainer = document.getElementById('issuesContainer');
+        if (!issuesContainer || !issuesContainer.parentNode) {
+            this.showFloatingNotification(message, type);
+            return;
+        }
+
+        const iconMap = {
+            'success': 'check',
+            'error': 'exclamation-triangle',
+            'info': 'info'
+        };
+        const icon = iconMap[type] || 'info';
+
+        const existing = document.getElementById('issuesAboveNotification');
+        if (existing) existing.remove();
+
+        const notification = document.createElement('div');
+        notification.id = 'issuesAboveNotification';
+        notification.className = `inline-notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${icon}-circle"></i>
+            ${message}
+        `;
+        issuesContainer.parentNode.insertBefore(notification, issuesContainer);
 
         // Auto-hide after 3 seconds
         setTimeout(() => {

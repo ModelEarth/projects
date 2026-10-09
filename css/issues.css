@@ -9,7 +9,7 @@
     --light-color: #f8f9fa;
     --dark-color: #666;
     --border-color: #e1e4e8;
-    --text-muted: #6a737d;
+    --text-muted: #777;
     --bg-overlay: rgba(0, 0, 0, 0.5);
     --border-radius: 12px;
     --box-shadow: 0 1px 3px rgba(27, 31, 35, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
@@ -449,10 +449,6 @@
 #tokenBenefitText .token-benefit-detail {
     flex: 1 1 auto;
     min-width: 0;
-}
-#tokenBenefitText .close-auth-instructions {
-    margin-left: auto;
-    flex: 0 0 auto;
 }
 
 .auth-help a {
