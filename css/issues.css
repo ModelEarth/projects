@@ -1648,7 +1648,7 @@
 
 /* Second row: 4 items */
 .filter-row-2 .filter-group {
-    flex: 1;
+    flex: 0 1 auto; /* size to content rather than stretching wide */
     min-width: 0;
     height: 100%;
     display: flex;
@@ -2791,7 +2791,6 @@ body.widget-fullscreen-active {
 .issue-description-full {
     font-size: 0.9rem;
     line-height: 1.4;
-    color: var(--text-muted);
 }
 
 /* Short description styling */
@@ -3413,4 +3412,70 @@ body.widget-fullscreen-active {
   margin-top: 0.25rem;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+/* Row view (rowView option) — each issue is a 2-line row (repo #number, title) that expands
+   on click to show its details; each comment is a 2-line row (author/date, text) likewise. */
+/* Compact rows rarely fill the 400px .issues-list minimum, which left a blank band below them */
+.issues-list.row-view {
+    min-height: 0;
+}
+
+.issues-list.row-view .issue-item {
+    padding: 0.6rem 0.75rem;
+}
+
+.issues-list.row-view .issue-header {
+    cursor: pointer;
+}
+
+.issues-list.row-view .issue-repo-line {
+    margin-bottom: 0.1rem;
+}
+
+.issues-list.row-view .issue-item:not(.expanded) .short-title {
+    font-size: 0.95rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.issues-list.row-view .issue-item:not(.expanded) .issue-full-details {
+    display: none !important;
+}
+
+.issues-list.row-view .comment-item {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.issues-list.row-view .comment-header {
+    padding: 0.35rem 0.5rem;
+}
+
+.issues-list.row-view .comment-item:not(.expanded) .comment-header {
+    border-bottom: none;
+}
+
+.issues-list.row-view .comment-item:not(.expanded) .comment-body {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-height: 1.5em;
+    padding: 0 0.5rem 0.35rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+.issues-list.row-view .comment-item:not(.expanded) .comment-body * {
+    margin: 0;
+    padding: 0;
+    font-size: inherit;
+}
+
+.issues-list.row-view .comment-item:not(.expanded) .comment-body img,
+.issues-list.row-view .comment-item:not(.expanded) .comment-body pre {
+    display: none;
 }

@@ -54,6 +54,7 @@ class GitHubIssuesManager {
         this.multiRepoRoots = config.multiRepoRoots;
         this.showProject = config.showProject;
         this.showTokenSource = !!options.showTokenSource; // Adds "(Source: …)" after the rate limit text
+        this.rowView = !!options.rowView; // Issues and comments as 2-line rows that expand on click
         this.currentFolder = this.getCurrentFolder();
         this.defaultRepo = this.determineDefaultRepo();
 
@@ -3509,6 +3510,10 @@ class GitHubIssuesManager {
         const pageIssues = this.filteredIssues.slice(startIndex, endIndex);
 
         issuesList.innerHTML = '';
+        if (this.rowView) {
+            issuesList.className = 'issues-list summary-view row-view';
+            this.bindRowViewToggle(issuesList);
+        }
 
         if (pageIssues.length === 0) {
             // Show token prompt if no token available, otherwise show regular no issues message
@@ -3545,6 +3550,24 @@ class GitHubIssuesManager {
         this.updateClearAllFiltersVisibility();
     }
 
+    // Row view: click an issue's header to expand its details, or a comment to expand its text.
+    // Links, buttons and the actions menu keep their own behavior. Bound once per list element.
+    bindRowViewToggle(issuesList) {
+        if (issuesList.dataset.rowViewBound) return;
+        issuesList.dataset.rowViewBound = '1';
+        issuesList.addEventListener('click', (event) => {
+            if (event.target.closest('a, button, input, textarea, select, .issue-actions-menu')) return;
+            const comment = event.target.closest('.comment-item');
+            if (comment) {
+                comment.classList.toggle('expanded');
+                return;
+            }
+            const header = event.target.closest('.issue-header');
+            const item = header && header.closest('.issue-item');
+            if (item) item.classList.toggle('expanded');
+        });
+    }
+
     createIssueElement(issue) {
         const issueDiv = document.createElement('div');
         issueDiv.className = 'issue-item';
@@ -3571,8 +3594,8 @@ class GitHubIssuesManager {
                 </span>
             `).join('') : '';
 
-        // Summary view content (always expanded details)
-        if (currentView === 'summary') {
+        // Summary view content (always expanded details; collapsed to rows when rowView is on)
+        if (currentView === 'summary' || this.rowView) {
             const hideOwnerOnlyAssignee = this.shouldHideOwnerOnlyAssignee(issue);
 
             // Prepare detailed content
@@ -4720,6 +4743,8 @@ class GitHubIssuesManager {
         if (existingElement) {
             // Create new element with updated data
             const newElement = this.createIssueElement(updatedIssue);
+            // Row view: keep the issue open if it was expanded
+            newElement.classList.toggle('expanded', existingElement.classList.contains('expanded'));
 
             // Replace existing element with smooth transition
             existingElement.style.opacity = '0.5';
