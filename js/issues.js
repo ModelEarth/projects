@@ -3710,8 +3710,8 @@ class GitHubIssuesManager {
                             </div>
                         ` : ''}
 
-                        <!-- Assignees Section -->
-                        ${hideOwnerOnlyAssignee ? '' : `
+                        <!-- Assignees Section (omitted when empty) -->
+                        ${hideOwnerOnlyAssignee || !(issue.assignees && issue.assignees.length) ? '' : `
                             <div class="issue-section-inline">
                                 <h5 class="section-title">Assignees</h5>
                                 <div class="assignees-detail">
@@ -3722,8 +3722,10 @@ class GitHubIssuesManager {
 
                         <!-- Comments Section -->
                         ${issue.comments > 0 ? `
-                            <div class="issue-section-inline">
-                                <h5 class="section-title">Comments (${issue.comments})</h5>
+                            <div class="issue-section-inline comments-toggle-section">
+                                <h5 class="section-title comments-toggle" role="button" tabindex="0" aria-expanded="false" onclick="issuesManager.toggleCommentsSection(this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }">
+                                    Comments (${issue.comments}) <i class="material-icons mi comments-toggle-icon">expand_more</i>
+                                </h5>
                                 <div class="comments-section-inline">
                                     ${commentsHtml}
                                 </div>
@@ -3981,22 +3983,26 @@ class GitHubIssuesManager {
                     </div>
                 </div>
 
+                ${issue.labels && issue.labels.length ? `
                 <div class="issue-section">
                     <h4>Labels</h4>
                     <div class="issue-labels-detail">
                         ${labelsHtml}
                     </div>
-                </div>
+                </div>` : ''}
 
+                ${issue.assignees && issue.assignees.length ? `
                 <div class="issue-section">
                     <h4>Assignees</h4>
                     <div class="assignees-detail">
                         ${assigneesHtml}
                     </div>
-                </div>
+                </div>` : ''}
 
-                <div class="issue-section">
-                    <h4>Comments (${issue.comments || 0})</h4>
+                <div class="issue-section comments-toggle-section">
+                    <h4 class="comments-toggle" role="button" tabindex="0" aria-expanded="false" onclick="issuesManager.toggleCommentsSection(this)" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.click(); }">
+                        Comments (${issue.comments || 0}) <i class="material-icons mi comments-toggle-icon">expand_more</i>
+                    </h4>
                     <div class="comments-section">
                         ${commentsHtml}
                     </div>
@@ -4014,6 +4020,16 @@ class GitHubIssuesManager {
         `;
 
         modal.style.display = 'flex';
+    }
+
+    // "Comments (n)" subtitle: show or hide that issue's comments (collapsed by default)
+    toggleCommentsSection(toggle) {
+        const section = toggle.closest('.comments-toggle-section');
+        if (!section) return;
+        const open = section.classList.toggle('comments-open');
+        toggle.setAttribute('aria-expanded', String(open));
+        const icon = toggle.querySelector('.comments-toggle-icon');
+        if (icon) icon.textContent = open ? 'expand_less' : 'expand_more';
     }
 
     closeModal() {
@@ -4159,8 +4175,9 @@ class GitHubIssuesManager {
     }
 
     formatMarkdown(text) {
-        // Basic markdown formatting
-        return text
+        // Basic markdown formatting. Trimmed first: each newline becomes a <br>,
+        // so trailing blank lines in an issue body showed as empty space below it.
+        return String(text || '').trim()
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/`(.*?)`/g, '<code>$1</code>')

@@ -2959,9 +2959,9 @@ body.widget-fullscreen-active {
     /* Height follows content (was forced square, which left wide two-column cards much taller than needed) */
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
+    align-items: stretch !important; /* left-aligned, top-down (was centered) */
+    justify-content: flex-start !important;
+    text-align: left !important;
     padding: 1rem !important;
     border: 1px solid var(--border-color) !important;
     border-radius: var(--border-radius) !important;
@@ -3005,7 +3005,7 @@ body.widget-fullscreen-active {
 .card-view .issue-header {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
 }
 
 .card-view .issue-title {
@@ -3034,7 +3034,7 @@ body.widget-fullscreen-active {
 /* Show and style detail button in card view */
 .card-view .issue-actions {
     display: flex !important;
-    justify-content: center;
+    justify-content: flex-start;
     margin-top: 0.75rem;
 }
 
@@ -3482,5 +3482,18 @@ body.widget-fullscreen-active {
 
 .issues-list.row-view .comment-item:not(.expanded) .comment-body img,
 .issues-list.row-view .comment-item:not(.expanded) .comment-body pre {
+    display: none;
+}
+
+/* "Comments (n)" subtitle toggles its comments (toggleCommentsSection in issues.js) */
+.comments-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+.comments-toggle:hover {
+    color: var(--accent-blue);
+}
+.comments-toggle-section:not(.comments-open) .comments-section-inline,
+.comments-toggle-section:not(.comments-open) .comments-section {
     display: none;
 }
