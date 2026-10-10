@@ -1,5 +1,24 @@
 /* GitHub Issues Manager Styles */
 
+/* Icons: material-icons (localsite's icon font) with class "mi", sized to the surrounding text like
+   the Font Awesome icons they replaced. i.mi outranks localsite's 30px .material-icons, while the
+   later context rules below (e.g. .issue-meta i) still set their own sizes. */
+i.mi {
+    font-size: 1.2em;
+    line-height: 1;
+    vertical-align: -0.2em;
+}
+.mi-spin {
+    animation: spin 1s linear infinite;
+}
+/* GitHub mark (no Material equivalent) */
+.mi-github {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+}
+
 :root {
     --primary-color: #0366d6;
     --success-color: #28a745;
@@ -230,22 +249,9 @@
     gap: 0.5rem;
 }
 
-.cache-info {
-    font-family: 'Courier New', monospace;
-    background: rgba(0, 0, 0, 0.05);
-    padding: 0.25rem 0.5rem;
-    border-radius: 3px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
 .dark .cache-status-section {
     border-color: var(--border-color);
     color: #e2e8f0 !important; /* Much lighter text for dark theme */
-}
-
-.dark .cache-info {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Issue Actions Menu */
@@ -339,7 +345,7 @@
 }
 
 .menu-item i {
-    width: 14px;
+    min-width: 14px;
     text-align: center;
     font-size: 0.85rem;
 }
@@ -1092,9 +1098,8 @@
     }
     
     /* Fix potential dropdown arrow conflicts */
-    .filter-button .fa-chevron-down {
-        margin-left: 0.5rem;
-        font-size: 0.8rem;
+    .filter-button .mi:last-child {
+        margin-left: 0.25rem;
     }
     
     /* Additional filters dropdown buttons */
@@ -1495,6 +1500,12 @@
 .view-btn.active {
     background: var(--primary-color);
     color: white;
+}
+
+.view-btn .material-icons {
+    font-size: 18px;
+    line-height: 1;
+    vertical-align: middle;
 }
 
 .dark .view-btn.active {
@@ -2216,7 +2227,7 @@ body.widget-fullscreen-active {
 }
 
 .issue-meta i {
-    width: 14px;
+    min-width: 14px;
     text-align: center;
 }
 
@@ -2559,7 +2570,6 @@ body.widget-fullscreen-active {
 
 .modal-header h2 {
     margin: 0;
-    font-size: 1rem;
     font-weight: 600;
     color: var(--dark-color);
 }
@@ -2633,11 +2643,6 @@ body.widget-fullscreen-active {
     color: var(--dark-color);
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 0.5rem;
-}
-
-.issue-description-full {
-    line-height: 1.6;
-    color: var(--dark-color);
 }
 
 .issue-labels-detail {
@@ -2848,7 +2853,7 @@ body.widget-fullscreen-active {
 }
 
 .issue-meta-inline i {
-    width: 14px;
+    min-width: 14px;
     text-align: center;
 }
 
@@ -2951,7 +2956,7 @@ body.widget-fullscreen-active {
 
 /* Override any existing card item styles */
 .card-view .issue-item {
-    aspect-ratio: 1 / 1 !important;
+    /* Height follows content (was forced square, which left wide two-column cards much taller than needed) */
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -3097,7 +3102,7 @@ body.widget-fullscreen-active {
     opacity: 0.7;
     font-size: 0.75rem;
     flex-shrink: 0;
-    width: 12px;
+    min-width: 12px;
     height: 12px;
     display: flex;
     align-items: center;

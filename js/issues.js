@@ -237,7 +237,7 @@ class GitHubIssuesManager {
                 <span class="material-icons header-fullscreen-btn" title="Toggle Fullscreen" style="cursor: pointer;">fullscreen</span>
 
                 <div class="header-content">
-                    <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><i class="fab fa-github"></i> Team Projects</h1>
+                    <h1 id="hubHeaderTitle" style="font-size:32px;${this.showProject ? '' : 'display:none;'}"><svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> Team Projects</h1>
                     <div id="gitAccountHeaderRow" style="font-size: 0.9rem; padding: calc(0.35rem + 5px) 0 0.35rem 0;">
                         <span id="gitAccountDisplay" style="display: none; margin-bottom: 6px;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
                         <a href="#" id="toggleTokenSection" class="btn-nice btn-white" style="margin-right: 8px;">Add My Token</a>
@@ -262,7 +262,7 @@ class GitHubIssuesManager {
                         </div>
                         <div class="auth-actions">
                             <button id="saveToken" class="btn btn-primary" style="display: none;">
-                                <i class="fas fa-save"></i> Save
+                                <i class="material-icons mi">save</i> Save
                             </button>
                             <button id="clearToken" class="btn" style="display: none;">
                                 Clear
@@ -276,7 +276,7 @@ class GitHubIssuesManager {
                     <div class="auth-instructions">
                         <details>
                             <summary>
-                                <span><i class="fas fa-question-circle"></i> How to create a GitHub token?</span>
+                                <span><i class="material-icons mi">help</i> How to create a GitHub token?</span>
                             </summary>
                             <div class="instructions-content">
                                 <ol>
@@ -340,13 +340,13 @@ class GitHubIssuesManager {
                     <div class="view-controls">
                         <div class="view-toggle">
                             <button id="summaryView" class="view-btn active" title="Summary View">
-                                <i class="fas fa-align-justify"></i>
+                                <i class="material-icons">view_headline</i>
                             </button>
                             <button id="listView" class="view-btn" title="List View">
-                                <i class="fas fa-list"></i>
+                                <i class="material-icons">format_list_bulleted</i>
                             </button>
                             <button id="cardView" class="view-btn" title="Card View">
-                                <i class="fas fa-th-large"></i>
+                                <i class="material-icons">grid_view</i>
                             </button>
                         </div>
                     </div>
@@ -357,18 +357,18 @@ class GitHubIssuesManager {
                     <!-- State Filter (moved from secondary row) -->
                     <div class="filter-group">
                         <button id="stateButton" class="filter-button compact-filter">
-                            <i class="fas fa-exclamation-circle"></i> Active
-                            <i class="fas fa-chevron-down"></i>
+                            <i class="material-icons mi">error</i> Active
+                            <i class="material-icons mi">expand_more</i>
                         </button>
                         <div class="dropdown-menu" id="stateDropdown">
                             <div class="dropdown-item" data-projectstatus="open">
-                                <i class="fas fa-exclamation-circle"></i> Active
+                                <i class="material-icons mi">error</i> Active
                             </div>
                             <div class="dropdown-item" data-projectstatus="closed">
-                                <i class="fas fa-check-circle"></i> Closed
+                                <i class="material-icons mi">check_circle</i> Closed
                             </div>
                             <div class="dropdown-item" data-projectstatus="all">
-                                <i class="fas fa-list"></i> All
+                                <i class="material-icons mi">list</i> All
                             </div>
                         </div>
                     </div>
@@ -376,23 +376,23 @@ class GitHubIssuesManager {
                     <!-- Labels Filter (moved from secondary row) -->
                     <div class="filter-group">
                         <button id="labelButton" class="filter-button compact-filter">
-                            <i class="fas fa-tags"></i> Labels: All
-                            <i class="fas fa-chevron-down"></i>
+                            <i class="material-icons mi">label</i> Labels: All
+                            <i class="material-icons mi">expand_more</i>
                         </button>
                         <div class="dropdown-menu" id="labelDropdown">
                             <div class="dropdown-item" data-label="all">
-                                <i class="fas fa-tags"></i> All Labels
+                                <i class="material-icons mi">label</i> All Labels
                             </div>
                         </div>
                     </div>
                     
           <button id="toggleFiltersBtn" class="toggle-filters-btn" title="Toggle Additional Filters" onclick="console.log('Container width:', this.closest('.filters-always-visible')?.offsetWidth + 'px');">
-                        <i class="fas fa-filter toggle-icon" style="display: none;"></i>
+                        <i class="material-icons mi toggle-icon" style="display: none;">filter_alt</i>
                         <span class="toggle-text">More Filters</span>
                     </button>
                     
                     <button id="clearAllFiltersBtn" class="btn btn-secondary clear-filters-btn" style="display: none;">
-                        <i class="fas fa-times clear-icon" style="display: none;"></i>
+                        <i class="material-icons mi clear-icon" style="display: none;">close</i>
                         <span class="clear-text">Clear</span>
                     </button>
                 </div>
@@ -405,15 +405,15 @@ class GitHubIssuesManager {
                     <!-- Assigned to filter (moved from main row) -->
                     <div class="filter-group">
                         <button id="assigneeButton" class="filter-button">
-                            <i class="fas fa-user"></i> Assigned to: All
-                            <i class="fas fa-chevron-down"></i>
+                            <i class="material-icons mi">person</i> Assigned to: All
+                            <i class="material-icons mi">expand_more</i>
                         </button>
                         <div class="dropdown-menu" id="assigneeDropdown">
                             <div class="dropdown-item" data-assignee="all">
-                                <i class="fas fa-users"></i> All Users
+                                <i class="material-icons mi">group</i> All Users
                             </div>
                             <div class="dropdown-item" data-assignee="unassigned">
-                                <i class="fas fa-user-slash"></i> Unassigned
+                                <i class="material-icons mi">person_off</i> Unassigned
                             </div>
                         </div>
                     </div>
@@ -421,24 +421,24 @@ class GitHubIssuesManager {
                     <!-- Sort filter (moved from main row) -->
                     <div class="filter-group">
                         <button id="sortButton" class="filter-button">
-                            <i class="fas fa-sort"></i> Sort by: Updated
-                            <i class="fas fa-chevron-down"></i>
+                            <i class="material-icons mi">sort</i> Sort by: Updated
+                            <i class="material-icons mi">expand_more</i>
                         </button>
                         <div class="dropdown-menu" id="sortDropdown">
                             <div class="dropdown-item" data-sort="updated">
-                                <i class="fas fa-calendar-alt"></i> Updated Date
+                                <i class="material-icons mi">event</i> Updated Date
                             </div>
                             <div class="dropdown-item" data-sort="created">
-                                <i class="fas fa-plus"></i> Created Date
+                                <i class="material-icons mi">add</i> Created Date
                             </div>
                             <div class="dropdown-item" data-sort="comments">
-                                <i class="fas fa-comments"></i> Comment Count
+                                <i class="material-icons mi">forum</i> Comment Count
                             </div>
                             <div class="dropdown-item" data-sort="title">
-                                <i class="fas fa-sort-alpha-down"></i> Title (A-Z)
+                                <i class="material-icons mi">sort_by_alpha</i> Title (A-Z)
                             </div>
                             <div class="dropdown-item" data-sort="number">
-                                <i class="fas fa-hashtag"></i> Issue Number
+                                <i class="material-icons mi">tag</i> Issue Number
                             </div>
                         </div>
                     </div>
@@ -458,10 +458,10 @@ class GitHubIssuesManager {
     <div class="search-group">
       <input id="searchInput" type="text" placeholder="Enter Search " />
       <button id="searchButton" class="btn btn-primary">
-        <i class="fas fa-search"></i>
+        <i class="material-icons mi">search</i>
       </button>
       <button id="clearSearch" class="btn btn-clear-search" title="Clear" style="display:none">
-        <i class="fas fa-times"></i>
+        <i class="material-icons mi">close</i>
       </button>
     </div>
   </div>
@@ -501,7 +501,7 @@ class GitHubIssuesManager {
             <div class="stats-section" id="statsSection" style="display: none;">
                 <a class="stat-card" href="/codechat">
                     <div class="stat-icon">
-                        <i class="fas fa-code-branch"></i>
+                        <i class="material-icons mi">call_split</i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-number" id="repoCount">0</div>
@@ -510,7 +510,7 @@ class GitHubIssuesManager {
                 </a>
                 <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
-                        <i class="fas fa-exclamation-circle"></i>
+                        <i class="material-icons mi">error</i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-number" id="openIssueCount">0</div>
@@ -519,7 +519,7 @@ class GitHubIssuesManager {
                 </a>
                 <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
+                        <i class="material-icons mi">check_circle</i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-number" id="closedIssueCount">0</div>
@@ -528,7 +528,7 @@ class GitHubIssuesManager {
                 </a>
                 <a class="stat-card" href="https://github.com/modelearth/projects/issues/" target="_blank" rel="noopener">
                     <div class="stat-icon">
-                        <i class="fas fa-comments"></i>
+                        <i class="material-icons mi">forum</i>
                     </div>
                     <div class="stat-content">
                         <div class="stat-number" id="totalComments">0</div>
@@ -543,7 +543,7 @@ class GitHubIssuesManager {
         return `
             <div class="cache-status-section">
                 <div id="cacheStatus" class="cache-status">
-                    <span class="cache-info">Cache: Loading...</span>
+                    <span>Cache: Loading...</span>
                 </div>
             </div>
         `;
@@ -553,13 +553,13 @@ class GitHubIssuesManager {
         return `
             <div class="error-message" id="errorMessage" style="display: none;">
                 <div class="error-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="material-icons mi">warning</i>
                 </div>
                 <div class="error-content">
                     <h3>Error Loading Issues</h3>
                     <p id="errorText">Failed to load GitHub data. Please check your connection and try again.</p>
                     <button id="retryButton" class="btn btn-primary">
-                        <i class="fas fa-redo"></i> Retry
+                        <i class="material-icons mi">redo</i> Retry
                     </button>
                 </div>
             </div>
@@ -573,7 +573,7 @@ class GitHubIssuesManager {
                     <div class="modal-header">
                         <h2 id="modalTitle">Issue Details</h2>
                         <button class="modal-close" id="modalClose">
-                            <i class="fas fa-times"></i>
+                            <i class="material-icons mi">close</i>
                         </button>
                     </div>
                     <div class="modal-body" id="modalBody">
@@ -588,7 +588,7 @@ class GitHubIssuesManager {
                     <div class="modal-header">
                         <h2 id="refreshDialogTitle">Refresh Issue</h2>
                         <button class="modal-close" id="refreshDialogClose">
-                            <i class="fas fa-times"></i>
+                            <i class="material-icons mi">close</i>
                         </button>
                     </div>
                     <div class="modal-body">
@@ -596,7 +596,7 @@ class GitHubIssuesManager {
                         <div class="refresh-dialog-actions" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
                             <button class="btn btn-secondary" id="refreshDialogCancel">Cancel</button>
                             <button class="btn btn-primary" id="refreshDialogConfirm">
-                                <i class="fas fa-sync-alt"></i> Refresh Issue
+                                <i class="material-icons mi">sync</i> Refresh Issue
                             </button>
                         </div>
                     </div>
@@ -1242,17 +1242,17 @@ class GitHubIssuesManager {
                 const cacheType = filteredCache ? 'Filtered' : 'Base';
 
                 cacheStatusDiv.innerHTML = `
-                    <span class="cache-info">
+                    <span>
                         ${cacheType} Cache: ${cacheAgeMinutes}m old, expires in ${remainingMinutes}m
                         (${this.cacheConfig.duration}m duration)
                         ${this.cacheConfig.autoRefresh ? ' • Auto-refresh enabled' : ' • Auto-refresh disabled'}
                     </span>
                 `;
             } catch (error) {
-                cacheStatusDiv.innerHTML = '<span class="cache-info">Cache: Invalid</span>';
+                cacheStatusDiv.innerHTML = '<span>Cache: Invalid</span>';
             }
         } else {
-            cacheStatusDiv.innerHTML = '<span class="cache-info">Cache: Empty</span>';
+            cacheStatusDiv.innerHTML = '<span>Cache: Empty</span>';
         }
     }
 
@@ -1293,7 +1293,7 @@ class GitHubIssuesManager {
         if (this.invalidTokenMessage) {
             rateLimitDiv.innerHTML = `
                 <div class="rate-limit-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="material-icons mi">warning</i>
                     <div class="rate-limit-content">
                         <div class="rate-limit-title">Invalid GitHub Token</div>
                         <div class="rate-limit-details">${this.invalidTokenMessage}</div>
@@ -1322,7 +1322,7 @@ class GitHubIssuesManager {
             if (shouldShowWarning && timeLeft > 0) {
                 rateLimitDiv.innerHTML = `
                     <div class="rate-limit-warning">
-                        <i class="fas fa-clock"></i>
+                        <i class="material-icons mi">schedule</i>
                         <div class="rate-limit-content">
                             <div class="rate-limit-title">API Rate Limit Warning: ${remaining} requests remaining. Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})</div>
                         </div>
@@ -1333,7 +1333,7 @@ class GitHubIssuesManager {
                 // Show informational rate limit for users without token
                 rateLimitDiv.innerHTML = `
                     <div class="rate-limit-info-display">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="material-icons mi">info</i>
                         <div class="rate-limit-content">
                             <div class="rate-limit-title">API Rate Limit: ${remaining} requests remaining (without token). ${timeLeft > 0 ? `Resets in ${minutesLeft} minutes (${resetTime.toLocaleTimeString()})` : 'Resets hourly'}</div>
                         </div>
@@ -1360,7 +1360,7 @@ class GitHubIssuesManager {
 
         rateLimitDiv.innerHTML = `
             <div class="rate-limit-warning">
-                <i class="fas fa-exclamation-triangle"></i>
+                <i class="material-icons mi">warning</i>
                 <div class="rate-limit-content">
                     <div class="rate-limit-title">Invalid GitHub Token</div>
                     <div class="rate-limit-details">${this.invalidTokenMessage}</div>
@@ -3363,7 +3363,7 @@ class GitHubIssuesManager {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             item.setAttribute('data-assignee', assignee);
-            item.innerHTML = `<i class="fas fa-user"></i> ${assignee.split('-')[0]}`;
+            item.innerHTML = `<i class="material-icons mi">person</i> ${assignee.split('-')[0]}`;
             dropdown.appendChild(item);
         });
 
@@ -3385,7 +3385,7 @@ class GitHubIssuesManager {
             const item = document.createElement('div');
             item.className = 'dropdown-item';
             item.setAttribute('data-label', label);
-            item.innerHTML = `<i class="fas fa-tag"></i> ${label}`;
+            item.innerHTML = `<i class="material-icons mi">label</i> ${label}`;
             dropdown.appendChild(item);
         });
     }
@@ -3510,8 +3510,10 @@ class GitHubIssuesManager {
         const pageIssues = this.filteredIssues.slice(startIndex, endIndex);
 
         issuesList.innerHTML = '';
+        // Row view: Summary shows collapsed 2-line rows; List and Card use their normal layouts
         if (this.rowView) {
-            issuesList.className = 'issues-list summary-view row-view';
+            const isSummary = this.currentView === 'summary';
+            issuesList.className = `issues-list ${this.currentView}-view${isSummary ? ' row-view' : ''}`;
             this.bindRowViewToggle(issuesList);
         }
 
@@ -3520,7 +3522,7 @@ class GitHubIssuesManager {
             if (!this.githubToken || this.invalidTokenMessage) {
                 issuesList.innerHTML = `
                     <div class="no-issues">
-                        <i class="fas fa-search"></i>
+                        <i class="material-icons mi">search</i>
                         <h3>Add your token</h3>
                         <p>Access more repositories and increase API rate limits</p>
                         <button class="btn btn-primary" onclick="issuesManager.showTokenSectionAndOpenTab()" style="margin-top: 10px;">
@@ -3531,7 +3533,7 @@ class GitHubIssuesManager {
             } else {
                 issuesList.innerHTML = `
                     <div class="no-issues">
-                        <i class="fas fa-search"></i>
+                        <i class="material-icons mi">search</i>
                         <h3>No issues found</h3>
                         <p>Try adjusting your filters or search terms.</p>
                     </div>
@@ -3556,6 +3558,7 @@ class GitHubIssuesManager {
         if (issuesList.dataset.rowViewBound) return;
         issuesList.dataset.rowViewBound = '1';
         issuesList.addEventListener('click', (event) => {
+            if (!issuesList.classList.contains('row-view')) return; // Summary view only
             if (event.target.closest('a, button, input, textarea, select, .issue-actions-menu')) return;
             const comment = event.target.closest('.comment-item');
             if (comment) {
@@ -3595,7 +3598,7 @@ class GitHubIssuesManager {
             `).join('') : '';
 
         // Summary view content (always expanded details; collapsed to rows when rowView is on)
-        if (currentView === 'summary' || this.rowView) {
+        if (currentView === 'summary') {
             const hideOwnerOnlyAssignee = this.shouldHideOwnerOnlyAssignee(issue);
 
             // Prepare detailed content
@@ -3628,7 +3631,7 @@ class GitHubIssuesManager {
                     </div>
                 `).join('') :
                 issue.comment_load_error ?
-                    `<p class="text-muted"><i class="fas fa-exclamation-triangle"></i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
+                    `<p class="text-muted"><i class="material-icons mi">warning</i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
                     '<p class="text-muted">No comments</p>';
 
             issueDiv.innerHTML = `
@@ -3642,17 +3645,17 @@ class GitHubIssuesManager {
                         <!-- Issue Actions Menu -->
                         <div class="issue-actions-menu">
                             <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
-                                <i class="fas fa-ellipsis-v"></i>
+                                <i class="material-icons mi">more_vert</i>
                             </button>
                             <div class="issue-menu-dropdown" id="issueMenu-${issue.id}">
                                 <div class="menu-item" onclick="issuesManager.refreshSingleIssue('${issue.id}')">
-                                    <i class="fas fa-sync-alt"></i> Refresh
+                                    <i class="material-icons mi">sync</i> Refresh
                                 </div>
                                 <div class="menu-item" onclick="window.open('${issue.html_url}', '_blank')">
-                                    <i class="fas fa-external-link-alt"></i> Open in GitHub
+                                    <i class="material-icons mi">open_in_new</i> Open in GitHub
                                 </div>
                                 <div class="menu-item" onclick="issuesManager.copyIssueLink('${issue.html_url}')">
-                                    <i class="fas fa-link"></i> Copy Link
+                                    <i class="material-icons mi">link</i> Copy Link
                                 </div>
                             </div>
                         </div>
@@ -3669,20 +3672,20 @@ class GitHubIssuesManager {
                         <!-- Metadata Section -->
                         <div class="issue-meta-inline">
                             <span class="issue-date">
-                                <i class="fas fa-plus"></i> Created: ${this.formatDate(issue.created_at)}
+                                <i class="material-icons mi">add</i> Created: ${this.formatDate(issue.created_at)}
                             </span>
                             <span class="issue-date">
-                                <i class="fas fa-clock"></i> Updated: ${this.formatDate(issue.updated_at)}
+                                <i class="material-icons mi">schedule</i> Updated: ${this.formatDate(issue.updated_at)}
                             </span>
                             <span class="issue-date">
-                                <i class="fas fa-sync-alt"></i> Last Refreshed:
+                                <i class="material-icons mi">sync</i> Last Refreshed:
                                 <a href="#" onclick="issuesManager.showRefreshDialog('${issue.id}'); return false;" class="refresh-link" title="Click to refresh this issue">
                                     ${issue.last_refreshed ? this.formatFullDateTime(issue.last_refreshed) : this.formatFullDateTime(issue.created_at)}
                                 </a>
                             </span>
                             ${issue.comments > 0 ? `
                                 <span class="comment-count">
-                                    <i class="fas fa-comments"></i> ${issue.comments} comment${issue.comments > 1 ? 's' : ''}
+                                    <i class="material-icons mi">forum</i> ${issue.comments} comment${issue.comments > 1 ? 's' : ''}
                                 </span>
                             ` : ''}
                         </div>
@@ -3730,10 +3733,10 @@ class GitHubIssuesManager {
                         <!-- Action Buttons -->
                         <div class="issue-actions-inline">
                             <a href="${issue.html_url}" target="_blank" class="btn btn-primary btn-sm">
-                                <i class="fab fa-github"></i> View on GitHub
+                                <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub
                             </a>
                             <a href="${issue.html_url}/edit" target="_blank" class="btn btn-secondary btn-sm">
-                                <i class="fas fa-edit"></i> Edit Issue
+                                <i class="material-icons mi">edit</i> Edit Issue
                             </a>
                         </div>
                     </div>
@@ -3762,33 +3765,33 @@ class GitHubIssuesManager {
                     <!-- Issue Actions Menu -->
                     <div class="issue-actions-menu">
                         <button class="issue-menu-btn" onclick="issuesManager.toggleIssueMenu('${issue.id}', event)" title="Issue Actions">
-                            <i class="fas fa-ellipsis-v"></i>
+                            <i class="material-icons mi">more_vert</i>
                         </button>
                         <div class="issue-menu-dropdown" id="issueMenu-${issue.id}">
                             <div class="menu-item" onclick="issuesManager.refreshSingleIssue('${issue.id}')">
-                                <i class="fas fa-sync-alt"></i> Refresh
+                                <i class="material-icons mi">sync</i> Refresh
                             </div>
                             <div class="menu-item" onclick="window.open('${issue.html_url}', '_blank')">
-                                <i class="fas fa-external-link-alt"></i> Open in GitHub
+                                <i class="material-icons mi">open_in_new</i> Open in GitHub
                             </div>
                             <div class="menu-item" onclick="issuesManager.copyIssueLink('${issue.html_url}')">
-                                <i class="fas fa-link"></i> Copy Link
+                                <i class="material-icons mi">link</i> Copy Link
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="issue-meta">
                     <span class="repo-name">
-                        <i class="fas fa-code-branch"></i>
+                        <i class="material-icons mi">call_split</i>
                         <a href="${issue.repository_url}" target="_blank">${issue.repository}</a>
                     </span>
                     <span class="issue-date">
-                        <i class="fas fa-clock"></i>
+                        <i class="material-icons mi">schedule</i>
                         Updated ${this.formatDate(issue.updated_at)}
                     </span>
                     ${issue.comments > 0 ? `
                         <span class="comment-count">
-                            <i class="fas fa-comments"></i>
+                            <i class="material-icons mi">forum</i>
                             ${issue.comments}
                         </span>
                     ` : ''}
@@ -3815,11 +3818,11 @@ class GitHubIssuesManager {
                     
                     <div class="issue-actions">
                         <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
-                            <i class="fas fa-eye"></i><span> Details</span>
+                            <i class="material-icons mi">visibility</i><span> Details</span>
                         </button>
                         <!-- GitHub button commented out - now available in 3-dot menu -->
                         <!--<a href="${issue.html_url}" target="_blank" class="btn btn-sm btn-outline">
-                            <i class="fab fa-github"></i><span> GitHub</span>
+                            <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span> GitHub</span>
                         </a>-->
                     </div>
                 </div>
@@ -3947,7 +3950,7 @@ class GitHubIssuesManager {
                 </div>
             `).join('') :
             issue.comment_load_error ?
-                `<p class="text-muted"><i class="fas fa-exclamation-triangle"></i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
+                `<p class="text-muted"><i class="material-icons mi">warning</i> Failed to load comments: ${issue.comment_load_error}. <a href="${issue.html_url}#issuecomment-section" target="_blank">View comments on GitHub</a></p>` :
                 '<p class="text-muted">No comments</p>';
 
         modalBody.innerHTML = `
@@ -3956,13 +3959,13 @@ class GitHubIssuesManager {
                     ${stateIcon}
                     <div class="issue-meta-detail">
                         <div class="repo-info">
-                            <i class="fas fa-code-branch"></i>
+                            <i class="material-icons mi">call_split</i>
                             <a href="${issue.repository_url}" target="_blank">${issue.repository}</a>
                         </div>
                         <div class="issue-dates">
-                            <div><i class="fas fa-plus"></i> Created: ${this.formatDate(issue.created_at)}</div>
-                            <div><i class="fas fa-clock"></i> Updated: ${this.formatDate(issue.updated_at)}</div>
-                            <div><i class="fas fa-sync-alt"></i> Last Refreshed: 
+                            <div><i class="material-icons mi">add</i> Created: ${this.formatDate(issue.created_at)}</div>
+                            <div><i class="material-icons mi">schedule</i> Updated: ${this.formatDate(issue.updated_at)}</div>
+                            <div><i class="material-icons mi">sync</i> Last Refreshed: 
                                 <a href="#" onclick="issuesManager.showRefreshDialog('${issue.id}'); return false;" class="refresh-link" title="Click to refresh this issue">
                                     ${issue.last_refreshed ? this.formatFullDateTime(issue.last_refreshed) : this.formatFullDateTime(issue.created_at)}
                                 </a>
@@ -4001,10 +4004,10 @@ class GitHubIssuesManager {
 
                 <div class="issue-actions-detail">
                     <a href="${issue.html_url}" target="_blank" class="btn btn-primary">
-                        <i class="fab fa-github"></i> View on GitHub
+                        <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub
                     </a>
                     <a href="${issue.html_url}/edit" target="_blank" class="btn btn-secondary">
-                        <i class="fas fa-edit"></i> Edit Issue
+                        <i class="material-icons mi">edit</i> Edit Issue
                     </a>
                 </div>
             </div>
@@ -4065,7 +4068,7 @@ class GitHubIssuesManager {
 
         // Update pagination info with width and fullscreen controls
         const paginationInfo = document.getElementById('paginationInfo');
-        const fullscreenIcon = this.isFullscreen ? 'fa-compress' : 'fa-expand';
+        const fullscreenIcon = this.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
         const headerFullscreenIcon = this.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
         const fullscreenTitle = this.isFullscreen ? 'Exit Fullscreen' : 'Toggle Fullscreen';
 
@@ -4073,7 +4076,7 @@ class GitHubIssuesManager {
             'No issues found' :
             `Showing ${startIndex + 1}-${endIndex} of ${this.filteredIssues.length} issues (${this.perPage} per page)`;
 
-        const rightText = `Widget width ${containerWidth}px <i class="fas ${fullscreenIcon} fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="${fullscreenTitle}" style="margin-left: 0.5rem; cursor: pointer; color: var(--primary-color);"></i>`;
+        const rightText = `Widget width ${containerWidth}px <i class="material-icons mi fullscreen-btn" onclick="issuesManager.toggleFullscreen()" title="${fullscreenTitle}" style="margin-left: 0.5rem; cursor: pointer; color: var(--primary-color);">${fullscreenIcon}</i>`;
 
         paginationInfo.innerHTML = `<span class="pagination-left">${leftText}</span><span class="pagination-right" style="color: var(--text-muted); font-size: 0.85em;">${rightText}</span>`;
 
@@ -4094,7 +4097,7 @@ class GitHubIssuesManager {
         // Previous button
         const prevButton = document.createElement('button');
         prevButton.className = `pagination-btn ${this.currentPage === 1 ? 'disabled' : ''}`;
-        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevButton.innerHTML = '<i class="material-icons mi">chevron_left</i>';
         prevButton.onclick = () => this.goToPage(this.currentPage - 1);
         paginationControls.appendChild(prevButton);
 
@@ -4118,7 +4121,7 @@ class GitHubIssuesManager {
         // Next button
         const nextButton = document.createElement('button');
         nextButton.className = `pagination-btn ${this.currentPage === totalPages ? 'disabled' : ''}`;
-        nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextButton.innerHTML = '<i class="material-icons mi">chevron_right</i>';
         nextButton.onclick = () => this.goToPage(this.currentPage + 1);
         paginationControls.appendChild(nextButton);
     }
@@ -4435,8 +4438,8 @@ class GitHubIssuesManager {
             number: 'Number'
         };
         button.innerHTML = `
-            <i class="fas fa-sort"></i> Sort by: ${sortNames[this.filters.sort]}
-            <i class="fas fa-chevron-down"></i>
+            <i class="material-icons mi">sort</i> Sort by: ${sortNames[this.filters.sort]}
+            <i class="material-icons mi">expand_more</i>
         `;
     }
 
@@ -4455,8 +4458,8 @@ class GitHubIssuesManager {
         const labelText = isNarrow ? '' : 'Assigned to: ';
 
         button.innerHTML = `
-            <i class="fas fa-user"></i> ${labelText}${displayText}
-            <i class="fas fa-chevron-down"></i>
+            <i class="material-icons mi">person</i> ${labelText}${displayText}
+            <i class="material-icons mi">expand_more</i>
         `;
     }
 
@@ -4469,8 +4472,8 @@ class GitHubIssuesManager {
         };
         const displayText = stateNames[this.filters.projectstatus] || 'Active';
         button.innerHTML = `
-            <i class="fas fa-exclamation-circle"></i> ${displayText}
-            <i class="fas fa-chevron-down"></i>
+            <i class="material-icons mi">error</i> ${displayText}
+            <i class="material-icons mi">expand_more</i>
         `;
     }
 
@@ -4478,8 +4481,8 @@ class GitHubIssuesManager {
         const button = document.getElementById('labelButton');
         let displayText = this.filters.label === 'all' ? 'All' : this.filters.label;
         button.innerHTML = `
-            <i class="fas fa-tags"></i> Labels: ${displayText}
-            <i class="fas fa-chevron-down"></i>
+            <i class="material-icons mi">label</i> Labels: ${displayText}
+            <i class="material-icons mi">expand_more</i>
         `;
     }
 
@@ -4767,7 +4770,7 @@ class GitHubIssuesManager {
                 // Add subtle loading indicator
                 const loader = document.createElement('div');
                 loader.className = 'issue-refresh-loader';
-                loader.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
+                loader.innerHTML = '<i class="material-icons mi mi-spin">sync</i>';
                 issueElement.appendChild(loader);
             } else {
                 issueElement.classList.remove('issue-refreshing');
@@ -5223,15 +5226,15 @@ class GitHubIssuesManager {
         let iconHtml;
 
         if (isLoadingMessage) {
-            iconHtml = '<i class="fas fa-spinner fa-spin inline-spinner"></i>';
+            iconHtml = '<i class="material-icons mi mi-spin inline-spinner">autorenew</i>';
         } else {
             const iconMap = {
-                'success': 'check',
-                'error': 'exclamation-triangle',
+                'success': 'check_circle',
+                'error': 'warning',
                 'info': 'info'
             };
             const icon = iconMap[type] || 'info';
-            iconHtml = `<i class="fas fa-${icon}-circle"></i>`;
+            iconHtml = `<i class="material-icons mi">${icon}</i>`;
         }
 
         notification.innerHTML = `
@@ -5265,8 +5268,8 @@ class GitHubIssuesManager {
         }
 
         const iconMap = {
-            'success': 'check',
-            'error': 'exclamation-triangle',
+            'success': 'check_circle',
+            'error': 'warning',
             'info': 'info'
         };
         const icon = iconMap[type] || 'info';
@@ -5278,7 +5281,7 @@ class GitHubIssuesManager {
         notification.id = 'issuesAboveNotification';
         notification.className = `inline-notification ${type}`;
         notification.innerHTML = `
-            <i class="fas fa-${icon}-circle"></i>
+            <i class="material-icons mi">${icon}</i>
             ${message}
         `;
         issuesContainer.parentNode.insertBefore(notification, issuesContainer);
@@ -5296,14 +5299,14 @@ class GitHubIssuesManager {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         const iconMap = {
-            'success': 'check',
-            'error': 'exclamation-triangle',
+            'success': 'check_circle',
+            'error': 'warning',
             'info': 'info'
         };
         const icon = iconMap[type] || 'info';
 
         notification.innerHTML = `
-            <i class="fas fa-${icon}-circle"></i>
+            <i class="material-icons mi">${icon}</i>
             ${message}
         `;
 
@@ -5355,7 +5358,7 @@ class GitHubIssuesManager {
         document.getElementById('issuesContainer').style.display = 'block';
         document.getElementById('issuesList').innerHTML = `
             <div class="no-issues">
-                <i class="fas fa-exclamation-triangle"></i>
+                <i class="material-icons mi">warning</i>
                 <h3>API Rate Limit Exceeded</h3>
                 <p>GitHub API rate limit reached. Please try again later or Add a GitHub token to increase your rate limit.</p>
                 <p>You can still use the filters - they will work once the API is accessible again.</p>

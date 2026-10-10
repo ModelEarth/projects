@@ -201,7 +201,6 @@ setupCacheExpirationTimer(timeUntilExpiration) {
 | `.header-search-btn` | Search icon styling and positioning | css/issues.css |
 | `.cache-status-section` | Cache status container | css/issues.css |
 | `.cache-status` | Cache status layout | css/issues.css |
-| `.cache-info` | Cache status text styling | css/issues.css |
 | `#filtersSection.show-filters` | Filter visibility control | css/issues.css |
 | `.issue-actions` | 3-dot menu container positioning | css/issues.css |
 | `.issue-actions-menu` | 3-dot button styling | css/issues.css |
