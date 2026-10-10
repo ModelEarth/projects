@@ -2455,8 +2455,20 @@ body.widget-fullscreen-active {
 }
 
 .dark .pagination-btn {
-    background: var(--light-color);
-    color: var(--dark-color);
+    background: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+}
+
+.dark .pagination-btn:hover:not(.disabled):not(.active) {
+    background: #363636;
+    border-color: #4a90e2;
+}
+
+.dark .pagination-btn.active {
+    background: #137AD1;
+    border-color: #137AD1;
+    color: #fff;
 }
 
 .pagination-btn:hover:not(.disabled):not(.active) {
