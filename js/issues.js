@@ -242,6 +242,7 @@ class GitHubIssuesManager {
                         <span id="gitAccountDisplay" style="display: none; margin-bottom: 6px;"> Your GitHub account: <a href="#" id="gitAccountLink"></a>&nbsp;&nbsp;</span>
                         <a href="#" id="toggleTokenSection" class="btn-nice btn-white" style="margin-right: 8px;">Add My Token</a>
                         <a href="#" id="toggleProjectsSection" class="btn-nice btn-white" style="display: none;">View Projects</a>
+                        <a href="#" id="toggleProjectFilters" class="btn-nice btn-white" style="display: none;" title="Show filters" aria-pressed="false"><svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"></polygon></svg></a>
                         <span id="headerLastRefreshTime" style="font-size: 0.9rem; display: none;"> Issue counts last updated: <span id="headerRefreshTime">Never</span>.</span>
                     </div>
                 </div>
@@ -1407,6 +1408,13 @@ class GitHubIssuesManager {
                 await this.toggleProjectsSection();
             });
         }
+        const toggleProjectFilters = document.getElementById('toggleProjectFilters');
+        if (toggleProjectFilters) {
+            toggleProjectFilters.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleProjectFilters();
+            });
+        }
         if (saveToken) {
             saveToken.addEventListener('click', () => this.saveToken());
         }
@@ -1479,6 +1487,10 @@ class GitHubIssuesManager {
     }
 
     setupEventListeners() {
+        // Runs once: the filters toggle can bind these before initializeFullProjectView() does
+        if (this.eventListenersBound) return;
+        this.eventListenersBound = true;
+
         // Token management
         this.setupTokenEventListeners();
 
@@ -1858,24 +1870,59 @@ class GitHubIssuesManager {
         if (subtitleLine) subtitleLine.classList.remove('token-editor-open');
     }
 
+    // Projects show when #projectsSectionsContainer is displayed without the filters-only class
+    projectsListShown(projectsSections = document.getElementById('projectsSectionsContainer')) {
+        return !!projectsSections && projectsSections.style.display !== 'none'
+            && !projectsSections.classList.contains('filters-only');
+    }
+
     async toggleProjectsSection() {
         const projectsSections = document.getElementById('projectsSectionsContainer');
         if (!projectsSections) return;
 
-        const currentlyVisible = projectsSections.style.display !== 'none';
-        if (currentlyVisible) {
+        if (this.projectsListShown(projectsSections)) {
             projectsSections.style.display = 'none';
+            this.setProjectFiltersShown(false);
             this.updateTokenSectionUI();
             return;
         }
 
+        // Viewing projects shows the filters with them, as before the filters toggle existed
         projectsSections.style.display = 'block';
+        projectsSections.classList.remove('filters-only');
+        this.setProjectFiltersShown(true);
 
         if (!this.projectsViewInitialized) {
             await this.initializeFullProjectView();
         }
 
         this.updateTokenSectionUI();
+    }
+
+    // Filters toggle beside View Projects. Before the project list is requested it shows the filters on their own
+    // (filters-only), so choices made there are kept in this.filters and the hash, and apply when View Projects loads.
+    toggleProjectFilters() {
+        const projectsSections = document.getElementById('projectsSectionsContainer');
+        if (!projectsSections) return;
+        const show = !this.projectFiltersShown;
+        if (show) this.setupEventListeners(); // Filter controls work before the list loads
+
+        if (!this.projectsListShown(projectsSections)) {
+            projectsSections.style.display = show ? 'block' : 'none';
+            projectsSections.classList.toggle('filters-only', show);
+        }
+        this.setProjectFiltersShown(show);
+        this.updateTokenSectionUI();
+    }
+
+    setProjectFiltersShown(show) {
+        this.projectFiltersShown = show;
+        document.getElementById('projectsSectionsContainer')?.classList.toggle('filters-hidden', !show);
+        const btn = document.getElementById('toggleProjectFilters');
+        if (btn) {
+            btn.setAttribute('aria-pressed', String(show));
+            btn.title = show ? 'Hide filters' : 'Show filters';
+        }
     }
 
     showTokenSectionAndOpenTab() {
@@ -1969,7 +2016,7 @@ class GitHubIssuesManager {
         // Show View/Hide Projects only when project sections are hidden under the header.
         if (projectsToggleLink) {
             if (!this.showProject && projectsSections) {
-                const isVisible = projectsSections.style.display !== 'none';
+                const isVisible = this.projectsListShown(projectsSections);
                 // Hide beside the open token editor only while it shares the header row
                 // (requests/engine moves it into its own Projects panel).
                 const inHeaderRow = !!projectsToggleLink.closest('#gitAccountHeaderRow');
@@ -1984,9 +2031,15 @@ class GitHubIssuesManager {
             }
         }
 
+        // The filters toggle appears wherever View Projects does
+        const projectFiltersToggle = document.getElementById('toggleProjectFilters');
+        if (projectFiltersToggle && projectsToggleLink) {
+            projectFiltersToggle.style.display = projectsToggleLink.style.display === 'none' ? 'none' : 'inline-flex';
+        }
+
         // Hide fullscreen control when only auth/token editor is shown.
         if (headerFullscreenBtn) {
-            const authOnlyView = !this.showProject && (!projectsSections || projectsSections.style.display === 'none');
+            const authOnlyView = !this.showProject && !this.projectsListShown(projectsSections);
             headerFullscreenBtn.style.display = authOnlyView ? 'none' : '';
         }
 

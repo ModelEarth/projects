@@ -150,8 +150,29 @@ i.mi {
     color: #eee !important;
 }
 
+/* Filters toggle beside View Projects: filters-only shows just the filters before the list is requested,
+   filters-hidden hides them while the list shows */
+#projectsSectionsContainer.filters-only > :not(.filters-holder) {
+    display: none !important;
+}
+#projectsSectionsContainer.filters-hidden > .filters-holder {
+    display: none;
+}
+#toggleProjectFilters.btn-nice {
+    margin-left: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+#toggleProjectFilters .filter-icon {
+    display: block;
+}
+#toggleProjectFilters.btn-nice[aria-pressed="true"] {
+    border-color: #888;
+}
+
 /* Projects button always plain; token button plain when token exists */
 #toggleProjectsSection.btn-nice,
+#toggleProjectFilters.btn-nice,
 #toggleTokenSection.btn-nice.btn-plain {
     background: transparent;
     box-shadow: none;
@@ -160,6 +181,7 @@ i.mi {
     opacity: 0.9;
 }
 #toggleProjectsSection.btn-nice:hover,
+#toggleProjectFilters.btn-nice:hover,
 #toggleTokenSection.btn-nice.btn-plain:hover {
     background: #f4f4f4;
     border-color: #aaa;
@@ -167,11 +189,13 @@ i.mi {
     opacity: 1;
 }
 .dark #toggleProjectsSection.btn-nice,
+.dark #toggleProjectFilters.btn-nice,
 .dark #toggleTokenSection.btn-nice.btn-plain {
     border-color: #666;
     color: #d6d6d6 !important;
 }
 .dark #toggleProjectsSection.btn-nice:hover,
+.dark #toggleProjectFilters.btn-nice:hover,
 .dark #toggleTokenSection.btn-nice.btn-plain:hover {
     background: #333;
     border-color: #888;
