@@ -34,7 +34,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 ### IO Data Pipeline
 
 [Data-Pipeline Python Admin](../data-pipeline/admin/) - Browser UX for running python data pulls
-[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Summary Report](../profile/footprint/) and [Comparison Experiments](../comparison/)
+[Trade Flow CSV](../exiobase/tradeflow) - Claude Code CLI processing - [Summary Report](../profile/) and [Comparison Experiments](../comparison/)
 [Trade Flow SQL](../profile/trade/) - Spark to Azure Postgresql
 [US Interstate Trade Flow CSV](../exiobase/tradeflow/bea) - Combines Exiobase with Bureau of Economic Analysis (BEA) data
 
