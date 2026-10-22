@@ -24,8 +24,10 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 
 ### Webroot for Code CLIs (Claude, OpenIA Codex, Gemini)
 
-[Webroot setup](https://model.earth/webroot/) - Simple commands to send PRs from your work.  
-[CodeChat](../codechat/) - Overview of our webroot submodules for [RAG Ingestion Pipeline training](../chat/ingestion)
+[Weekly Meetup](https://model.earth/io/coders/) - Thursdays, 7pm ET and occasionally Fridays at Georgia Tech Square Garage  
+[CloudRoot setup](https://model.earth/cloudroot/) - For CloudFlare deployments  
+[Webroot setup](https://model.earth/webroot/) - Send PRs for submodules
+[CodeChat](../codechat/) - Overview of submodules and [RAG Ingestion Pipeline](../chat/ingestion)
 [Meet Our Team](../cv) - CV Automation
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
