@@ -17,4 +17,4 @@ TO DO:
 Main data sources for the new MCP process:
 1\. Preprocessed Economic Impact Data from US and International Trade
 2\. Preprocessed data from Google Data Commons for goal setting
-(21 goals, at the start of every meeting, let participants choose their own 4 goals)
+(21 goals, at the start of every meeting, we'll let participants choose their own top goals.)
