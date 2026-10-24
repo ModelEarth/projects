@@ -14,7 +14,7 @@ TO DO:
 - Narration check - Have the agent compare its narration with the numbers the page displays, and flag any that differ.
 - Setup steps - Document adding the MCP servers to webroot for Claude Code, Codex and Gemini CLIs.
 
-Main data sources for the new MCP process:
-1\. Preprocessed Economic Impact Data from US and International trade flow
-2\. Preprocessed data from Google Data Commons for goal setting
+Main data sources for the new MCP process:  
+1\. Preprocessed Economic Impact Data from US and International trade flow. 
+2\. Preprocessed data from Google Data Commons for goal setting. 
 (21 goals, at the start of every meeting, we'll let participants choose their own top goals.)
