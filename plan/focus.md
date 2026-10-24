@@ -5,9 +5,3 @@ Our weekly [DreamStudio Earth](https://dreamstudio.com/io/coders/) meetups are e
 Select one of the [project areas](../../io/coders/) below and add your first name by editing its file in a [fork of the projects repo](https://github.com/ModelEarth/projects/tree/main/plan), then send a PR.
 
 [OPT Volunteers Welcome!](../../community/members/welcome) - Overview and New Member Signup
-<!--
-https://techcommunity.microsoft.com/blog/aiplatformblog/the-future-of-ai-how-lovable-dev-and-azure-openai-accelerate-apps-that-change-li/4413375
-
-5. [React FeedPlayer]() - 
-6. [Products Repo](/products)
--->
