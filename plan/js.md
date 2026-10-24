@@ -4,7 +4,7 @@ Our [Everybody's Home Page](../../home) process is being designed to display inf
 
 [Our Javascript Timelines](../../localsite/timeline/) pull from the Google Data Commons API with data IDs set in a Google Sheet with UN Goal tabs.
 
-TO DO: Help us continue to refine the [3 trade charts](../../profile/trade/) (links on lower right: Trade Flow Map, Chord, and Sankey) we're developing to provide an interactive [Exiobase](https://exiobase.eu) front-end.
+TO DO: Continue to refine the [3 trade charts](../../profile/trade/) (links on right: Trade Flow Map, Chord, and Sankey) to create an interactive [Exiobase](https://exiobase.eu) front-end.
 
 We're pulling images and video via [our React FeedPlayer](../../feed) which can be updated to point at any Github repo or API.
 
