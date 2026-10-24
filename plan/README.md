@@ -5,7 +5,6 @@ medium.com subscription needed
 	https://bhavikjikadara.medium.com/how-to-install-open-webui-without-docker-33eedbda9b96
 -->
 
-
 <!--
 Create a developer account in [Omdena.com](https://omdena.com) and help us create [team panels](/panels) using the 
 
@@ -28,7 +27,7 @@ Create a developer account in [Omdena.com](https://omdena.com) and help us creat
 [Webroot setup](https://model.earth/webroot/) - Send PRs for submodules
 [CodeChat](../../codechat/) - Overview of submodules and [RAG Ingestion Pipeline](../../chat/ingestion)
 [Meet Our Team](../../cv) - CV Automation
-[Projects List on Github](https://github.com/modelearth/projects/issues/) - Click "Edit" below to update TO DO items. (We're phasing out the use of GitHub issues.)
+[Projects List on Github](https://github.com/modelearth/projects/issues/) - Click "Edit" in the plan sections below to update TO DO items.
 <!--
 [ModelEarth with AnythingLLM](https://model.earth/modelearth/) - Install steps for Claude Code CLI
 -->
