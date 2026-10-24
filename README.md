@@ -1,4 +1,4 @@
 # Projects
 
-- [Active Projects](active.md)
+- [Active Projects](plan/)
 - [About our Projects](about/)

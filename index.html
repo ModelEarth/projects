@@ -13,17 +13,42 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 	<link type="text/css" rel="stylesheet" href="../localsite/css/base.css" id="/localsite/css/base.css">
-	<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true"></script>
+	<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true&mdedit=live"></script>
 
 	<!-- Side Nav -->
     <link rel="stylesheet" href="../localsite/css/nav.css">
     <script src="../localsite/js/nav.js"></script>
 
 	<script>
-	//loadMarkdown('active.md', 'activeDiv', '_parent',1, formatBuckets('activeDiv'));
-	loadMarkdown('active.md', 'activeDiv', '_parent',1);
-	loadMarkdown("../community/projects/intro.md", "moonshotsDiv", "_parent");
-	
+	// Each project area is a README in plan/, shown in its own bar. The bar title comes from here, not the
+	// file, so the editor doesn't change it. To add an area, add its div in #projectPlans and a line below.
+	loadMarkdown('plan/README.md', 'projectsIntro', { buttonText: 'Edit' });
+	loadMarkdown('plan/focus.md', 'planFocus', { title: 'Get Involved!', buttonText: 'Edit' }); // Not numbered, outside #projectPlans
+	loadMarkdown('plan/mcp.md', 'planMcp', { title: 'MCP for Impact Video Training (MCP)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/js.md', 'planJs', { title: 'Data Visualization (JS)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/ai.md', 'planAi', { title: 'CodeChat RAG for LLMs (AI)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/ml.md', 'planMl', { title: 'RealityStream Machine Learning (ML)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/io.md', 'planIo', { title: 'International Trade Flow (IO)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/geo.md', 'planGeo', { title: 'Open Footprint Labels (Geo)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/feed.md', 'planFeed', { title: 'FeedPlayer with MemberSense (Feed)', buttonText: 'Edit' }, undefined, numberProjectBars);
+	loadMarkdown('plan/moon.md', 'planMoon', { title: 'Moonshot Challenges (Moon)', buttonText: 'Edit' }, undefined, numberProjectBars);
+
+	// Numbers each bar by its place in #projectPlans, so the numbers adjust when a bar is added.
+	// Runs as each file loads, since they can arrive in any order.
+	function numberProjectBars() {
+		var plans = document.querySelectorAll('#projectPlans > div');
+		plans.forEach(function(plan, i) {
+			var bar = plan.querySelector(':scope > h2');
+			if (!bar) return; // Not loaded yet
+			var num = bar.querySelector('.barNum');
+			if (!num) {
+				num = document.createElement('span');
+				num.className = 'barNum';
+				bar.insertBefore(num, bar.firstChild);
+			}
+			num.textContent = (i + 1) + '. ';
+		});
+	}
 	</script>
 
 	<style>
@@ -66,6 +91,10 @@
 		  .dark #activeDiv h2 {
 		  	color: #000 !important;
 		  }
+		  /* Each README's own title; its bar shows a short title set in loadMarkdown above */
+		  #activeDiv .bucket > .bucketcontent > h1:first-child {
+		    display: none;
+		  }
 		  .dark #readmeDiv h2 {
 		    background-color: #000;
 		    border-bottom: 0px;
@@ -75,7 +104,8 @@
 	<script>
 	// Create GitHub cmds for downloading missing local repos.
 	document.addEventListener('DOMContentLoaded', function () {
-		waitForElm('#activeDivLoaded').then((elm) => {
+		// The plan/ files load on their own, so links are collected when the check is clicked.
+		waitForElm('#activeDiv').then((elm) => {
 			const website = location.host;
 			const projectsDiv = document.getElementById('activeDiv');
 			const missingReposFound = document.getElementById('missingReposFound');
@@ -92,22 +122,27 @@
 			const missingRepoCount = {};
 
 			// Build repoArray and repoCount
-			for (let link of links) {
-				if (link.href.includes(location.host)) {
-					// Get links pointed at current domain (typically localhost:8887)
-					const path = new URL(link.href).pathname.split('/');
-					const folder = path[1]; // Top level parent folder
+			const collectRepos = () => {
+				repoArray.length = 0;
+				Object.keys(repoCount).forEach((key) => delete repoCount[key]);
+				for (let link of links) {
+					if (link.href.includes(location.host)) {
+						// Get links pointed at current domain (typically localhost:8887)
+						const path = new URL(link.href).pathname.split('/');
+						const folder = path[1]; // Top level parent folder
 
-					if (folder && !repoArray.includes(folder)) {
-						repoArray.push(folder);
+						if (folder && !repoArray.includes(folder)) {
+							repoArray.push(folder);
+						}
+
+						repoCount[folder] = (repoCount[folder] || 0) + 1;
 					}
-
-					repoCount[folder] = (repoCount[folder] || 0) + 1;
 				}
-			}
+			};
 
 			// Check for missing repos and build missingRepoCount
 			const checkRepos = async () => {
+				collectRepos();
 				presentRepos.length = 0;
 				missingRepos.length = 0;
 				Object.keys(presentRepoCount).forEach((key) => delete presentRepoCount[key]);
@@ -230,7 +265,20 @@
 	    </div>
 
 		<div id="formatMeX">
-			<div id="activeDiv" class="mTable"></div>
+			<div id="activeDiv" class="mTable">
+				<div id="projectsIntro"></div>
+				<div id="planFocus"></div>
+				<div id="projectPlans">
+					<div id="planMcp"></div>
+					<div id="planJs"></div>
+					<div id="planAi"></div>
+					<div id="planMl"></div>
+					<div id="planIo"></div>
+					<div id="planGeo"></div>
+					<div id="planFeed"></div>
+					<div id="planMoon"></div>
+				</div>
+			</div>
 		</div>
 		
 		<div id="localRepoCheckPrompt" style="margin: 10px 0 18px;">
