@@ -54,5 +54,5 @@ Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 <!--
 ### Possible Resources
 
-[Full-Stack Cloudflare SaaS kit](https://github.com/Dhravya/cloudflare-saas-stack) - and SuperMemoryAI
+[Full-Stack Cloudflare SaaS kit](https://github.com/Dhravya/cloudflare-saas-stack) - and SuperMemoryAI..
 -->
