@@ -47,7 +47,7 @@ JAM Stack with Rust API hitting Azure PostgreSQL and Google Sheets
 
 ### RealityStream ML
 
-[Setting up local run for 6 ML forcasting models](../../realitystream/models/)  
+[Google Cloud run for 6 ML forecasting models](../../realitystream/models/)  
 RealityStream industry titles in importance report <!-- Abivish -->
 Tree Canopy density as forecasting target <!-- Sai Thanmayi -->
 
