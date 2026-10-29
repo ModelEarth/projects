@@ -23,8 +23,6 @@ Get started with the setup steps in [modelearth webroot](https://model.earth/web
 
 <!--
 - Our [repo pull page](../../home/repo) uses GitHub's API to load images, music and text to send to LLM APIs using javascript.
-
-- TO DO: Integrate [our API storage in javascript](/localsite/tools/storage/api/) to store API keys locally and override team/.env keys.
 -->
 
 <!--See also: DataStax Astra DB
