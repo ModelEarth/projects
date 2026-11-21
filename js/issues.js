@@ -3790,6 +3790,7 @@ class GitHubIssuesManager {
                             <a href="${issue.html_url}" target="_blank" class="btn btn-primary btn-sm">
                                 <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub
                             </a>
+                            ${this.crewLinksHtml(issue)}
                         </div>
                     </div>
                 </div>
@@ -3872,6 +3873,7 @@ class GitHubIssuesManager {
                         <button class="btn btn-sm btn-outline" onclick="issuesManager.showIssueDetails(${issue.id})">
                             <i class="material-icons mi">visibility</i><span> Details</span>
                         </button>
+                        ${this.crewLinksHtml(issue)}
                         <!-- GitHub button commented out - now available in 3-dot menu -->
                         <!--<a href="${issue.html_url}" target="_blank" class="btn btn-sm btn-outline">
                             <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span> GitHub</span>
@@ -3892,6 +3894,19 @@ class GitHubIssuesManager {
         `;
 
         return issueDiv;
+    }
+
+    // Bid and Payment links to the crew pages (ModelEarth/studio crew), shown only on localhost.
+    // Set window.crewBaseUrl or localStorage crewBaseUrl to point at a deployed crew site.
+    crewLinksHtml(issue) {
+        const match = issue.html_url && issue.html_url.match(/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)/i);
+        if (!match || issue.pull_request) return '';
+        let crewBase = window.crewBaseUrl;
+        try { crewBase = crewBase || localStorage.getItem('crewBaseUrl'); } catch (e) {}
+        crewBase = (crewBase || 'http://localhost:4201/crew').replace(/\/+$/, '');
+        const query = `repo=${encodeURIComponent(match[1] + '/' + match[2])}&issue=${match[3]}`;
+        return `<a href="${crewBase}/bid?${query}" target="_blank" class="local btn btn-sm btn-outline" style="display:none">Bid</a>
+                <a href="${crewBase}/pay?${query}" target="_blank" class="local btn btn-sm btn-outline" style="display:none">Payment</a>`;
     }
 
     getRepoOwnerLogin(issue) {
