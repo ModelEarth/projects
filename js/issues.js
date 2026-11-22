@@ -3896,17 +3896,20 @@ class GitHubIssuesManager {
         return issueDiv;
     }
 
-    // Bid and Payment links to the crew pages (ModelEarth/studio crew), shown only on localhost.
-    // Set window.crewBaseUrl or localStorage crewBaseUrl to point at a deployed crew site.
+    // Bid, Payment and Bounty links to the crew pages (ModelEarth/studio crew).
+    // They open the crew site on localhost:4201 locally, and https://studio.model.earth/crew elsewhere.
+    // Set window.crewBaseUrl or localStorage crewBaseUrl to point at another crew site.
     crewLinksHtml(issue) {
         const match = issue.html_url && issue.html_url.match(/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)/i);
         if (!match || issue.pull_request) return '';
         let crewBase = window.crewBaseUrl;
         try { crewBase = crewBase || localStorage.getItem('crewBaseUrl'); } catch (e) {}
-        crewBase = (crewBase || 'http://localhost:4201/crew').replace(/\/+$/, '');
+        const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+        crewBase = (crewBase || (local ? 'http://localhost:4201/crew' : 'https://studio.model.earth/crew')).replace(/\/+$/, '');
         const query = `repo=${encodeURIComponent(match[1] + '/' + match[2])}&issue=${match[3]}`;
-        return `<a href="${crewBase}/bid?${query}" target="_blank" class="local btn btn-sm btn-outline" style="display:none">Bid</a>
-                <a href="${crewBase}/pay?${query}" target="_blank" class="local btn btn-sm btn-outline" style="display:none">Payment</a>`;
+        return `<a href="${crewBase}/bid?${query}" target="_blank" class="btn btn-sm btn-outline" title="Bid to produce this issue">Bid</a>
+                <a href="${crewBase}/pay?${query}" target="_blank" class="btn btn-sm btn-outline" title="Pay for work, and send tips">Payment</a>
+                <a href="${crewBase}/bounty?${query}" target="_blank" class="btn btn-sm btn-outline" title="Offer an amount for a satisfactory production">Bounty</a>`;
     }
 
     getRepoOwnerLogin(issue) {
