@@ -2946,7 +2946,7 @@ body.widget-fullscreen-active {
     margin-bottom: 0.75rem;
 }
 .issue-actions-inline .btn,
-.issue-actions-inline > div {
+.issue-actions-inline > div:not(.crew-links) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2954,7 +2954,7 @@ body.widget-fullscreen-active {
     padding: 0.45rem 0.9rem !important;
 }
 .issue-actions-inline .btn i,
-.issue-actions-inline > div i {
+.issue-actions-inline > div:not(.crew-links) i {
     margin-right: 0;
 }
 
@@ -3532,4 +3532,53 @@ body.widget-fullscreen-active {
 .comments-toggle-section:not(.comments-open) .comments-section-inline,
 .comments-toggle-section:not(.comments-open) .comments-section {
     display: none;
+}
+
+/* Bid, Payment and Bounty links (crewLinksHtml in js/issues.js). They sit in the row like its
+   other buttons; when the row is too narrow, the Crew button opens them in a menu. */
+.crew-links,
+.crew-links-buttons {
+    display: contents;
+}
+.crew-links[hidden] {
+    display: none !important;
+}
+.crew-links .crew-links-toggle {
+    display: none;
+}
+.crew-links.crew-collapsed {
+    display: inline-flex;
+    position: relative;
+}
+.crew-links.crew-collapsed .crew-links-toggle {
+    display: inline-flex;
+}
+.crew-links.crew-collapsed .crew-links-buttons {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 4px);
+    z-index: 20;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.4rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+.dark .crew-links.crew-collapsed .crew-links-buttons {
+    background: var(--light-color);
+}
+.crew-links.crew-collapsed.crew-open .crew-links-buttons {
+    display: flex;
+}
+/* Set while fitCrewLinks measures the row, so buttons report their full width. */
+.crew-measuring > *,
+.crew-measuring .crew-links-buttons > * {
+    flex-shrink: 0;
+}
+.crew-links.crew-collapsed .crew-links-buttons .btn {
+    justify-content: center;
+    white-space: nowrap;
 }

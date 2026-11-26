@@ -3899,17 +3899,24 @@ class GitHubIssuesManager {
     // Bid, Payment and Bounty links to the crew pages (ModelEarth/studio crew).
     // They open the crew site on localhost:4201 locally, and https://studio.model.earth/crew elsewhere.
     // Set window.crewBaseUrl or localStorage crewBaseUrl to point at another crew site.
+    // Shown on localhost, and on other hosts only when devmode is dev (see crewLinksVisible).
+    // Used by the issue rows and the issue details popup. When the row is too narrow for them,
+    // a single Crew button reveals them (see fitCrewLinks).
     crewLinksHtml(issue) {
         const match = issue.html_url && issue.html_url.match(/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)/i);
         if (!match || issue.pull_request) return '';
         let crewBase = window.crewBaseUrl;
         try { crewBase = crewBase || localStorage.getItem('crewBaseUrl'); } catch (e) {}
-        const local = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-        crewBase = (crewBase || (local ? 'http://localhost:4201/crew' : 'https://studio.model.earth/crew')).replace(/\/+$/, '');
+        crewBase = (crewBase || (isCrewLocalHost() ? 'http://localhost:4201/crew' : 'https://studio.model.earth/crew')).replace(/\/+$/, '');
         const query = `repo=${encodeURIComponent(match[1] + '/' + match[2])}&issue=${match[3]}`;
-        return `<a href="${crewBase}/bid?${query}" target="_blank" class="btn btn-sm btn-outline" title="Bid to produce this issue">Bid</a>
+        return `<div class="crew-links"${crewLinksVisible() ? '' : ' hidden'}>
+                <button type="button" class="btn btn-sm btn-outline crew-links-toggle" aria-expanded="false" title="Bid, Payment and Bounty" onclick="toggleCrewLinks(this)"><i class="material-icons mi">payments</i><span> Crew</span></button>
+                <div class="crew-links-buttons">
+                <a href="${crewBase}/bid?${query}" target="_blank" class="btn btn-sm btn-outline" title="Bid to produce this issue">Bid</a>
                 <a href="${crewBase}/pay?${query}" target="_blank" class="btn btn-sm btn-outline" title="Pay for work, and send tips">Payment</a>
-                <a href="${crewBase}/bounty?${query}" target="_blank" class="btn btn-sm btn-outline" title="Offer an amount for a satisfactory production">Bounty</a>`;
+                <a href="${crewBase}/bounty?${query}" target="_blank" class="btn btn-sm btn-outline" title="Offer an amount for a satisfactory production">Bounty</a>
+                </div>
+                </div>`;
     }
 
     getRepoOwnerLogin(issue) {
@@ -4080,6 +4087,7 @@ class GitHubIssuesManager {
                     <a href="${issue.html_url}" target="_blank" class="btn btn-primary">
                         <svg class="mi-github" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> View on GitHub
                     </a>
+                    ${this.crewLinksHtml(issue)}
                 </div>
             </div>
         `;
@@ -5533,6 +5541,94 @@ if (typeof waitForElm === 'function') {
 } else {
     document.addEventListener('DOMContentLoaded', initGitIssuesAccountField);
 }
+
+function isCrewLocalHost() {
+    return ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+}
+
+// The crew links show on localhost, and elsewhere when devmode is dev
+// (the devmode cookie, set by localsite's Public/Dev setting).
+function crewLinksVisible(devmode) {
+    if (isCrewLocalHost()) return true;
+    if (devmode === undefined) {
+        const cookie = document.cookie.match(/(?:^|;\s*)devmode=([^;]*)/);
+        devmode = cookie ? decodeURIComponent(cookie[1]) : '';
+    }
+    return devmode == 'dev';
+}
+
+document.addEventListener('change', (event) => {
+    if (!event.target || event.target.id !== 'devmode') return;
+    const visible = crewLinksVisible(event.target.value);
+    document.querySelectorAll('.crew-links').forEach((links) => {
+        links.hidden = !visible;
+        fitCrewLinks(links);
+    });
+});
+
+// The row the crew links sit in. They collapse to the Crew button when they'd pass its right side.
+function crewLinksRow(links) {
+    return links.closest('.issue-footer, .issue-actions-inline, .issue-actions-detail') || links.parentElement;
+}
+
+function fitCrewLinks(links) {
+    if (links.hidden) return;
+    const row = crewLinksRow(links);
+    const wasOpen = links.classList.contains('crew-open');
+    links.classList.remove('crew-collapsed', 'crew-open');
+    const last = links.querySelector('.crew-links-buttons > :last-child');
+    if (!row || !last) return;
+    row.classList.add('crew-measuring');
+    const right = row.getBoundingClientRect().right - (parseFloat(getComputedStyle(row).paddingRight) || 0);
+    const overflows = last.getBoundingClientRect().right > right + 1;
+    row.classList.remove('crew-measuring');
+    if (overflows) {
+        links.classList.add('crew-collapsed');
+        if (wasOpen) links.classList.add('crew-open');
+    }
+    const toggle = links.querySelector('.crew-links-toggle');
+    if (toggle) toggle.setAttribute('aria-expanded', String(links.classList.contains('crew-open')));
+}
+
+function toggleCrewLinks(toggle) {
+    const links = toggle.closest('.crew-links');
+    const open = links.classList.toggle('crew-open');
+    toggle.setAttribute('aria-expanded', String(open));
+}
+window.toggleCrewLinks = toggleCrewLinks;
+
+document.addEventListener('click', (event) => {
+    document.querySelectorAll('.crew-links.crew-open').forEach((links) => {
+        if (!links.contains(event.target)) toggleCrewLinks(links.querySelector('.crew-links-toggle'));
+    });
+});
+
+// Fit the crew links when they're added and whenever their rows change width.
+(function watchCrewLinks() {
+    const resized = typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver((entries) => entries.forEach((entry) => entry.target.querySelectorAll('.crew-links').forEach(fitCrewLinks)))
+        : null;
+    const rows = new WeakSet();
+    const fitAll = () => {
+        document.querySelectorAll('.crew-links').forEach((links) => {
+            const row = crewLinksRow(links);
+            if (resized && row && !rows.has(row)) {
+                rows.add(row);
+                resized.observe(row);
+            }
+            fitCrewLinks(links);
+        });
+    };
+    const start = () => {
+        new MutationObserver((mutations) => {
+            if (mutations.some((mutation) => [...mutation.addedNodes].some((node) => node.nodeType === 1 && (node.matches('.crew-links') || node.querySelector('.crew-links'))))) fitAll();
+        }).observe(document.body, { childList: true, subtree: true });
+        if (!resized) window.addEventListener('resize', fitAll);
+        fitAll();
+    };
+    if (document.body) start();
+    else document.addEventListener('DOMContentLoaded', start);
+})();
 
 // Initialize the issues manager.
 // Supports lazy script loading after DOMContentLoaded.
